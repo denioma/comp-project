@@ -7,7 +7,8 @@ Compilers' Project
   * illegal character
   * unterminated comment (occurs when a multi line comment isn't closed before EOF)
   * unterminated string literal
-* Automatic `SEMICOLON` after `LIT`, `ID`, `RETURN`, `RPAR`, `RSQ` ou `RBRACE`.
+* Automatic `SEMICOLON` after `LIT`, `ID`, `RETURN`, `RPAR`, `RSQ` ou `RBRACE`
+* RESERVED tokens
 
 ## Implemented
 

@@ -3,8 +3,6 @@
  // -------------------------------------------------
 
 %{
-	int checkOctal(char*, int*, int*);
-	int checkHex(char*, int*, int*);
 	int col = 1, temp = 0;							// Keep track of line column
 	short int semicolon = 0;				// Use for SEMICOLON emission if last token valid
 	short int valid = 1;					// Use for token emission after complete match
@@ -89,25 +87,3 @@ int yywrap() {
 	return 1;
 }
 
-int checkOctal(char* input, int* len, int* line) {
-	short int ret = 0;
-	for (int i = 1; i < *len; i++) {
-		if (*(input+i) - 48 > 7 || *(input+i) - 48 < 0) {
-			// Print error msg to stdout
-			fprintf(stdout, "Line %d, column %d: invalid octal constant (%c)\n", yylineno, col+i, *(input+i));			
-			ret = 1;
-		}
-	}
-	return ret;
-}
-
-int checkHex(char* input, int* len, int* line) {
-	short int ret = 0;
-	for (int i = 1; i < *len; i++) {
-		if (!(*(input+i) >= 48 && *(input+i) <= 57) && !(*(input+i) >= 65 && *(input+i) <= 70) && !(*(input+i) >= 97 && *(input+i) <= 102)) {
-			// What to do with invalid hex?
-			ret = 1;
-		}
-	}
-	return ret;
-}
