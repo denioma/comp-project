@@ -5,7 +5,7 @@
 %{
 	int checkOctal(char*, int*, int*);
 	int checkHex(char*, int*, int*);
-	int col = 1;							// Keep track of line column
+	int col = 1, temp = 0;							// Keep track of line column
 	short int semicolon = 0;				// Use for SEMICOLON emission if last token valid
 	short int valid = 1;					// Use for token emission after complete match
 %}
@@ -13,17 +13,17 @@ letter			[A-Za-z_]
 number			[0-9]
 alnum			{letter}|{number}
 identifier		{letter}{alnum}*
-integer			{number}+
+integer			[1-9]{number}*
 octal			0{integer}
 hex			    0[xX]{alnum}+
 string			([^\n\r\"\\]|\\[fnrt\\\"])*
 %X STRLIT OCTAL COMMENT
 %%
-{octal}			{if (!checkOctal(yytext, &yyleng, &yylineno)) fprintf(yyout, "INTLIT(%s)\n", yytext);}
-{hex}			{if (!checkHex(yytext, &yyleng, &yylineno)); fprintf(yyout, "INTLIT(%s)\n", yytext);}
+0               {BEGIN OCTAL;}
 {integer}		{fprintf(yyout, "INTLIT(%s)\n", yytext); col += yyleng;}
 \"				{++col; BEGIN(STRLIT);}
-"//".*				{;}
+"//".*			{;}
+"/*"            {col +=2; BEGIN COMMENT;}
 ";"				{fprintf(yyout, "SEMICOLON\n"); col += yyleng;}
 ","				{fprintf(yyout, "COMMA\n"); col += yyleng;}
 "_"				{fprintf(yyout, "BLANKID\n"); col += yyleng;}
@@ -70,6 +70,14 @@ string			([^\n\r\"\\]|\\[fnrt\\\"])*
 <STRLIT>{string}\"		{col += yyleng; if (valid) fprintf(yyout, "STRLIT(%s)\n", yytext); valid = 1; BEGIN 0;}
 <STRLIT>\\[^fnrt\\\"]	{fprintf(stdout, "Line %d, column %d: invalid escape sequence (%s)\n", yylineno, col, yytext); col += 2; valid = 0;}
 <STRLIT>.				{++col;}
+
+<COMMENT>"*/"       {BEGIN 0;}
+<COMMENT>.          {++temp;}
+<COMMENT>\n         {col = 1;}
+
+<OCTAL>[0-7]*       {fprintf(yyout, "INTLIT(0%s)\n", yytext); col += yyleng; BEGIN 0;}
+<OCTAL>[0-9]*       {fprintf(stdout, "Line %d, column %d: invalid octal constant (0%s)\n", yylineno, col, yytext); col += yyleng; BEGIN 0;}
+<OCTAL>.|\n         {BEGIN 0;}
 %%
 int main(int argc, char** argv) {
 	yylex();
