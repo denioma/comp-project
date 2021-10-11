@@ -9,20 +9,21 @@
 	short int semicolon = 0;				// Use for SEMICOLON emission if last token valid
 	short int valid = 1;					// Use for token emission after complete match
 %}
-letter			[A-Za-z]
+letter			[A-Za-z_]
 number			[0-9]
 alnum			{letter}|{number}
 identifier		{letter}{alnum}*
 integer			{number}+
 octal			0{integer}
-hex				0[xX]{alnum}+
+hex			    0[xX]{alnum}+
 string			([^\n\r\"\\]|\\[fnrt\\\"])*
-%X STRLIT OCTAL
+%X STRLIT OCTAL COMMENT
 %%
 {octal}			{if (!checkOctal(yytext, &yyleng, &yylineno)) fprintf(yyout, "INTLIT(%s)\n", yytext);}
 {hex}			{if (!checkHex(yytext, &yyleng, &yylineno)); fprintf(yyout, "INTLIT(%s)\n", yytext);}
 {integer}		{fprintf(yyout, "INTLIT(%s)\n", yytext); col += yyleng;}
 \"				{++col; BEGIN(STRLIT);}
+"//".*				{;}
 ";"				{fprintf(yyout, "SEMICOLON\n"); col += yyleng;}
 ","				{fprintf(yyout, "COMMA\n"); col += yyleng;}
 "_"				{fprintf(yyout, "BLANKID\n"); col += yyleng;}
