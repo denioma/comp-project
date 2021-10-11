@@ -15,6 +15,8 @@ integer			[1-9]{number}*
 octal			0{integer}
 hex			    0[xX][0-9a-f]+
 string			([^\n\r\"\\]|\\[fnrt\\\"])*
+whitespace      [" "\t]
+reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto|import|interface|map|range|select|struct|switch|type|"++"|"--"
 %X STRLIT OCTAL COMMENT
 %%
 0               {BEGIN OCTAL;}
@@ -61,12 +63,13 @@ string			([^\n\r\"\\]|\\[fnrt\\\"])*
 "strconv.Atoi"	{fprintf(yyout, "PARSEINT\n"); col += yyleng;}
 "func"			{fprintf(yyout, "FUNC\n"); col += yyleng;}
 "os.Args"		{fprintf(yyout, "CMDARGS\n"); col += yyleng;}
+{reserved}      {fprintf(yyout, "RESERVED(%s)\n", yytext);}
 {identifier}	{fprintf(yyout, "ID(%s)\n", yytext); col += yyleng;}
-" "				{++col;}
+{whitespace}    {++col;}
+[\r\n]          {;}
 .				{fprintf(stdout, "Line %d, column %d: illegal character('%c')\n", yylineno, ++col, *yytext);}
-\n				{col = 1;}
 
-<STRLIT>{string}\"		{col += yyleng; if (valid) fprintf(yyout, "STRLIT(%s)\n", yytext); valid = 1; BEGIN 0;}
+<STRLIT>{string}\"		{col += yyleng; if (valid) fprintf(yyout, "STRLIT(\"%s)\n", yytext); valid = 1; BEGIN 0;}
 <STRLIT>\\[^fnrt\\\"]	{fprintf(stdout, "Line %d, column %d: invalid escape sequence (%s)\n", yylineno, col, yytext); col += 2; valid = 0;}
 <STRLIT>.				{++col;}
 
