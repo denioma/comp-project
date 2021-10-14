@@ -1,8 +1,7 @@
- // José Miguel Rocha Gonçalves - 2019223292
- // Rodrigo Alexandre da Mota Machado - 2019218299
- // -------------------------------------------------
-
 %{
+	// José Miguel Rocha Gonçalves - 2019223292
+	// Rodrigo Alexandre da Mota Machado - 2019218299
+	// -------------------------------------------------
     #include <string.h>
     int lflag = 0; 
 	int col = 1, temp = 0, line = 1;		// Keep track of line column
@@ -14,20 +13,23 @@ number			[0-9]
 alnum			{letter}|{number}
 identifier		{letter}{alnum}*
 integer			[1-9]{number}*
+octal			0[0-7]*
 hex			    0[xX][0-9a-fA-F]+
-string			([^\n\r\"\\]|\\[fnrt\\\"])*
+string			\"([^\n\r\"\\]|\\[fnrt\\\"])*\"
 exponent		[eE][-+]?{number}+
 real			({number}+"."({number}+)?{exponent}?)|({number}+{exponent})|("."{number}+{exponent}?)
 whitespace      [" "\t]
+newline			\r\n|\n
 reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto|import|interface|map|range|select|struct|switch|type|"++"|"--"
-%X STRLIT OCTAL COMMENT
+%x STRLIT COMMENT
 %%
 {hex}           {if (lflag) fprintf(yyout, "INTLIT(%s)\n", yytext); col += yyleng; semicolon = 1;}
-0[0-7]*         {if (lflag) fprintf(yyout, "INTLIT(%s)\n", yytext); col += yyleng; semicolon = 1;}
+{octal}         {if (lflag) fprintf(yyout, "INTLIT(%s)\n", yytext); col += yyleng; semicolon = 1;}
 0[0-9]*         {printf("Line %d, column %d: invalid octal constant (%s)\n", yylineno, col, yytext); col += yyleng;}
 {integer}		{if (lflag) fprintf(yyout, "INTLIT(%s)\n", yytext); col += yyleng; semicolon = 1;}
 {real}			{if (lflag) fprintf(yyout, "REALLIT(%s)\n", yytext); col += yyleng; semicolon = 1;}
-\"				{++col; BEGIN(STRLIT);}
+{string}		{if (lflag) fprintf(yyout, "STRLIT(%s)\n", yytext); col += yyleng; semicolon = 1;}
+\"				{temp = col; BEGIN(STRLIT);}
 "//".*			{;}
 "/*"            {temp = col; line = yylineno; BEGIN COMMENT;}
 ";"				{if (lflag) fprintf(yyout, "SEMICOLON\n"); col += yyleng; semicolon = 0;}
@@ -71,17 +73,19 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 {reserved}      {if (lflag) fprintf(yyout, "RESERVED(%s)\n", yytext); semicolon = 0;}
 {identifier}	{if (lflag) fprintf(yyout, "ID(%s)\n", yytext); col += yyleng; semicolon = 1;}
 {whitespace}    {++col;}
-\n|\r\n			{col = 1; yylineno++; if (semicolon) { printf("SEMICOLON\n"); semicolon = 0;}}
-.				{fprintf(stdout, "Line %d, column %d: illegal character(%c)\n", yylineno, ++col, *yytext);}
+{newline}		{col = 1; yylineno++; if (semicolon && lflag) {fprintf(yyout, "SEMICOLON\n"); semicolon = 0;}}
+.				{fprintf(stdout, "Line %d, column %d: illegal character (%c)\n", yylineno, col++, *yytext);}
 
-<STRLIT>{string}\"		{col += yyleng; if (valid && lflag) fprintf(yyout, "STRLIT(\"%s)\n", yytext); valid = 1; semicolon = 1; BEGIN 0;}
-<STRLIT>\\[^fnrt\\\"]	{fprintf(stdout, "Line %d, column %d: invalid escape sequence (%s)\n", yylineno, col, yytext); col += 2; valid = 0;}
-<STRLIT>.				{++col;}
+<STRLIT>\\[^fnrt\\\"]	{fprintf(stdout, "Line %d, column %d: invalid escape sequence (%s)\n", yylineno, ++temp, yytext);}
+<STRLIT>{newline}		{fprintf(stdout, "Line %d, column %d: unterminated string literal\n", yylineno++, col); BEGIN 0;}
+<STRLIT>.				{++temp;}
 
-<COMMENT>"*/"       {BEGIN 0;}
+<COMMENT>"*/"       {temp = 1; BEGIN 0;}
 <COMMENT>.          {++temp;}
-<COMMENT>\n         {temp = 1;}
-<COMMENT><<EOF>>	{printf("Line %d, column %d: unterminated comment\n", line, col); BEGIN 0;}
+<COMMENT>\n         {temp = 1; yylineno++;}
+<COMMENT><<EOF>>	{printf("Line %d, column %d: unterminated comment\n", line, col); temp = 1; BEGIN 0;}
+
+<INITIAL><<EOF>>	{if (lflag && semicolon) fprintf(yyout, "SEMICOLON\n"); exit(0);}
 %%
 int main(int argc, char** argv) {
     for (int i = 1; i < argc; i++) {

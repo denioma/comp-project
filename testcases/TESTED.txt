@@ -1,9 +1,22 @@
-CHECK text_01.dgo
-CHECK text_02.dgo
-FAIL str_bad_1.dg	
-CHECK literals_2.dgo
-FAIL literals_3.dgo
-CHECK operators_1.dgo
-CHECK operators_2.dgo
-FAIL semicolons_1.dgo
-FAIL semicolons_2.dgo
+✅ PASSED testcases/auto_semicolon_1.dgo
+✅ PASSED testcases/blank_1.dgo
+✅ PASSED testcases/comments_1.dgo
+✅ PASSED testcases/comments_2.dgo
+✅ PASSED testcases/comments_bad_1.dgo
+✅ PASSED testcases/comments_bad_2.dgo
+✅ PASSED testcases/empty_1.dgo
+✅ PASSED testcases/factorial.dgo
+✅ PASSED testcases/ids_keywords_1.dgo
+✅ PASSED testcases/ids_keywords_2.dgo
+✅ PASSED testcases/ids_keywords_3.dgo
+✅ PASSED testcases/illegalchar_1.dgo
+✅ PASSED testcases/literals_1.dgo
+✅ PASSED testcases/literals_2.dgo
+✅ PASSED testcases/literals_3.dgo
+✅ PASSED testcases/operators_1.dgo
+✅ PASSED testcases/operators_2.dgo
+✅ PASSED testcases/semicolons_1.dgo
+✅ PASSED testcases/semicolons_2.dgo
+❌ FAILED testcases/str_bad_1.dgo
+✅ PASSED testcases/text_1.dgo
+✅ PASSED testcases/text_2.dgo
