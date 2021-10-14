@@ -17,7 +17,7 @@ integer			[1-9]{number}*
 hex			    0[xX][0-9a-fA-F]+
 string			([^\n\r\"\\]|\\[fnrt\\\"])*
 exponent		[eE][-+]?{number}+
-real			({number}+"."({number}+)?{exponent}?) | ({number}+{exponent}) | ("."{number}+{exponent}?)
+real			({number}+"."({number}+)?{exponent}?)|({number}+{exponent})|("."{number}+{exponent}?)
 whitespace      [" "\t]
 reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto|import|interface|map|range|select|struct|switch|type|"++"|"--"
 %X STRLIT OCTAL COMMENT
