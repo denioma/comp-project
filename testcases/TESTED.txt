@@ -1,0 +1,9 @@
+CHECK text_01.dgo
+CHECK text_02.dgo
+FAIL str_bad_1.dg	
+CHECK literals_2.dgo
+FAIL literals_3.dgo
+CHECK operators_1.dgo
+CHECK operators_2.dgo
+FAIL semicolons_1.dgo
+FAIL semicolons_2.dgo
