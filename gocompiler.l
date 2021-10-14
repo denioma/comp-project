@@ -15,11 +15,14 @@ integer			[1-9]{number}*
 octal			0{integer}
 hex			    0[xX][0-9a-fA-F]+
 string			([^\n\r\"\\]|\\[fnrt\\\"])*
+exponent		[eE][-+]?{number}+
+real			({number}+"."({number}+)?{exponent}?) | ({number}+{exponent}) | ("."{number}+{exponent}?)
 %X STRLIT OCTAL COMMENT
 %%
 0               {BEGIN OCTAL;}
 {integer}		{fprintf(yyout, "INTLIT(%s)\n", yytext); col += yyleng;}
 {hex}           {fprintf(yyout, "INTLIT(%s)\n", yytext); col += yyleng;}
+{real}			{fprintf(yyout, "REALLIT(%s)\n", yytext); col += yyleng;}
 \"				{++col; BEGIN(STRLIT);}
 "//".*			{;}
 "/*"            {col +=2; BEGIN COMMENT;}
