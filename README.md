@@ -20,6 +20,13 @@ Submit to mooshak and despair.
 José Miguel Rocha Gonçalves
 Rodrigo Alexandre da Mota Machado
 
+## Mooshak
+
+```
+H - Illegal Characters: 0/20
+J - Unterminated Comments: 0/10
+```
+
 ## Tests Status
 
 ```
