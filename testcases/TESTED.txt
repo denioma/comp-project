@@ -1,3 +1,5 @@
+make: 'gocompiler.out' is up to date.
+---------------------------------------------
 ✅ PASSED testcases/auto_semicolon_1.dgo
 ✅ PASSED testcases/blank_1.dgo
 ✅ PASSED testcases/comments_1.dgo
@@ -17,6 +19,6 @@
 ✅ PASSED testcases/operators_2.dgo
 ✅ PASSED testcases/semicolons_1.dgo
 ✅ PASSED testcases/semicolons_2.dgo
-❌ FAILED testcases/str_bad_1.dgo
+✅ PASSED testcases/str_bad_1.dgo
 ✅ PASSED testcases/text_1.dgo
 ✅ PASSED testcases/text_2.dgo

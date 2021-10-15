@@ -21,6 +21,7 @@ real			({number}+"."({number}+)?{exponent}?)|({number}+{exponent})|("."{number}+
 whitespace      [" "\t]
 newline			\r\n|\n
 reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto|import|interface|map|range|select|struct|switch|type|"++"|"--"
+%option yylineno
 %x STRLIT COMMENT
 %%
 {hex}           {if (lflag) fprintf(yyout, "INTLIT(%s)\n", yytext); col += yyleng; semicolon = 1;}
@@ -73,19 +74,20 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 {reserved}      {if (lflag) fprintf(yyout, "RESERVED(%s)\n", yytext); semicolon = 0;}
 {identifier}	{if (lflag) fprintf(yyout, "ID(%s)\n", yytext); col += yyleng; semicolon = 1;}
 {whitespace}    {++col;}
-{newline}		{col = 1; yylineno++; if (semicolon && lflag) {fprintf(yyout, "SEMICOLON\n"); semicolon = 0;}}
+{newline}		{col = 1; if (semicolon && lflag) {fprintf(yyout, "SEMICOLON\n"); semicolon = 0;}}
 .				{fprintf(stdout, "Line %d, column %d: illegal character (%c)\n", yylineno, col++, *yytext);}
 
-<STRLIT>\\(\n|\r\n)		{temp += 2; fprintf(stdout, "Line %d, column %d: invalid escape sequence (\\)\n", yylineno, temp);}
-<STRLIT>\\[fnrt\\\"]	{;}
-<STRLIT>\\[^fnrt\\\"]	{fprintf(stdout, "Line %d, column %d: invalid escape sequence (%s)\n", yylineno, ++temp, yytext);}
-<STRLIT>\"				{BEGIN 0;}
-<STRLIT>{newline}		{fprintf(stdout, "Line %d, column %d: unterminated string literal\n", yylineno++, col); BEGIN 0;}
+<STRLIT>\\				{temp++; fprintf(stdout, "Line %d, column %d: invalid escape sequence (\\)\n", yylineno, temp);}
+<STRLIT>\\[fnrt\\\"]	{temp += 2;}
+<STRLIT>\\.				{temp++; fprintf(stdout, "Line %d, column %d: invalid escape sequence (%s)\n", yylineno, temp++, yytext);}
+<STRLIT>\"				{col = temp; BEGIN 0;}
+<STRLIT>{newline}		{fprintf(stdout, "Line %d, column %d: unterminated string literal\n", yylineno-1, col); BEGIN 0;}
+<STRLIT><<EOF>>			{fprintf(stdout, "Line %d, column %d: unterminated string literal\n", yylineno, col); BEGIN 0;}
 <STRLIT>.				{++temp;}
 
 <COMMENT>"*/"       {temp = 1; BEGIN 0;}
 <COMMENT>.          {++temp;}
-<COMMENT>\n         {temp = 1; yylineno++;}
+<COMMENT>\n         {temp = 1;}
 <COMMENT><<EOF>>	{printf("Line %d, column %d: unterminated comment\n", line, col); temp = 1; BEGIN 0;}
 
 <INITIAL><<EOF>>	{if (lflag && semicolon) fprintf(yyout, "SEMICOLON\n"); exit(0);}

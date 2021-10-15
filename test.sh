@@ -1,3 +1,5 @@
+make # for making sure that the compiler is updated
+echo "---------------------------------------------"
 for input in testcases/*.dgo; do
     filename=`echo $input | cut -d "." -f1`
     out=$(./gocompiler.out -l < $filename.dgo | diff $filename.out -)
