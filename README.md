@@ -38,8 +38,10 @@ Rodrigo Alexandre da Mota Machado
 ✅ PASSED testcases/literals_1.dgo
 ✅ PASSED testcases/literals_2.dgo
 ✅ PASSED testcases/literals_3.dgo
+✅ PASSED testcases/literals_4.dgo
 ✅ PASSED testcases/operators_1.dgo
 ✅ PASSED testcases/operators_2.dgo
+✅ PASSED testcases/programs_1.dgo
 ✅ PASSED testcases/semicolons_1.dgo
 ✅ PASSED testcases/semicolons_2.dgo
 ✅ PASSED testcases/str_bad_1.dgo
