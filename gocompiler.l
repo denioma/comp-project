@@ -76,7 +76,10 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 {newline}		{col = 1; yylineno++; if (semicolon && lflag) {fprintf(yyout, "SEMICOLON\n"); semicolon = 0;}}
 .				{fprintf(stdout, "Line %d, column %d: illegal character (%c)\n", yylineno, col++, *yytext);}
 
+<STRLIT>\\(\n|\r\n)		{temp += 2; fprintf(stdout, "Line %d, column %d: invalid escape sequence (\\)\n", yylineno, temp);}
+<STRLIT>\\[fnrt\\\"]	{;}
 <STRLIT>\\[^fnrt\\\"]	{fprintf(stdout, "Line %d, column %d: invalid escape sequence (%s)\n", yylineno, ++temp, yytext);}
+<STRLIT>\"				{BEGIN 0;}
 <STRLIT>{newline}		{fprintf(stdout, "Line %d, column %d: unterminated string literal\n", yylineno++, col); BEGIN 0;}
 <STRLIT>.				{++temp;}
 
