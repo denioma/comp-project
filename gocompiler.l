@@ -3,7 +3,7 @@
 	// Rodrigo Alexandre da Mota Machado - 2019218299
 	// -------------------------------------------------
     #include <string.h>
-    int lflag = 0; 
+    short int lflag = 0;
 	int col = 1, temp = 0, line = 1;		// Keep track of line column
 	short int semicolon = 0;				// Use for SEMICOLON emission if last token valid
 	short int valid = 1;					// Use for token emission after complete match
@@ -30,9 +30,9 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 {integer}		{if (lflag) fprintf(yyout, "INTLIT(%s)\n", yytext); col += yyleng; semicolon = 1;}
 {real}			{if (lflag) fprintf(yyout, "REALLIT(%s)\n", yytext); col += yyleng; semicolon = 1;}
 {string}		{if (lflag) fprintf(yyout, "STRLIT(%s)\n", yytext); col += yyleng; semicolon = 1;}
-\"				{temp = col; BEGIN(STRLIT);}
+\"				{temp = col; semicolon = 0; BEGIN(STRLIT);}
 "//".*			{;}
-"/*"            {temp = col; line = yylineno; BEGIN COMMENT;}
+"/*"            {temp = col + 2; line = yylineno; BEGIN COMMENT;}
 ";"				{if (lflag) fprintf(yyout, "SEMICOLON\n"); col += yyleng; semicolon = 0;}
 ","				{if (lflag) fprintf(yyout, "COMMA\n"); col += yyleng; semicolon = 0;}
 "_"				{if (lflag) fprintf(yyout, "BLANKID\n"); col += yyleng; semicolon = 0;}
@@ -75,20 +75,21 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 {identifier}	{if (lflag) fprintf(yyout, "ID(%s)\n", yytext); col += yyleng; semicolon = 1;}
 {whitespace}    {++col;}
 {newline}		{col = 1; if (semicolon && lflag) {fprintf(yyout, "SEMICOLON\n"); semicolon = 0;}}
-.				{fprintf(stdout, "Line %d, column %d: illegal character (%c)\n", yylineno, col++, *yytext);}
+.				{fprintf(stdout, "Line %d, column %d: illegal character (%c)\n", yylineno, col++, *yytext); semicolon = 0;}
 
 <STRLIT>\\				{temp++; fprintf(stdout, "Line %d, column %d: invalid escape sequence (\\)\n", yylineno, temp);}
 <STRLIT>\\[fnrt\\\"]	{temp += 2;}
 <STRLIT>\\.				{temp++; fprintf(stdout, "Line %d, column %d: invalid escape sequence (%s)\n", yylineno, temp++, yytext);}
-<STRLIT>\"				{col = temp; BEGIN 0;}
-<STRLIT>{newline}		{fprintf(stdout, "Line %d, column %d: unterminated string literal\n", yylineno-1, col); BEGIN 0;}
+<STRLIT>\"				{col = temp + 1; BEGIN 0;}
+<STRLIT>{newline}		{fprintf(stdout, "Line %d, column %d: unterminated string literal\n", yylineno-1, col); col = 1; BEGIN 0;}
 <STRLIT><<EOF>>			{fprintf(stdout, "Line %d, column %d: unterminated string literal\n", yylineno, col); BEGIN 0;}
 <STRLIT>.				{++temp;}
 
-<COMMENT>"*/"       {temp = 1; BEGIN 0;}
+<COMMENT>"*/"       {col = temp + 2; temp = 1; BEGIN 0;}
 <COMMENT>.          {++temp;}
 <COMMENT>\n         {temp = 1;}
-<COMMENT><<EOF>>	{printf("Line %d, column %d: unterminated comment\n", line, col); temp = 1; BEGIN 0;}
+<COMMENT><<EOF>>	{if (semicolon && lflag) { fprintf(yyout, "SEMICOLON\n"); semicolon = 0; }
+					 printf("Line %d, column %d: unterminated comment\n", line, col); col = temp; temp = 1; BEGIN 0;}
 
 <INITIAL><<EOF>>	{if (lflag && semicolon) fprintf(yyout, "SEMICOLON\n"); exit(0);}
 %%

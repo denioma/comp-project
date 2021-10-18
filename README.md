@@ -1,9 +1,12 @@
 # comp-project
 Compilers' Project
 
-## TODO
+## Mooshak
 
-Submit to mooshak and despair.
+```
+H - Illegal Characters: 0/20
+J - Unterminated Comments: 5/10
+```
 
 ## Implemented
 
@@ -19,13 +22,6 @@ Submit to mooshak and despair.
 ## Authors
 José Miguel Rocha Gonçalves
 Rodrigo Alexandre da Mota Machado
-
-## Mooshak
-
-```
-H - Illegal Characters: 0/20
-J - Unterminated Comments: 0/10
-```
 
 ## Tests Status
 
@@ -51,7 +47,11 @@ J - Unterminated Comments: 0/10
 ✅ PASSED testcases/programs_1.dgo
 ✅ PASSED testcases/semicolons_1.dgo
 ✅ PASSED testcases/semicolons_2.dgo
+✅ PASSED testcases/song_1.dgo
+✅ PASSED testcases/song_2.dgo
+✅ PASSED testcases/song_3.dgo
 ✅ PASSED testcases/str_bad_1.dgo
 ✅ PASSED testcases/text_1.dgo
 ✅ PASSED testcases/text_2.dgo
+✅ PASSED testcases/unt-comment--escape-chars.dgo
 ```
