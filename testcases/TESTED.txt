@@ -21,6 +21,10 @@ make: 'gocompiler.out' is up to date.
 ✅ PASSED testcases/programs_1.dgo
 ✅ PASSED testcases/semicolons_1.dgo
 ✅ PASSED testcases/semicolons_2.dgo
+✅ PASSED testcases/song_1.dgo
+✅ PASSED testcases/song_2.dgo
+✅ PASSED testcases/song_3.dgo
 ✅ PASSED testcases/str_bad_1.dgo
 ✅ PASSED testcases/text_1.dgo
 ✅ PASSED testcases/text_2.dgo
+✅ PASSED testcases/unt-comment--escape-chars.dgo
