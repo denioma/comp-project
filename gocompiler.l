@@ -71,7 +71,7 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 "strconv.Atoi"	{if (lflag) fprintf(yyout, "PARSEINT\n"); col += yyleng; semicolon = 0;}
 "func"			{if (lflag) fprintf(yyout, "FUNC\n"); col += yyleng; semicolon = 0;}
 "os.Args"		{if (lflag) fprintf(yyout, "CMDARGS\n"); col += yyleng; semicolon = 0;}
-{reserved}      {if (lflag) fprintf(yyout, "RESERVED(%s)\n", yytext); semicolon = 0;}
+{reserved}      {if (lflag) fprintf(yyout, "RESERVED(%s)\n", yytext); col += yyleng; semicolon = 0;}
 {identifier}	{if (lflag) fprintf(yyout, "ID(%s)\n", yytext); col += yyleng; semicolon = 1;}
 {whitespace}    {++col;}
 {newline}		{col = 1; if (semicolon && lflag) {fprintf(yyout, "SEMICOLON\n"); semicolon = 0;}}
@@ -80,7 +80,7 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 <STRLIT>\\				{temp++; fprintf(stdout, "Line %d, column %d: invalid escape sequence (\\)\n", yylineno, temp);}
 <STRLIT>\\[fnrt\\\"]	{temp += 2;}
 <STRLIT>\\.				{temp++; fprintf(stdout, "Line %d, column %d: invalid escape sequence (%s)\n", yylineno, temp++, yytext);}
-<STRLIT>\"				{col = temp + 1; BEGIN 0;}
+<STRLIT>\"				{col = temp + 1; temp = 1; BEGIN 0;}
 <STRLIT>{newline}		{fprintf(stdout, "Line %d, column %d: unterminated string literal\n", yylineno-1, col); col = 1; BEGIN 0;}
 <STRLIT><<EOF>>			{fprintf(stdout, "Line %d, column %d: unterminated string literal\n", yylineno, col); BEGIN 0;}
 <STRLIT>.				{++temp;}
@@ -89,7 +89,7 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 <COMMENT>.          {++temp;}
 <COMMENT>\n         {temp = 1;}
 <COMMENT><<EOF>>	{if (semicolon && lflag) { fprintf(yyout, "SEMICOLON\n"); semicolon = 0; }
-					 printf("Line %d, column %d: unterminated comment\n", line, col); col = temp; temp = 1; BEGIN 0;}
+					 printf("Line %d, column %d: unterminated comment\n", line, col); BEGIN 0;}
 
 <INITIAL><<EOF>>	{if (lflag && semicolon) fprintf(yyout, "SEMICOLON\n"); exit(0);}
 %%

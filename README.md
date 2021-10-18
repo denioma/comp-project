@@ -4,8 +4,7 @@ Compilers' Project
 ## Mooshak
 
 ```
-H - Illegal Characters: 0/20
-J - Unterminated Comments: 5/10
+We did it gaymers!
 ```
 
 ## Implemented
