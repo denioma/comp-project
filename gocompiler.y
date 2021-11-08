@@ -14,13 +14,13 @@ extern int col;
 %token IF ELSE FOR 
 %token INT FLOAT32 BOOL STRING
 
+%right ASSIGN
 %left OR
 %left AND
 %left EQ GE GT LE LT NE
 %left MOD
 %left PLUS MINUS
 %left STAR DIV
-%right ASSIGN
 %nonassoc LPAR RPAR
 %nonassoc NOT
 %%
@@ -87,16 +87,25 @@ FuncInvocationOpts: Expr ExprReps | /* empty */ ;
 ExprReps: ExprReps COMMA Expr | /* empty */ ;
 
 Expr:
-       Expr ExprOperators Expr
+        Expr PLUS Expr
+    |   Expr MINUS Expr
+    |   Expr STAR Expr
+    |   Expr DIV Expr
+    |   Expr MOD Expr
+    |   Expr OR Expr
+    |   Expr AND Expr
+    |   Expr LT Expr
+    |   Expr GT Expr
+    |   Expr EQ Expr
+    |   Expr GE Expr
+    |   Expr LE Expr
+    |   Expr NE Expr
     |   NOT Expr
     |   INTLIT
     |   REALLIT
     |   ID
     |   FuncInvocation
     |   LPAR Expr RPAR ;
-
-ExprOperators: OR | AND | LT | GT | EQ | NE | LE | GE |
-            PLUS | MINUS | STAR | DIV | MOD ;
 
 %%
 int main() {

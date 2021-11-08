@@ -31,5 +31,13 @@
 *.out
 *.app
 
+# Lex output
+lex.yy.c
+
+# Yacc output
+y.tab.c
+y.tab.h
+y.output
+
 # Output
 gocompiler.zip
