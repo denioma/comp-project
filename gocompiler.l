@@ -2,6 +2,7 @@
 	// José Miguel Rocha Gonçalves - 2019223292
 	// Rodrigo Alexandre da Mota Machado - 2019218299
 	// -------------------------------------------------
+	#include "y.tab.h"
     #include <string.h>
     short int lflag = 0;
 	int col = 1, temp = 0, line = 1;		// Keep track of line column
