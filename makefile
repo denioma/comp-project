@@ -4,7 +4,7 @@ src = lex.yy.c y.tab.c
 out = gocompiler.out
 
 $(out): $(src) 
-	clang-7 $@ -o $@
+	clang-7 $^ -o $@
 
 lex.yy.c: $(lex)
 	flex $^
