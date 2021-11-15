@@ -105,11 +105,7 @@ int main(int argc, char** argv) {
 	if (lflag) yylex();
 	else {
 		yyparse();
-<<<<<<< HEAD
-		print_ast(program);
-=======
 		if (tflag) print_ast(head);
->>>>>>> 89802396f18b8eb1eb879ec39251cb85b9c4f012
 	}
 	return 0;
 }
