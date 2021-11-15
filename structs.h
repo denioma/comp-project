@@ -23,7 +23,7 @@ typedef struct _dec_node {
     struct _dec_node* next;
 } dec_node;
 
-typedef struct {
+typedef struct _prog_node{
     dec_node* dlist;
 } prog_node;
 
