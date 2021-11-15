@@ -1,11 +1,17 @@
 %{
+#include "shared.h"
+#include "y.tab.h"
 #include <stdio.h>
 int yylex();
 void yyerror(const char*);
-extern int col;
+char build = 1;
 %}
-%token INTLIT STRLIT REALLIT
-%token SEMICOLON COMMA BLANKID ASSIGN ID VAR
+%union{
+    char* token;
+}
+
+%token INTLIT STRLIT REALLIT ID
+%token SEMICOLON COMMA BLANKID ASSIGN VAR
 %token PLUS MINUS STAR DIV MOD
 %token EQ GE GT LE LT NE 
 %token NOT AND OR
@@ -13,6 +19,10 @@ extern int col;
 %token PACKAGE RETURN PRINT PARSEINT FUNC CMDARGS RESERVED
 %token IF ELSE FOR 
 %token INT FLOAT32 BOOL STRING
+
+%type Program
+%type Declarations VarDeclaration VarSpec
+%type <token> Type
 
 %right ASSIGN
 %left OR
@@ -25,94 +35,95 @@ extern int col;
 %nonassoc NOT
 %%
 
-Program: PACKAGE ID SEMICOLON Declarations ;
+Program: PACKAGE ID SEMICOLON Declarations      {printf("Parsing complete!\n");} ;
 
 Declarations:
-        Declarations VarDeclaration SEMICOLON
-    |   Declarations FuncDeclaration SEMICOLON
-    |    /* empty */
-    ;
+        Declarations VarDeclaration SEMICOLON   {printf("VarDec\n");}
+    |   Declarations FuncDeclaration SEMICOLON  {printf("FuncDec\n");}
+    |   /* empty */                             {;} ;
 
 VarDeclaration: 
-        VAR VarSpec 
-    |   VAR LPAR VarSpec SEMICOLON RPAR
+        VAR VarSpec                             {;}
+    |   VAR LPAR VarSpec SEMICOLON RPAR         {;} ;
 
-FuncDeclaration: FUNC ID LPAR FuncParams RPAR FuncType FuncBody
+FuncDeclaration: FUNC ID LPAR FuncParams RPAR FuncType FuncBody {;} ;
 
-FuncParams: Parameters | /* empty */
+FuncParams: Parameters {;} | /* empty */ {;} ;
 
-FuncType: Type | /* empty */
+FuncType: Type {;} | /* empty */ {;} ;
 
-VarSpec: ID IdReps Type ;
+VarSpec: ID IdReps Type {;} ;
 
-IdReps: IdReps COMMA ID | /* empty */ ;
+IdReps: IdReps COMMA ID {;} | /* empty */ {;} ;
         
-Type: INT | FLOAT32 | BOOL | STRING ;
+Type: INT {;} | FLOAT32 {;} | BOOL {;} | STRING {;} ;
 
-Parameters: ID Type ParamOpts ;
+Parameters: ID Type ParamOpts {;} ;
 
-ParamOpts: ParamOpts COMMA ID Type | /* empty */ ;
+ParamOpts: ParamOpts COMMA ID Type {;} | /* empty */ ;
 
-FuncBody: LBRACE VarsAndStatements RBRACE ;
+FuncBody: LBRACE VarsAndStatements RBRACE {;} ;
 
 VarsAndStatements: 
-        VarsAndStatements VASOpts SEMICOLON 
-    |   /* empty */ ;
+        VarsAndStatements VASOpts SEMICOLON {;}
+    |   /* empty */ {;} ;
 
-VASOpts: VarDeclaration | Statement | /* empty */ ;
+VASOpts: VarDeclaration {;} | Statement {;}| /* empty */ {;} ;
 
 Statement:
-        ID ASSIGN Expr
-    |   LBRACE StmtBlock RBRACE
-    |   IF Expr LBRACE StmtBlock RBRACE ElseStmt
-    |   FOR ExprOpt LBRACE StmtBlock RBRACE
-    |   RETURN ExprOpt
-    |   FuncInvocation
-    |   ParseArgs
-    |   PRINT LPAR STRLIT RPAR
-    |   PRINT LPAR Expr RPAR ;
+        error {;}
+    |   ID ASSIGN Expr {;}
+    |   LBRACE StmtBlock RBRACE {;}
+    |   IF Expr LBRACE StmtBlock RBRACE ElseStmt {;}
+    |   FOR ExprOpt LBRACE StmtBlock RBRACE {;}
+    |   RETURN ExprOpt {;}
+    |   FuncInvocation {;}
+    |   ParseArgs {;}
+    |   PRINT LPAR STRLIT RPAR {;}
+    |   PRINT LPAR Expr RPAR {;} ;
 
-StmtBlock: StmtBlock Statement SEMICOLON | /* empty */ ;
+StmtBlock: StmtBlock Statement SEMICOLON {;} | /* empty */ {;} ;
 
-ElseStmt: ELSE LBRACE StmtBlock RBRACE | /* empty */ ;
+ElseStmt: ELSE LBRACE StmtBlock RBRACE {;} | /* empty */ {;} ;
 
-ExprOpt: Expr | /* empty */ ;
+ExprOpt: Expr {;} | /* empty */ {;} ;
 
-ParseArgs: ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ Expr RSQ RPAR
+ParseArgs: 
+        ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ Expr RSQ RPAR {;}
+    |   ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ error RSQ RPAR {;} ;
 
-FuncInvocation: ID LPAR FuncInvocationOpts RPAR
 
-FuncInvocationOpts: Expr ExprReps | /* empty */ ;
+FuncInvocation: 
+        ID LPAR FuncInvocationOpts RPAR {;}
+    |   ID LPAR error RPAR {;} ;
+
+FuncInvocationOpts: Expr ExprReps {;} | /* empty */ {;} ;
     
-ExprReps: ExprReps COMMA Expr | /* empty */ ;
+ExprReps: ExprReps COMMA Expr {;} | /* empty */ {;} ;
 
 Expr:
-        Expr PLUS Expr
-    |   Expr MINUS Expr
-    |   Expr STAR Expr
-    |   Expr DIV Expr
-    |   Expr MOD Expr
-    |   Expr OR Expr
-    |   Expr AND Expr
-    |   Expr LT Expr
-    |   Expr GT Expr
-    |   Expr EQ Expr
-    |   Expr GE Expr
-    |   Expr LE Expr
-    |   Expr NE Expr
-    |   NOT Expr
-    |   INTLIT
-    |   REALLIT
-    |   ID
-    |   FuncInvocation
-    |   LPAR Expr RPAR ;
-
+        Expr PLUS Expr {;}
+    |   Expr MINUS Expr {;}
+    |   Expr STAR Expr {;}
+    |   Expr DIV Expr {;}
+    |   Expr MOD Expr {;}
+    |   Expr OR Expr {;}
+    |   Expr AND Expr {;}
+    |   Expr LT Expr {;}
+    |   Expr GT Expr {;}
+    |   Expr EQ Expr {;}
+    |   Expr GE Expr {;}
+    |   Expr LE Expr {;}
+    |   Expr NE Expr {;}
+    |   NOT Expr {;}
+    |   INTLIT {;}
+    |   REALLIT {;}
+    |   ID {;}
+    |   FuncInvocation {;}
+    |   LPAR Expr RPAR {;}
+    |   LPAR error RPAR {;} ;
 %%
-int main() {
-    yylex();
-    return 0;
-}
-
-int yyerror(char* s) {
+void yyerror(const char* s) {
     printf("Line %d, column %d: %s: %s\n", yylineno, col, s, yytext);
+    build = 0;
 }

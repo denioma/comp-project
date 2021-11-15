@@ -8,9 +8,10 @@ $(out): $(src)
 
 lex.yy.c: $(lex)
 	flex $^
+
 y.tab.c: $(yacc)
 	yacc -d $^
 
 .PHONY: clean
 clean:
-	rm -rf lex.yy.c y.tab.c
+	rm -rf lex.yy.c y.tab.c y.tab.h
