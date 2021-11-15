@@ -1,7 +1,10 @@
+#include "structs.h"
+#include "tree.h"
+
 extern char* yytext;
 extern int yylineno;
 
 extern char lflag, tflag, semicolon;
 extern int col, line, temp;
 
-extern prog_node* head;
+extern prog_node* program;

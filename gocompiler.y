@@ -43,7 +43,7 @@
 %nonassoc NOT
 %%
 
-Program: PACKAGE ID SEMICOLON Declarations      {$$=head=new_prog($4); printf("Parsing complete!\n");} ;
+Program: PACKAGE ID SEMICOLON Declarations      {$$=program=new_prog($4); printf("Parsing complete!\n");} ;
 
 Declarations:
         Declarations VarDeclaration SEMICOLON   {$$=insert_dec($1, $2); printf("VarDec\n");}
