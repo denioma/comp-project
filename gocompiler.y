@@ -35,7 +35,7 @@ char build = 1;
 %nonassoc NOT
 %%
 
-Program: PACKAGE ID SEMICOLON Declarations      {printf("Parsing complete!\n");} ;
+Program: PACKAGE ID SEMICOLON Declarations      {printf("Parsing complete!\n"); program = new_prog($4);} ;
 
 Declarations:
         Declarations VarDeclaration SEMICOLON   {printf("VarDec\n");}
