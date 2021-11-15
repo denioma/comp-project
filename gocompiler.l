@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
 	if (lflag) yylex();
 	else {
 		yyparse();
-		// TODO call pretty printer for AST
+		print_ast(program);
 	}
 	return 0;
 }
