@@ -17,8 +17,8 @@ typedef enum { d_var, d_func } d_type;
 typedef struct _dec_node {
     d_type type;
     union {
-        func_dec* func;
-        var_dec* var;
+        func_dec func;
+        var_dec var;
     } dec;
     struct _dec_node* next;
 } dec_node;

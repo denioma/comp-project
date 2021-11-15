@@ -1,28 +1,36 @@
 %{
-#include "shared.h"
-#include "y.tab.h"
-#include <stdio.h>
-int yylex();
-void yyerror(const char*);
-char build = 1;
+    // José Miguel Rocha Gonçalves - 2019223292
+	// Rodrigo Alexandre da Mota Machado - 2019218299
+	// -------------------------------------------------
+    #include "structs.h"
+    #include "tree.h"
+    #include "shared.h"
+    #include <stdio.h>
+    int yylex();
+    void yyerror(const char*);
+    char build = 1;
 %}
 %union{
     char* token;
+    dec_node* decl;
+    v_type var_type;
+    prog_node* prog;
 }
 
-%token INTLIT STRLIT REALLIT ID
+%token <token> INTLIT STRLIT REALLIT ID
 %token SEMICOLON COMMA BLANKID ASSIGN VAR
 %token PLUS MINUS STAR DIV MOD
 %token EQ GE GT LE LT NE 
 %token NOT AND OR
 %token LPAR RPAR LBRACE RBRACE LSQ RSQ
-%token PACKAGE RETURN PRINT PARSEINT FUNC CMDARGS RESERVED
+%token PACKAGE RETURN PRINT PARSEINT FUNC CMDARGS
 %token IF ELSE FOR 
 %token INT FLOAT32 BOOL STRING
+%token RESERVED
 
-%type Program
-%type Declarations VarDeclaration VarSpec
-%type <token> Type
+%type <prog> Program
+%type <decl> Declarations VarDeclaration VarSpec
+%type <var_type> Type
 
 %right ASSIGN
 %left OR
@@ -35,15 +43,15 @@ char build = 1;
 %nonassoc NOT
 %%
 
-Program: PACKAGE ID SEMICOLON Declarations      {printf("Parsing complete!\n");} ;
+Program: PACKAGE ID SEMICOLON Declarations      {$$=head=new_prog($4); printf("Parsing complete!\n");} ;
 
 Declarations:
-        Declarations VarDeclaration SEMICOLON   {printf("VarDec\n");}
+        Declarations VarDeclaration SEMICOLON   {$$=insert_dec($1, $2); printf("VarDec\n");}
     |   Declarations FuncDeclaration SEMICOLON  {printf("FuncDec\n");}
     |   /* empty */                             {;} ;
 
 VarDeclaration: 
-        VAR VarSpec                             {;}
+        VAR VarSpec                             {$$=$2;}
     |   VAR LPAR VarSpec SEMICOLON RPAR         {;} ;
 
 FuncDeclaration: FUNC ID LPAR FuncParams RPAR FuncType FuncBody {;} ;
@@ -52,11 +60,11 @@ FuncParams: Parameters {;} | /* empty */ {;} ;
 
 FuncType: Type {;} | /* empty */ {;} ;
 
-VarSpec: ID IdReps Type {;} ;
+VarSpec: ID IdReps Type {$$=insert_var($1, $3);} ;
 
 IdReps: IdReps COMMA ID {;} | /* empty */ {;} ;
         
-Type: INT {;} | FLOAT32 {;} | BOOL {;} | STRING {;} ;
+Type: INT {$$=v_int;} | FLOAT32 {$$=v_float;} | BOOL {$$=v_bool;} | STRING {$$=v_string;} ;
 
 Parameters: ID Type ParamOpts {;} ;
 
