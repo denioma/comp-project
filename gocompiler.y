@@ -2,17 +2,17 @@
     // José Miguel Rocha Gonçalves - 2019223292
 	// Rodrigo Alexandre da Mota Machado - 2019218299
 	// -------------------------------------------------
-    #include "structs.h"
-    #include "tree.h"
-    #include "shared.h"
+    #include "yacc.h"
+    #include "y.tab.h"
     #include <stdio.h>
-    int yylex();
     void yyerror(const char*);
-    char build = 1;
+    prog_node* program;
 %}
 %union{
     char* token;
     dec_node* decl;
+    var_dec* var;
+    func_dec* func;
     v_type var_type;
     prog_node* prog;
 }
@@ -29,8 +29,10 @@
 %token RESERVED
 
 %type <prog> Program
-%type <decl> Declarations VarDeclaration VarSpec
-%type <var_type> Type
+%type <decl> Declarations 
+%type <var> VarDeclaration VarSpec
+%type <var_type> Type FuncType
+%type <func> FuncDeclaration
 
 %right ASSIGN
 %left OR
@@ -43,24 +45,24 @@
 %nonassoc NOT
 %%
 
-Program: PACKAGE ID SEMICOLON Declarations      {$$=program=new_prog($4); printf("Parsing complete!\n");} ;
+Program: PACKAGE ID SEMICOLON Declarations      {$$=program=new_prog($4);} ;
 
 Declarations:
-        Declarations VarDeclaration SEMICOLON   {$$=insert_dec($1, $2); printf("VarDec\n");}
-    |   Declarations FuncDeclaration SEMICOLON  {printf("FuncDec\n");}
-    |   /* empty */                             {;} ;
+        Declarations VarDeclaration SEMICOLON   {$$=insert_var_dec($1, $2);}
+    |   Declarations FuncDeclaration SEMICOLON  {$$=insert_func_dec($1, $2);}
+    |   /* empty */                             {$$=NULL;} ;
 
 VarDeclaration: 
         VAR VarSpec                             {$$=$2;}
-    |   VAR LPAR VarSpec SEMICOLON RPAR         {;} ;
+    |   VAR LPAR VarSpec SEMICOLON RPAR         {$$=$3;} ;
 
-FuncDeclaration: FUNC ID LPAR FuncParams RPAR FuncType FuncBody {;} ;
+FuncDeclaration: FUNC ID LPAR FuncParams RPAR FuncType FuncBody {$$=create_func($2, $6);} ;
 
 FuncParams: Parameters {;} | /* empty */ {;} ;
 
-FuncType: Type {;} | /* empty */ {;} ;
+FuncType: Type {$$=$1;} | /* empty */ {$$=v_void;} ;
 
-VarSpec: ID IdReps Type {$$=insert_var($1, $3);} ;
+VarSpec: ID IdReps Type {$$=create_var($1, $3);} ;
 
 IdReps: IdReps COMMA ID {;} | /* empty */ {;} ;
         
@@ -133,5 +135,4 @@ Expr:
 %%
 void yyerror(const char* s) {
     printf("Line %d, column %d: %s: %s\n", yylineno, col, s, yytext);
-    build = 0;
 }

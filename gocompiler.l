@@ -2,15 +2,13 @@
 	// José Miguel Rocha Gonçalves - 2019223292
 	// Rodrigo Alexandre da Mota Machado - 2019218299
 	// -------------------------------------------------
-	#include "y.tab.h"
-	#include "structs.h"
 	#include "tree.h"
-	#include "shared.h"
+	#include "y.tab.h"
 	#include <string.h>
 
 	char lflag = 0, tflag = 0, semicolon = 0;
 	int col = 1, line = 1, temp = 0;
-	prog_node* head;
+	prog_node* program;
 %}
 letter			[A-Za-z_]
 number			[0-9]
@@ -105,7 +103,7 @@ int main(int argc, char** argv) {
 	if (lflag) yylex();
 	else {
 		yyparse();
-		if (tflag) print_ast(head);
+		if (tflag) print_ast(program);
 	}
 	return 0;
 }

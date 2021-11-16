@@ -1,8 +1,8 @@
 #include "structs.h"
-#include <stdio.h>
 #include <stdlib.h>
 
-int spacing = 0;
+// Only useful for debug printing, remove later!
+#include <stdio.h> 
 
 prog_node* new_prog(dec_node* declarations) {
     prog_node* pn = (prog_node*) malloc(sizeof(prog_node));
@@ -10,35 +10,68 @@ prog_node* new_prog(dec_node* declarations) {
     return pn;
 }
 
-dec_node* insert_dec(dec_node* head, dec_node* node) {
-    if (head == NULL) return node;
-    
-    dec_node* tmp = head;
-    for (; tmp->next; tmp = tmp->next);
-    tmp->next = node;
-    return head;
-}
-
-dec_node* insert_var(char* id, v_type* typespec) {
+dec_node* alloc_node() {
     dec_node* node = (dec_node*) malloc(sizeof(dec_node));
-
-    node->type = d_var;
-    node->dec.var.id = id;
-    node->dec.var.typespec = *typespec;
-
+    node->next = NULL;
     return node;
 }
 
-void space() {
-    for (int i = 0; i < spacing; i++) printf(" ");
+dec_node* insert_var_dec(dec_node* head, var_dec* var) {
+    if (!head) {
+        head = alloc_node();
+        head->type = d_var;
+        head->dec.var = var;
+        head->next = NULL;
+    } else {
+        dec_node* tmp = head;
+        for (; tmp->next; tmp = tmp->next);
+        tmp->next = alloc_node();
+        tmp->next->type = d_var;
+        tmp->next->dec.var = var;
+    }
+    return head;   
 }
 
-void print_var(const var_dec* node) {
-    space();
-    printf("VarDecl\n");
-    spacing++;
-    space();
-    switch (node->typespec) {
+var_dec* create_var(char* id, v_type typespec) {
+    var_dec* var = (var_dec*) malloc(sizeof(var_dec*));
+    var->typespec = typespec;
+    var->id = id;
+
+    return var;
+}
+
+dec_node* insert_func_dec(dec_node* head, func_dec* func) {
+    if (!head) {
+        head = alloc_node();
+        head->type = d_func;
+        head->dec.func = func;
+        head->next = NULL;
+    } else {
+        dec_node* tmp = head;
+        for (; tmp->next; tmp = tmp->next);
+        tmp->next = alloc_node();
+        tmp->next->type = d_func;
+        tmp->next->dec.func = func;
+    }
+    return head;   
+}
+
+func_dec* create_func(char* id, v_type return_type) {
+    func_dec* func = (func_dec*) malloc(sizeof(func_dec*));
+    func->id = id;
+    func->return_type = return_type;
+
+    return func;
+}
+
+int spacing;
+
+void space() {
+    for (int i = 0; i < spacing; i++) printf("..");
+}
+
+void print_type(v_type type) {
+    switch (type) {
         case v_int: 
             printf("Int\n");
             break;
@@ -51,23 +84,49 @@ void print_var(const var_dec* node) {
         case v_bool:
             printf("Bool\n");
             break;
+        default:
+            break;
     }
+}
+
+void print_var(const var_dec* node) {
+    space();
+    printf("VarDecl\n");
+    spacing++;
+    space();
+    print_type(node->typespec);
     space();
     printf("Id(%s)\n", node->id);
-    spacing--;
+}
+
+void print_func(const func_dec* node) {
+    space();
+    printf("FuncDecl\n");
+    spacing++;
+    space();
+    printf("FuncHeader\n");
+    spacing++;
+    space();
+    printf("Id(%s)\n", node->id);
+    if (node->return_type != v_void) space();
+    print_type(node->return_type);
 }
 
 void print_ast(const prog_node* head) {
     printf("Program\n");
-    spacing++;
     dec_node* d_list = head->dlist;
     while (d_list) {
+        spacing = 1;
         switch(d_list->type) {
             case d_var:
-                print_var(&d_list->dec.var);
+                print_var(d_list->dec.var);
                 break;
             case d_func:
+                print_func(d_list->dec.func);
                 break;
+            default:
+                return;
         }
+        d_list = d_list->next;
     }
 }

@@ -3,20 +3,16 @@ package main
 var mybool bool;
 
 func main() {
-    fmt.Println(myint)
-    myint = 65
-    a, _ = strconv.Atoi(os.Args[1])
-    if myint {
-        fmt.Println("These balls")
-        myint = 65;
-    }
+	fmt.Println("Golang test")
+	return 0
 }
 
 var myint int;
 
-func empty() {}
+func empty() {
 
+}
 
-func returnBool(a bool) bool {
-    return !a
+func something(a int) bool {
+	
 }
