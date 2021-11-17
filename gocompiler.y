@@ -15,6 +15,8 @@
     func_dec* func;
     v_type var_type;
     prog_node* prog;
+    param_dec* params;
+    func_body* f_body;
 }
 
 %token <token> INTLIT STRLIT REALLIT ID
@@ -33,6 +35,8 @@
 %type <var> VarDeclaration VarSpec
 %type <var_type> Type FuncType
 %type <func> FuncDeclaration
+%type <params> FuncParams Parameters ParamOpts
+%type <f_body> FuncBody
 
 %right ASSIGN
 %left OR
@@ -56,9 +60,9 @@ VarDeclaration:
         VAR VarSpec                             {$$=$2;}
     |   VAR LPAR VarSpec SEMICOLON RPAR         {$$=$3;} ;
 
-FuncDeclaration: FUNC ID LPAR FuncParams RPAR FuncType FuncBody {$$=create_func($2, $6);} ;
+FuncDeclaration: FUNC ID LPAR FuncParams RPAR FuncType FuncBody {$$=create_func($2, $6, $4);} ;
 
-FuncParams: Parameters {;} | /* empty */ {;} ;
+FuncParams: Parameters {$$=$1;} | /* empty */ {$$=NULL;} ;
 
 FuncType: Type {$$=$1;} | /* empty */ {$$=v_void;} ;
 
@@ -68,9 +72,9 @@ IdReps: IdReps COMMA ID {;} | /* empty */ {;} ;
         
 Type: INT {$$=v_int;} | FLOAT32 {$$=v_float;} | BOOL {$$=v_bool;} | STRING {$$=v_string;} ;
 
-Parameters: ID Type ParamOpts {;} ;
+Parameters: ID Type ParamOpts {$$=create_param($1, $2, $3);} ;
 
-ParamOpts: ParamOpts COMMA ID Type {;} | /* empty */ ;
+ParamOpts: ParamOpts COMMA ID Type {$$=create_param($3, $4, $1);} | /* empty */ {$$=NULL;} ;
 
 FuncBody: LBRACE VarsAndStatements RBRACE {;} ;
 

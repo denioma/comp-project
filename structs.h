@@ -2,16 +2,19 @@
 
 typedef enum { v_void, v_int, v_float, v_bool, v_string } v_type;
 
+typedef enum { s_assign } stmt;
+
+typedef struct _func_body {
+    stmt stmt_type;
+    struct _func_body* next;
+} func_body;
+
 // function parameter declaration node
 typedef struct _param_dec {
     v_type typespec;
     char* id;
     struct _param_dec* next;
 } param_dec;
-
-typedef struct _func_body {
-
-} func_body;
 
 // function header node
 typedef struct _func_header {
@@ -20,18 +23,11 @@ typedef struct _func_header {
     param_dec* param;
 } func_header;
 
-typedef struct _func_dec {
-    char* id;
-    v_type return_type;
-} func_dec;
-
-/*
 // function declaration node
 typedef struct _func_dec {
     func_header* f_header;
     func_body* f_body;
 } func_dec;
-*/
 
 typedef struct {
     v_type typespec;
@@ -52,4 +48,3 @@ typedef struct _dec_node {
 typedef struct _prog_node {
     dec_node* dlist;
 } prog_node;
-
