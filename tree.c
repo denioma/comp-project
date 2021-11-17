@@ -56,6 +56,23 @@ dec_node* insert_func_dec(dec_node* head, func_dec* func) {
     return head;
 }
 
+func_body* create_body_var(var_dec* var) {
+    func_body* body = (func_body*)malloc(sizeof(func_body));
+    body->type = b_var;
+    body->dec.var = var;
+    body->next = NULL;
+
+    return body;
+}
+
+func_body* insert_to_body(func_body* node, func_body* chain) {
+    if (!node) return chain;
+    if (chain) node->next = chain;
+    else node->next = NULL;
+
+    return node;
+}
+
 param_dec* create_param(char* id, v_type typespec, param_dec* chain) {
     param_dec* param = (param_dec*)malloc(sizeof(param_dec));
     param->id = id;
@@ -74,10 +91,10 @@ func_header* create_func_header(char* id, v_type typespec, param_dec* param_list
     return header;
 }
 
-func_dec* create_func(char* id, v_type typespec, param_dec* param_list) {
+func_dec* create_func(char* id, v_type typespec, param_dec* param_list, func_body* body) {
     func_dec* func = (func_dec*)malloc(sizeof(func_dec));
     func->f_header = create_func_header(id, typespec, param_list);
-
+    func->f_body = body;
     return func;
 }
 
@@ -85,8 +102,9 @@ func_dec* create_func(char* id, v_type typespec, param_dec* param_list) {
 
 int spacing;
 
-void space() {
+void space(char* str) {
     for (int i = 0; i < spacing; i++) printf("..");
+    if (str) printf("%s", str);
 }
 
 void print_type(v_type type) {
@@ -109,46 +127,63 @@ void print_type(v_type type) {
 }
 
 void print_var(const var_dec* node) {
-    space();
-    printf("VarDecl\n");
+    space("VarDecl\n");
     spacing++;
-    space();
+    space(NULL);
     print_type(node->typespec);
-    space();
+    space(NULL);
     printf("Id(%s)\n", node->id);
+}
+
+void print_body(const func_body* body) {
+    spacing++;
+    while (body) {
+        switch(body->type) {
+            case b_var:
+                print_var(body->dec.var);
+                break;
+            case b_stmt:
+                break;
+            default:
+                break;
+        }
+        body = body->next;
+    }
 }
 
 void print_func(const func_dec* node) {
     func_header* header = node->f_header;
+    param_dec* param = header->param;
     func_body* body = node->f_body;
-    space();
-    printf("FuncDecl\n");
+    space("FuncDecl\n");
     spacing++;
-    space();
-    printf("FuncHeader\n");
+    space("FuncHeader\n");
     spacing++;
-    space();
+    space(NULL);
     printf("Id(%s)\n", header->id);
     if (header->typespec != v_void) {
-        space();
+        space(NULL);
         print_type(header->typespec);
     }
-    if (header->param) { 
-        space();
-        printf("FuncParams\n");
+    if (param) { 
+        space("FuncParams\n");
         spacing++;
-        param_dec* param = header->param;
         while(param) {
-            space();
-            printf("ParamDecl\n");
+            space("ParamDecl\n");
             spacing++;
-            space();
+            space(NULL);
             print_type(param->typespec);
-            space();
+            space(NULL);
             printf("Id(%s)\n", param->id);
             param = param->next;
             spacing--;
         }
+        spacing--;
+    }
+    spacing--;
+    if (body) {
+        space("FuncBody\n");
+        print_body(body);
     }
 }
 

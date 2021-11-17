@@ -3,7 +3,7 @@ package main
 var mybool bool;
 
 func main() {
-    var arg1 int
+    var arg1 int;
 	arg1, _ = strconv.Atoi(os.Args[1])
     fmt.Println("Golang test")
     
@@ -12,7 +12,7 @@ func main() {
 
 var myint int;
 
-func add(n1 int, n2 int) {
+func add(n1 int, n2 int) int {
     return n1 + n2
 }
 

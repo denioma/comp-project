@@ -2,10 +2,21 @@
 
 typedef enum { v_void, v_int, v_float, v_bool, v_string } v_type;
 
-typedef enum { s_assign } stmt;
+typedef struct {
+    v_type typespec;
+    char* id;
+} var_dec;
+
+typedef struct _stmt_dec stmt_dec;
+
+typedef enum { b_var, b_stmt } b_type;
 
 typedef struct _func_body {
-    stmt stmt_type;
+    b_type type;
+    union {
+        var_dec* var;
+        stmt_dec* stmt;
+    } dec;
     struct _func_body* next;
 } func_body;
 
@@ -28,11 +39,6 @@ typedef struct _func_dec {
     func_header* f_header;
     func_body* f_body;
 } func_dec;
-
-typedef struct {
-    v_type typespec;
-    char* id;
-} var_dec;
 
 typedef enum { d_var, d_func } d_type;
 
