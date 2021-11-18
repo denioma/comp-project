@@ -256,7 +256,7 @@ stmt_block* add_block_stmt(stmt_block* block, stmt_dec* stmt) {
     new_block->stmt = NULL;
     if (!block) return new_block;
     stmt_block* last = block;
-    for (; last->next; last = last->next) printf("next\n");
+    for (; last->next; last = last->next);
     last->next = new_block;
     return block;
 }

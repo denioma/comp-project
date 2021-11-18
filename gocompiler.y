@@ -139,7 +139,7 @@ Statement:
 Stmt:
         /* empty */                                     {$$=NULL;}
     |   Statement SEMICOLON                             {$$=$1;}
-    |   StmtBlock                                       {printer_block($1);$$=create_stmt_block($1);}
+    |   StmtBlock                                       {$$=create_stmt_block($1);}
 ;
 
 StmtBlock: 
