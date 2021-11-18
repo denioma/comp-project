@@ -7,7 +7,10 @@ func main() {
 	arg1, _ = strconv.Atoi(os.Args[1])
     lmao = 120
     fmt.Println("Golang test")
-        
+    if 1 {
+        fmt.Println("Stmt 1");
+        fmt.Println("Stmt 2");
+    }   
 	return 0
 }
 

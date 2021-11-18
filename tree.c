@@ -32,7 +32,7 @@ dec_node* insert_var_dec(dec_node* head, var_dec* var) {
     return head;
 }
 
-var_dec* create_var(char* id, v_type typespec) {
+var_dec* create_var(char* id, const v_type typespec) {
     var_dec* var = (var_dec*)malloc(sizeof(var_dec));
     var->typespec = typespec;
     var->id = id;
@@ -116,12 +116,12 @@ stmt_dec* create_stmt(s_type type) {
     return stmt;
 }
 
-stmt_dec* create_pargs(char* id /*, int index*/) {
+stmt_dec* create_pargs(char* id, expr* index) {
     parse_args* args = (parse_args*)malloc(sizeof(parse_args));
     args->id = id;
     // args->index = index;
     stmt_dec* stmt = create_stmt(s_parse);
-    stmt->dec.args = args;
+    stmt->dec.d_args = args;
 
     return stmt;
 }
@@ -132,7 +132,7 @@ stmt_dec* create_print(char* strlit, expr* expression) {
     print->expression = expression;
 
     stmt_dec* stmt = create_stmt(s_print);
-    stmt->dec.print = print;
+    stmt->dec.d_print = print;
 
     return stmt;
 }
@@ -143,7 +143,40 @@ stmt_dec* create_assign(char* id, expr* expression) {
     assign->expression = expression;
 
     stmt_dec* stmt = create_stmt(s_assign);
-    stmt->dec.assign = assign;
+    stmt->dec.d_assign = assign;
+
+    return stmt;
+}
+
+stmt_dec* create_if(expr* condition, stmt_dec* block1, stmt_dec* block2) {
+    if_stmt* d_if = (if_stmt*)malloc(sizeof(if_stmt));
+    d_if->condition = condition;
+    d_if->block1 = block1;
+    d_if->block2 = block2;
+    
+    stmt_dec* stmt = create_stmt(s_if);
+    stmt->dec.d_if = d_if;
+
+    return stmt;
+}
+
+stmt_dec* create_for(expr* expression, stmt_dec* block) {
+    for_stmt* d_for = (for_stmt*)malloc(sizeof(for_stmt));
+    d_for->expression = expression;
+    d_for->block = block;
+    stmt_dec* stmt = create_stmt(s_for);
+    
+    return stmt;
+}
+
+stmt_dec* create_return() {
+    stmt_dec* stmt = create_stmt(s_return);
+
+    return stmt;
+}
+
+stmt_dec* create_call() {
+    stmt_dec* stmt = create_stmt(s_call);
 
     return stmt;
 }
@@ -152,28 +185,14 @@ stmt_dec* create_assign(char* id, expr* expression) {
 
 int spacing = 0;
 
-void space(char* str) {
+void space(const char* str) {
     for (int i = 0; i < spacing; i++) printf("..");
     if (str) printf("%s", str);
 }
 
 void printer_type(v_type type) {
-    switch (type) {
-    case v_int:
-        space("Int\n");
-        break;
-    case v_float:
-        space("Float32\n");
-        break;
-    case v_string:
-        space("String\n");
-        break;
-    case v_bool:
-        space("Bool\n");
-        break;
-    default:
-        break;
-    }
+    const char* types[4] = {"Int\n", "Float32\n", "String\n", "Bool\n"};
+    space(types[type]);
 }
 
 void printer_var(const var_dec* node) {
@@ -185,18 +204,32 @@ void printer_var(const var_dec* node) {
     spacing--;
 }
 
+void printer_stmt(const stmt_dec*);
+
+void printer_if(const if_stmt* stmt) {
+    space("If\n");
+    spacing++;
+    if (stmt->block1) printer_stmt(stmt->block1);
+    if (stmt->block2) printer_stmt(stmt->block2);
+    spacing--;
+}
+
+void printer_assign(const assign_stmt* stmt) {
+    space("Assign\n");
+    spacing++;
+    space(NULL);
+    printf("Id(%s)\n", stmt->id);
+    // TODO print exp
+    spacing--;
+}
+
 void printer_stmt(const stmt_dec* stmt) {
     switch(stmt->type) {
         case s_assign:
-            space("Assign\n");
-            spacing++;
-            space(NULL);
-            printf("Id(%s)\n", stmt->dec.assign->id);
-            // TODO print exp
-            spacing--;
+            printer_assign(stmt->dec.d_assign);
             break;
         case s_if:
-            space("If\n");
+            printer_if(stmt->dec.d_if);
             break;
         case s_for:
             space("For\n");
@@ -211,8 +244,8 @@ void printer_stmt(const stmt_dec* stmt) {
             space("Print\n");
             spacing++;
             space(NULL);
-            if (stmt->dec.print->strlit)
-                printf("Strlit(%s)\n", stmt->dec.print->strlit);
+            if (stmt->dec.d_print->strlit)
+                printf("Strlit(%s)\n", stmt->dec.d_print->strlit);
             // TODO else print expr
             spacing--;
             break;
@@ -220,7 +253,7 @@ void printer_stmt(const stmt_dec* stmt) {
             space("ParseArgs\n");
             spacing++;
             space(NULL);
-            printf("Id(%s)\n", stmt->dec.args->id);
+            printf("Id(%s)\n", stmt->dec.d_args->id);
             spacing--;
             break;
         case s_block:

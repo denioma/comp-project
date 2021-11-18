@@ -33,14 +33,27 @@ typedef struct _parse_args {
     int index;
 } parse_args;
 
+typedef struct _if_stmt {
+    expr* condition;
+    struct _stmt_dec* block1;
+    struct _stmt_dec* block2;
+} if_stmt;
+
+typedef struct _for_stmt {
+    expr* expression;
+    struct _stmt_dec* block;
+} for_stmt;
+
 typedef enum { s_block, s_if, s_for, s_return, s_call, s_print, s_parse, s_assign } s_type;
 
 typedef struct _stmt_dec {
     s_type type;
     union {
-        parse_args* args;
-        print_stmt* print;
-        assign_stmt* assign;
+        parse_args* d_args;
+        print_stmt* d_print;
+        assign_stmt* d_assign;
+        if_stmt* d_if;
+        struct _stmt_dec* d_block;
     } dec;
 } stmt_dec;
 

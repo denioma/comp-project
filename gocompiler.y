@@ -39,8 +39,8 @@
 %type <func> FuncDeclaration
 %type <params> FuncParams Parameters ParamOpts
 %type <f_body> VarsAndStatements VASOpts FuncBody
-%type <stmt> Statement ParseArgs
-%type <expression> Expr
+%type <stmt> Statement Stmt StmtBlock ElseStmt ParseArgs
+%type <expression> Expr ExprOpt
 
 %right ASSIGN
 %left OR
@@ -123,37 +123,44 @@ VASOpts:
 ;
 
 Statement:
-        /* Rewrite grammar for stmt blocks with a single statement */
-        ID ASSIGN Expr                                  {$$=create_assign($1, NULL /* $3 */);}
-    |   LBRACE StmtBlock RBRACE                         {$$=create_stmt(s_block);}
-    |   IF Expr LBRACE StmtBlock RBRACE ElseStmt        {$$=create_stmt(s_if);}
-    |   FOR ExprOpt LBRACE StmtBlock RBRACE             {$$=create_stmt(s_for);}
-    |   RETURN ExprOpt                                  {$$=create_stmt(s_return);}
-    |   FuncInvocation                                  {$$=create_stmt(s_call);}
+        /* TODO change expr return from NULL when finished */
+        ID ASSIGN Expr                                  {$$=create_assign($1, $3);}
+    |   LBRACE Stmt RBRACE                              {$$=$2;}
+    |   IF Expr LBRACE Stmt RBRACE ElseStmt             {$$=create_if($2, $4, $6);}
+    |   FOR ExprOpt LBRACE Stmt RBRACE                  {$$=create_for($2, $4);}
+    |   RETURN ExprOpt                                  {$$=create_return($2);}
+    |   FuncInvocation                                  {$$=create_call(NULL /* $1 */);}
     |   ParseArgs                                       {$$=$1;}
     |   PRINT LPAR STRLIT RPAR                          {$$=create_print($3, NULL);}
-    |   PRINT LPAR Expr RPAR                            {$$=create_print(NULL, NULL /*$3*/);}
+    |   PRINT LPAR Expr RPAR                            {$$=create_print(NULL, $3);}
     |   error                                           {$$=NULL;}
 ;
 
+Stmt:
+        /* empty */                                     {$$=NULL;}
+    |   Statement SEMICOLON                             {$$=$1;}
+    |   StmtBlock                                       {$$=create_stmt(s_block);}
+;
+
 StmtBlock: 
-        StmtBlock Statement SEMICOLON                   {;}
-    |   /* empty */                                     {;} // $$=NULL;
+        /* TODO create stmt_dec* chain */
+        StmtBlock Statement SEMICOLON                   {$$=NULL;}
+    |   Statement SEMICOLON Statement SEMICOLON         {$$=NULL;}
 ;
 
 ElseStmt: 
-        ELSE LBRACE StmtBlock RBRACE                    {;}
-    |   /* empty */                                     {;} // $$=NULL;
+        ELSE LBRACE Stmt RBRACE                         {$$=$3;}
+    |   /* empty */                                     {$$=NULL;}
 ;
 
 ExprOpt: 
-        Expr                                            {;}
-    |   /* empty */                                     {;} // $$=NULL;
+        Expr                                            {$$=$1;}
+    |   /* empty */                                     {$$=NULL;} // $$=NULL;
 ;
 
 ParseArgs: 
-        ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ Expr RSQ RPAR     {$$=create_pargs($1);} // TODO Expr
-    |   ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ error RSQ RPAR    {;} 
+        ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ Expr RSQ RPAR     {$$=create_pargs($1, NULL);} // TODO Expr
+    |   ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ error RSQ RPAR    {$$=NULL;} 
 ;
 
 FuncInvocation: 
@@ -172,25 +179,26 @@ ExprReps:
 ;
 
 Expr:
-        Expr PLUS Expr                                  {;}
-    |   Expr MINUS Expr                                 {;}
-    |   Expr STAR Expr                                  {;}
-    |   Expr DIV Expr                                   {;}
-    |   Expr MOD Expr                                   {;}
-    |   Expr OR Expr                                    {;}
-    |   Expr AND Expr                                   {;}
-    |   Expr LT Expr                                    {;}
-    |   Expr GT Expr                                    {;}
-    |   Expr EQ Expr                                    {;}
-    |   Expr GE Expr                                    {;}
-    |   Expr LE Expr                                    {;}
-    |   Expr NE Expr                                    {;}
-    |   NOT Expr                                        {;}
-    |   INTLIT                                          {;}
-    |   REALLIT                                         {;}
-    |   ID                                              {;}
-    |   FuncInvocation                                  {;}
-    |   LPAR Expr RPAR                                  {;}
+        /* TODO returns */
+        Expr PLUS Expr                                  {$$=NULL;}
+    |   Expr MINUS Expr                                 {$$=NULL;}
+    |   Expr STAR Expr                                  {$$=NULL;}
+    |   Expr DIV Expr                                   {$$=NULL;}
+    |   Expr MOD Expr                                   {$$=NULL;}
+    |   Expr OR Expr                                    {$$=NULL;}
+    |   Expr AND Expr                                   {$$=NULL;}
+    |   Expr LT Expr                                    {$$=NULL;}
+    |   Expr GT Expr                                    {$$=NULL;}
+    |   Expr EQ Expr                                    {$$=NULL;}
+    |   Expr GE Expr                                    {$$=NULL;}
+    |   Expr LE Expr                                    {$$=NULL;}
+    |   Expr NE Expr                                    {$$=NULL;}
+    |   NOT Expr                                        {$$=NULL;}
+    |   INTLIT                                          {$$=NULL;}
+    |   REALLIT                                         {$$=NULL;}
+    |   ID                                              {$$=NULL;}
+    |   FuncInvocation                                  {$$=NULL;}
+    |   LPAR Expr RPAR                                  {$$=NULL;}
     |   LPAR error RPAR                                 {$$=NULL;}
 ;
 %%
