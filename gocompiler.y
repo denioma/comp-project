@@ -33,8 +33,7 @@
 %token RESERVED
 
 %type <prog> Program
-%type <decl> Declarations 
-%type <var> VarDeclaration VarSpec IdReps
+%type <decl> Declarations IdReps VarSpec VarDeclaration
 %type <var_type> Type FuncType
 %type <func> FuncDeclaration
 %type <params> FuncParams Parameters ParamOpts
@@ -58,7 +57,7 @@ Program:
 ;
 
 Declarations:
-        Declarations VarDeclaration SEMICOLON           {$$=insert_var_dec($1, $2);}
+        Declarations VarDeclaration SEMICOLON           {$$=insert_var_dec_list($1, $2);}
     |   Declarations FuncDeclaration SEMICOLON          {$$=insert_func_dec($1, $2);}
     |   /* empty */                                     {$$=NULL;}
 ;
@@ -83,11 +82,11 @@ FuncType:
 ;
 
 VarSpec: 
-        ID IdReps Type                                  {$$=create_var($1, $3);}
+        ID IdReps Type                                  {$$=set_id_reps_head($2, $1, $3);}
 ;
 
 IdReps: 
-        IdReps COMMA ID                                 {/* TODO case var a, b, c type*/ $$=NULL;} 
+        IdReps COMMA ID                                 {$$=save_id_reps($1,$3);} 
     |   /* empty */                                     {$$=NULL;} 
 ;
         

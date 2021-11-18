@@ -16,12 +16,24 @@ dec_node* alloc_node() {
     return node;
 }
 
+dec_node* insert_var_dec_list(dec_node* head, dec_node* list){
+    if (!head) {
+        head = list;
+    }
+    else {
+        dec_node* tmp = head;
+        for (; tmp->next; tmp = tmp->next);
+        tmp->next = list;
+    }
+    return head;
+}
+
 dec_node* insert_var_dec(dec_node* head, var_dec* var) {
     if (!head) {
         head = alloc_node();
         head->type = d_var;
         head->dec.var = var;
-        head->next = NULL;
+        //head->next = NULL;
     } else {
         dec_node* tmp = head;
         for (; tmp->next; tmp = tmp->next);
@@ -40,6 +52,26 @@ var_dec* create_var(char* id, v_type typespec) {
     return var;
 }
 
+dec_node* set_id_reps_head(dec_node* head, char* id, v_type typespec){
+    var_dec* var = create_var(id, typespec);
+    dec_node* n_head = insert_var_dec(NULL, var);
+
+    for (dec_node* tmp = head; tmp; tmp = tmp->next){
+        tmp->dec.var->typespec = typespec;
+    }
+
+    n_head->next = head;
+    head = n_head;
+    return head;
+}
+
+dec_node* save_id_reps(dec_node* head, char* id){
+    var_dec* var = (var_dec*)malloc(sizeof(var_dec));
+    var->id = id;
+    head = insert_var_dec(head, var);
+    return head;
+}
+
 dec_node* insert_func_dec(dec_node* head, func_dec* func) {
     if (!head) {
         head = alloc_node();
@@ -56,13 +88,20 @@ dec_node* insert_func_dec(dec_node* head, func_dec* func) {
     return head;
 }
 
-func_body* create_body_var(var_dec* var) {
-    func_body* body = (func_body*)malloc(sizeof(func_body));
-    body->type = b_var;
-    body->dec.var = var;
-    body->next = NULL;
+func_body* create_body_var(dec_node* head) {
+    func_body* f_body_head = (func_body*)malloc(sizeof(func_body));
+    func_body* body = f_body_head;
 
-    return body;
+    for (dec_node* tmp = head; tmp; tmp = tmp->next){
+        body->type = b_var;
+        body->dec.var = tmp->dec.var;
+        if(tmp->next) {
+            body->next = (func_body*)malloc(sizeof(func_body));
+            body = body->next;
+        } else body->next = NULL;
+    }
+
+    return f_body_head;
 }
 
 func_body* create_body_stmt(stmt_dec* stmt) {
