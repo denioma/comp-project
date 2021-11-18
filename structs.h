@@ -7,7 +7,42 @@ typedef struct {
     char* id;
 } var_dec;
 
-typedef struct _stmt_dec stmt_dec;
+typedef enum {
+    nop, op_or, op_and, op_eq, op_lt, op_gt,
+    op_le, op_ge, op_add, op_ne, op_sub, 
+    op_mul, op_div, op_mod, op_not, 
+    op_minus, op_plus, op_call
+} operation;
+
+typedef struct _expr {
+    operation operator;
+} expr;
+
+typedef struct _assign_stmt {
+    char* id;
+    expr* expression;
+} assign_stmt;
+
+typedef struct _print_stmt {
+    char* strlit;
+    expr* expression;
+} print_stmt;
+
+typedef struct _parse_args {
+    char* id;
+    int index;
+} parse_args;
+
+typedef enum { s_block, s_if, s_for, s_return, s_call, s_print, s_parse, s_assign } s_type;
+
+typedef struct _stmt_dec {
+    s_type type;
+    union {
+        parse_args* args;
+        print_stmt* print;
+        assign_stmt* assign;
+    } dec;
+} stmt_dec;
 
 typedef enum { b_var, b_stmt } b_type;
 

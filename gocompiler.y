@@ -17,6 +17,8 @@
     prog_node* prog;
     param_dec* params;
     func_body* f_body;
+    stmt_dec* stmt;
+    expr* expression;
 }
 
 %token <token> INTLIT STRLIT REALLIT ID
@@ -37,6 +39,8 @@
 %type <func> FuncDeclaration
 %type <params> FuncParams Parameters ParamOpts
 %type <f_body> VarsAndStatements VASOpts FuncBody
+%type <stmt> Statement ParseArgs
+%type <expression> Expr
 
 %right ASSIGN
 %left OR
@@ -114,40 +118,41 @@ VarsAndStatements:
 
 VASOpts: 
         VarDeclaration                                  {$$=create_body_var($1);} 
-    |   Statement                                       {$$=NULL; /* $$=create_body_stmt($1); */}
+    |   Statement                                       {$$=create_body_stmt($1);}
     |   /* empty */                                     {$$=NULL;}
 ;
 
 Statement:
-        error                                           {;}
-    |   ID ASSIGN Expr                                  {;}
-    |   LBRACE StmtBlock RBRACE                         {;}
-    |   IF Expr LBRACE StmtBlock RBRACE ElseStmt        {;}
-    |   FOR ExprOpt LBRACE StmtBlock RBRACE             {;}
-    |   RETURN ExprOpt                                  {;}
-    |   FuncInvocation                                  {;}
-    |   ParseArgs                                       {;}
-    |   PRINT LPAR STRLIT RPAR                          {;}
-    |   PRINT LPAR Expr RPAR                            {;}
+        /* Rewrite grammar for stmt blocks with a single statement */
+        ID ASSIGN Expr                                  {$$=create_assign($1, NULL /* $3 */);}
+    |   LBRACE StmtBlock RBRACE                         {$$=create_stmt(s_block);}
+    |   IF Expr LBRACE StmtBlock RBRACE ElseStmt        {$$=create_stmt(s_if);}
+    |   FOR ExprOpt LBRACE StmtBlock RBRACE             {$$=create_stmt(s_for);}
+    |   RETURN ExprOpt                                  {$$=create_stmt(s_return);}
+    |   FuncInvocation                                  {$$=create_stmt(s_call);}
+    |   ParseArgs                                       {$$=$1;}
+    |   PRINT LPAR STRLIT RPAR                          {$$=create_print($3, NULL);}
+    |   PRINT LPAR Expr RPAR                            {$$=create_print(NULL, NULL /*$3*/);}
+    |   error                                           {$$=NULL;}
 ;
 
 StmtBlock: 
         StmtBlock Statement SEMICOLON                   {;}
-    |   /* empty */                                     {;}
+    |   /* empty */                                     {;} // $$=NULL;
 ;
 
 ElseStmt: 
         ELSE LBRACE StmtBlock RBRACE                    {;}
-    |   /* empty */                                     {;}
+    |   /* empty */                                     {;} // $$=NULL;
 ;
 
 ExprOpt: 
         Expr                                            {;}
-    |   /* empty */                                     {;} 
+    |   /* empty */                                     {;} // $$=NULL;
 ;
 
 ParseArgs: 
-        ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ Expr RSQ RPAR     {;}
+        ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ Expr RSQ RPAR     {$$=create_pargs($1);} // TODO Expr
     |   ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ error RSQ RPAR    {;} 
 ;
 
@@ -158,12 +163,12 @@ FuncInvocation:
 
 FuncInvocationOpts: 
         Expr ExprReps                                   {;}
-    |   /* empty */                                     {;}
+    |   /* empty */                                     {;} // $$=NULL;
 ;
     
 ExprReps: 
         ExprReps COMMA Expr                             {;}
-    |   /* empty */                                     {;} 
+    |   /* empty */                                     {;} // $$=NULL;
 ;
 
 Expr:
@@ -186,7 +191,7 @@ Expr:
     |   ID                                              {;}
     |   FuncInvocation                                  {;}
     |   LPAR Expr RPAR                                  {;}
-    |   LPAR error RPAR                                 {;}
+    |   LPAR error RPAR                                 {$$=NULL;}
 ;
 %%
 void yyerror(const char* s) {

@@ -65,12 +65,23 @@ func_body* create_body_var(var_dec* var) {
     return body;
 }
 
+func_body* create_body_stmt(stmt_dec* stmt) {
+    func_body* body = (func_body*)malloc(sizeof(func_body));
+    body->type = b_stmt;
+    body->dec.stmt = stmt;
+    body->next = NULL;
+
+    return body;
+}
+
 func_body* insert_to_body(func_body* node, func_body* chain) {
     if (!node) return chain;
-    if (chain) node->next = chain;
-    else node->next = NULL;
+    if (!chain) return node;
+    func_body* last = chain;
+    for (; last->next; last = last->next);
+    last->next = node;
 
-    return node;
+    return chain;
 }
 
 param_dec* create_param(char* id, v_type typespec, param_dec* chain) {
@@ -98,41 +109,126 @@ func_dec* create_func(char* id, v_type typespec, param_dec* param_list, func_bod
     return func;
 }
 
-/* ------ Pretty printer ------ */
+stmt_dec* create_stmt(s_type type) {
+    stmt_dec* stmt = (stmt_dec*)malloc(sizeof(stmt_dec));
+    stmt->type = type;
 
-int spacing;
+    return stmt;
+}
+
+stmt_dec* create_pargs(char* id /*, int index*/) {
+    parse_args* args = (parse_args*)malloc(sizeof(parse_args));
+    args->id = id;
+    // args->index = index;
+    stmt_dec* stmt = create_stmt(s_parse);
+    stmt->dec.args = args;
+
+    return stmt;
+}
+
+stmt_dec* create_print(char* strlit, expr* expression) {
+    print_stmt* print = (print_stmt*)malloc(sizeof(print_stmt));
+    print->strlit = strlit;
+    print->expression = expression;
+
+    stmt_dec* stmt = create_stmt(s_print);
+    stmt->dec.print = print;
+
+    return stmt;
+}
+
+stmt_dec* create_assign(char* id, expr* expression) {
+    assign_stmt* assign = (assign_stmt*)malloc(sizeof(assign_stmt));
+    assign->id = id;
+    assign->expression = expression;
+
+    stmt_dec* stmt = create_stmt(s_assign);
+    stmt->dec.assign = assign;
+
+    return stmt;
+}
+
+/* ------ Pretty printers ------ */
+
+int spacing = 0;
 
 void space(char* str) {
     for (int i = 0; i < spacing; i++) printf("..");
     if (str) printf("%s", str);
 }
 
-void print_type(v_type type) {
+void printer_type(v_type type) {
     switch (type) {
     case v_int:
-        printf("Int\n");
+        space("Int\n");
         break;
     case v_float:
-        printf("Float32\n");
+        space("Float32\n");
         break;
     case v_string:
-        printf("String\n");
+        space("String\n");
         break;
     case v_bool:
-        printf("Bool\n");
+        space("Bool\n");
         break;
     default:
         break;
     }
 }
 
-void print_var(const var_dec* node) {
+void printer_var(const var_dec* node) {
     space("VarDecl\n");
     spacing++;
-    space(NULL);
-    print_type(node->typespec);
+    printer_type(node->typespec);
     space(NULL);
     printf("Id(%s)\n", node->id);
+    spacing--;
+}
+
+void printer_stmt(const stmt_dec* stmt) {
+    switch(stmt->type) {
+        case s_assign:
+            space("Assign\n");
+            spacing++;
+            space(NULL);
+            printf("Id(%s)\n", stmt->dec.assign->id);
+            // TODO print exp
+            spacing--;
+            break;
+        case s_if:
+            space("If\n");
+            break;
+        case s_for:
+            space("For\n");
+            break;
+        case s_return:
+            space("Return\n");
+            break;
+        case s_call:
+            space("Call\n");
+            break;
+        case s_print:
+            space("Print\n");
+            spacing++;
+            space(NULL);
+            if (stmt->dec.print->strlit)
+                printf("Strlit(%s)\n", stmt->dec.print->strlit);
+            // TODO else print expr
+            spacing--;
+            break;
+        case s_parse:
+            space("ParseArgs\n");
+            spacing++;
+            space(NULL);
+            printf("Id(%s)\n", stmt->dec.args->id);
+            spacing--;
+            break;
+        case s_block:
+            space("Block\n");
+            break;
+        default:
+            break;
+    }
 }
 
 void print_body(const func_body* body) {
@@ -140,9 +236,10 @@ void print_body(const func_body* body) {
     while (body) {
         switch(body->type) {
             case b_var:
-                print_var(body->dec.var);
+                printer_var(body->dec.var);
                 break;
             case b_stmt:
+                printer_stmt(body->dec.stmt);
                 break;
             default:
                 break;
@@ -151,7 +248,7 @@ void print_body(const func_body* body) {
     }
 }
 
-void print_func(const func_dec* node) {
+void printer_func(const func_dec* node) {
     func_header* header = node->f_header;
     param_dec* param = header->param;
     func_body* body = node->f_body;
@@ -161,18 +258,14 @@ void print_func(const func_dec* node) {
     spacing++;
     space(NULL);
     printf("Id(%s)\n", header->id);
-    if (header->typespec != v_void) {
-        space(NULL);
-        print_type(header->typespec);
-    }
+    if (header->typespec != v_void) printer_type(header->typespec);
+    space("FuncParams\n");
     if (param) { 
-        space("FuncParams\n");
         spacing++;
         while(param) {
             space("ParamDecl\n");
             spacing++;
-            space(NULL);
-            print_type(param->typespec);
+            printer_type(param->typespec);
             space(NULL);
             printf("Id(%s)\n", param->id);
             param = param->next;
@@ -181,10 +274,8 @@ void print_func(const func_dec* node) {
         spacing--;
     }
     spacing--;
-    if (body) {
-        space("FuncBody\n");
-        print_body(body);
-    }
+    space("FuncBody\n");
+    if (body) print_body(body);
 }
 
 void print_ast(const prog_node* head) {
@@ -194,10 +285,10 @@ void print_ast(const prog_node* head) {
         spacing = 1;
         switch (d_list->type) {
         case d_var:
-            print_var(d_list->dec.var);
+            printer_var(d_list->dec.var);
             break;
         case d_func:
-            print_func(d_list->dec.func);
+            printer_func(d_list->dec.func);
             break;
         default:
             return;

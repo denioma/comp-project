@@ -31,7 +31,7 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 0[0-9]*         {printf("Line %d, column %d: invalid octal constant (%s)\n", yylineno, col, yytext); col += yyleng;}
 {integer}		{col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "INTLIT(%s)\n", yytext); else return INTLIT;}
 {real}			{col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "REALLIT(%s)\n", yytext); else return REALLIT;}
-{string}		{col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "STRLIT(%s)\n", yytext); else return STRLIT;}
+{string}		{col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "STRLIT(%s)\n", yytext); else {yylval.token = strdup(yytext); return STRLIT;}}
 \"				{temp = col; semicolon = 0; BEGIN(STRLIT);}
 "//".*			{;}
 "/*"            {temp = col + 2; line = yylineno; BEGIN COMMENT;}
