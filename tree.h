@@ -7,7 +7,10 @@ var_dec* create_var( char* id, const v_type typespec);
 func_dec* create_func(char* id, const v_type typespec, param_dec* param_list, func_body* body);
 param_dec* create_param(char* id, v_type typespec, param_dec* chain);
 func_body* insert_to_body(func_body* head, func_body* node);
-func_body* create_body_var(var_dec* var);
+func_body* create_body_var(dec_node* var);
+dec_node* insert_var_dec_list(dec_node* head, dec_node* list);
+dec_node* set_id_reps_head(dec_node* head, char* id, v_type typespec);
+dec_node* save_id_reps(dec_node* head, char* id);
 
 /* TODO */
 func_body* create_body_stmt(stmt_dec* stmt);

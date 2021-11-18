@@ -16,7 +16,7 @@ dec_node* alloc_node() {
     return node;
 }
 
-dec_node* insert_var_dec_list(dec_node* head, dec_node* list){
+dec_node* insert_var_dec_list(dec_node* head, dec_node* list) {
     if (!head) {
         head = list;
     }
@@ -52,7 +52,7 @@ var_dec* create_var(char* id, const v_type typespec) {
     return var;
 }
 
-dec_node* set_id_reps_head(dec_node* head, char* id, v_type typespec){
+dec_node* set_id_reps_head(dec_node* head, char* id, v_type typespec) {
     var_dec* var = create_var(id, typespec);
     dec_node* n_head = insert_var_dec(NULL, var);
 
@@ -65,7 +65,7 @@ dec_node* set_id_reps_head(dec_node* head, char* id, v_type typespec){
     return head;
 }
 
-dec_node* save_id_reps(dec_node* head, char* id){
+dec_node* save_id_reps(dec_node* head, char* id) {
     var_dec* var = (var_dec*)malloc(sizeof(var_dec));
     var->id = id;
     head = insert_var_dec(head, var);
