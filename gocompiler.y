@@ -21,7 +21,7 @@
     expr* expression;
 }
 
-%token <token> INTLIT STRLIT REALLIT ID
+%token <token> STRLIT ID INTLIT REALLIT
 %token SEMICOLON COMMA BLANKID ASSIGN VAR
 %token PLUS MINUS STAR DIV MOD
 %token EQ GE GT LE LT NE 
@@ -123,7 +123,6 @@ VASOpts:
 ;
 
 Statement:
-        /* TODO change expr return from NULL when finished */
         ID ASSIGN Expr                                  {$$=create_assign($1, $3);}
     |   LBRACE Stmt RBRACE                              {$$=$2;}
     |   IF Expr LBRACE Stmt RBRACE ElseStmt             {$$=create_if($2, $4, $6);}
@@ -159,7 +158,7 @@ ExprOpt:
 ;
 
 ParseArgs: 
-        ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ Expr RSQ RPAR     {$$=create_pargs($1, NULL);} // TODO Expr
+        ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ Expr RSQ RPAR     {$$=create_pargs($1, $9);}
     |   ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ error RSQ RPAR    {$$=NULL;} 
 ;
 
@@ -179,26 +178,27 @@ ExprReps:
 ;
 
 Expr:
-        /* TODO returns */
-        Expr PLUS Expr                                  {$$=NULL;}
-    |   Expr MINUS Expr                                 {$$=NULL;}
-    |   Expr STAR Expr                                  {$$=NULL;}
-    |   Expr DIV Expr                                   {$$=NULL;}
-    |   Expr MOD Expr                                   {$$=NULL;}
-    |   Expr OR Expr                                    {$$=NULL;}
-    |   Expr AND Expr                                   {$$=NULL;}
-    |   Expr LT Expr                                    {$$=NULL;}
-    |   Expr GT Expr                                    {$$=NULL;}
-    |   Expr EQ Expr                                    {$$=NULL;}
-    |   Expr GE Expr                                    {$$=NULL;}
-    |   Expr LE Expr                                    {$$=NULL;}
-    |   Expr NE Expr                                    {$$=NULL;}
-    |   NOT Expr                                        {$$=NULL;}
-    |   INTLIT                                          {$$=NULL;}
-    |   REALLIT                                         {$$=NULL;}
-    |   ID                                              {$$=NULL;}
-    |   FuncInvocation                                  {$$=NULL;}
-    |   LPAR Expr RPAR                                  {$$=NULL;}
+        Expr PLUS Expr                                  {$$=create_expr(e_expr, op_add, $1, $3);}
+    |   Expr MINUS Expr                                 {$$=create_expr(e_expr, op_sub, $1, $3);}
+    |   Expr STAR Expr                                  {$$=create_expr(e_expr, op_mul, $1, $3);}
+    |   Expr DIV Expr                                   {$$=create_expr(e_expr, op_div, $1, $3);}
+    |   Expr MOD Expr                                   {$$=create_expr(e_expr, op_mod, $1, $3);}
+    |   Expr OR Expr                                    {$$=create_expr(e_expr, op_or, $1, $3);}
+    |   Expr AND Expr                                   {$$=create_expr(e_expr, op_and, $1, $3);}
+    |   Expr LT Expr                                    {$$=create_expr(e_expr, op_lt, $1, $3);}
+    |   Expr GT Expr                                    {$$=create_expr(e_expr, op_gt, $1, $3);}
+    |   Expr EQ Expr                                    {$$=create_expr(e_expr, op_eq, $1, $3);}
+    |   Expr GE Expr                                    {$$=create_expr(e_expr, op_ge, $1, $3);}
+    |   Expr LE Expr                                    {$$=create_expr(e_expr, op_le, $1, $3);}
+    |   Expr NE Expr                                    {$$=create_expr(e_expr, op_ne, $1, $3);}
+    |   NOT Expr                                        {$$=create_expr(e_expr, op_not, $2, NULL);}
+    |   MINUS Expr                                      {$$=create_expr(e_expr, op_minus, $2, NULL);}
+    |   PLUS Expr                                       {$$=create_expr(e_expr, op_plus, $2, NULL);}
+    |   INTLIT                                          {$$=create_expr(e_int, nop, $1, NULL);}
+    |   REALLIT                                         {$$=create_expr(e_real, nop, $1, NULL);}
+    |   ID                                              {$$=create_expr(e_id, nop, $1, NULL);}
+    |   FuncInvocation                                  {$$=NULL; /* TODO */}
+    |   LPAR Expr RPAR                                  {$$=$2;}
     |   LPAR error RPAR                                 {$$=NULL;}
 ;
 %%

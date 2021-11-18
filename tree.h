@@ -17,8 +17,9 @@ stmt_dec* create_print(char* strlit, expr* expression);
 stmt_dec* create_assign(char* id, expr* expression);
 stmt_dec* create_if(expr* condition, stmt_dec* block1, stmt_dec* block2);
 stmt_dec* create_for(expr* expression, stmt_dec* block);
-stmt_dec* create_return();
+stmt_dec* create_return(expr* expression);
 stmt_dec* create_call();
+expr* create_expr(e_type type, op operator, void* arg1, expr* arg2);
 /* End TODO */
 
 void print_ast(const prog_node* head);

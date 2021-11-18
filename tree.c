@@ -90,7 +90,7 @@ param_dec* create_param(char* id, v_type typespec, param_dec* chain) {
     param->typespec = typespec;
     if (chain) param->next = chain;
     else param->next = NULL;
-    
+
     return param;
 }
 
@@ -153,7 +153,7 @@ stmt_dec* create_if(expr* condition, stmt_dec* block1, stmt_dec* block2) {
     d_if->condition = condition;
     d_if->block1 = block1;
     d_if->block2 = block2;
-    
+
     stmt_dec* stmt = create_stmt(s_if);
     stmt->dec.d_if = d_if;
 
@@ -165,13 +165,13 @@ stmt_dec* create_for(expr* expression, stmt_dec* block) {
     d_for->expression = expression;
     d_for->block = block;
     stmt_dec* stmt = create_stmt(s_for);
-    
+
     return stmt;
 }
 
-stmt_dec* create_return() {
+stmt_dec* create_return(expr* expression) {
     stmt_dec* stmt = create_stmt(s_return);
-
+    stmt->dec.d_expr = expression;
     return stmt;
 }
 
@@ -179,6 +179,28 @@ stmt_dec* create_call() {
     stmt_dec* stmt = create_stmt(s_call);
 
     return stmt;
+}
+
+expr* create_expr(e_type type, op operator, void* arg1, expr* arg2) {
+    expr* expression = (expr*)malloc(sizeof(expr));
+    expression->type = type;
+    expression->operator = operator;
+    expression->arg2 = arg2;
+
+    switch (type) {
+    case e_expr:
+        expression->arg1.exp_1 = (expr*)arg1;
+        break;
+    case e_func:
+        break;
+    case e_int:
+    case e_real:
+    case e_id:
+        expression->operator = nop;
+        expression->arg1.token = (char*)arg1;
+        break;
+    }
+    return expression;
 }
 
 /* ------ Pretty printers ------ */
@@ -191,11 +213,12 @@ void space(const char* str) {
 }
 
 void printer_type(v_type type) {
-    const char* types[4] = {"Int\n", "Float32\n", "String\n", "Bool\n"};
+    const char* types[4] = { "Int\n", "Float32\n", "String\n", "Bool\n" };
     space(types[type]);
 }
 
 void printer_var(const var_dec* node) {
+    if (!node) return;
     space("VarDecl\n");
     spacing++;
     printer_type(node->typespec);
@@ -204,84 +227,142 @@ void printer_var(const var_dec* node) {
     spacing--;
 }
 
+void printer_expr(const expr*);
+
+void printer_op(const expr* node) {
+    if (!node) return;
+    const char* type[] = {
+        "Add\n", "And\n", "Call\n", "Div\n",
+        "Eq\n", "Ge\n", "Gt\n", "Le\n", "Lt\n",
+        "Minus\n", "Mod\n", "Mul\n", "Ne\n", 
+        "Not\n", "Or\n", "Plus\n", "Sub\n"
+    };
+    space(type[node->operator]);
+    spacing++;
+    printer_expr(node->arg1.exp_1);
+    printer_expr(node->arg2);
+    spacing--;
+}
+
+void printer_expr(const expr* node) {
+    if (!node) return;
+    switch (node->type) {
+    case e_int:
+        space(NULL);
+        printf("IntLit(%s)\n", node->arg1.token);
+        break;
+    case e_real:
+        space(NULL);
+        printf("RealLit(%s)\n", node->arg1.token);
+        break;
+    case e_id:
+        space(NULL);
+        printf("Id(%s)\n", node->arg1.token);
+        break;
+    case e_expr:
+        printer_op(node);
+        break;
+    default:
+        break;
+    }
+}
+
 void printer_stmt(const stmt_dec*);
 
 void printer_if(const if_stmt* stmt) {
+    if (!stmt) return;
     space("If\n");
     spacing++;
-    if (stmt->block1) printer_stmt(stmt->block1);
-    if (stmt->block2) printer_stmt(stmt->block2);
+    if (stmt->block1) {
+        space("Block\n");
+        spacing++;
+        printer_stmt(stmt->block1);
+        spacing--;
+    }
+    if (stmt->block2) {
+        space("Block\n");
+        spacing++;
+        printer_stmt(stmt->block2);
+        spacing--;
+    }
     spacing--;
 }
 
 void printer_assign(const assign_stmt* stmt) {
+    if (!stmt) return;
     space("Assign\n");
     spacing++;
     space(NULL);
     printf("Id(%s)\n", stmt->id);
-    // TODO print exp
+    printer_expr(stmt->expression);
     spacing--;
 }
 
 void printer_stmt(const stmt_dec* stmt) {
-    switch(stmt->type) {
-        case s_assign:
-            printer_assign(stmt->dec.d_assign);
-            break;
-        case s_if:
-            printer_if(stmt->dec.d_if);
-            break;
-        case s_for:
-            space("For\n");
-            break;
-        case s_return:
-            space("Return\n");
-            break;
-        case s_call:
-            space("Call\n");
-            break;
-        case s_print:
-            space("Print\n");
-            spacing++;
-            space(NULL);
-            if (stmt->dec.d_print->strlit)
-                printf("Strlit(%s)\n", stmt->dec.d_print->strlit);
-            // TODO else print expr
-            spacing--;
-            break;
-        case s_parse:
-            space("ParseArgs\n");
-            spacing++;
-            space(NULL);
-            printf("Id(%s)\n", stmt->dec.d_args->id);
-            spacing--;
-            break;
-        case s_block:
-            space("Block\n");
-            break;
-        default:
-            break;
+    if (!stmt) return;
+    switch (stmt->type) {
+    case s_assign:
+        printer_assign(stmt->dec.d_assign);
+        break;
+    case s_if:
+        printer_if(stmt->dec.d_if);
+        break;
+    case s_for:
+        space("For\n");
+        break;
+    case s_return:
+        space("Return\n");
+        spacing++;
+        if (stmt->dec.d_expr) printer_expr(stmt->dec.d_expr);
+        spacing--;
+        break;
+    case s_call:
+        space("Call\n");
+        break;
+    case s_print:
+        space("Print\n");
+        spacing++;
+        space(NULL);
+        if (stmt->dec.d_print->strlit)
+            printf("Strlit(%s)\n", stmt->dec.d_print->strlit);
+        else printer_expr(stmt->dec.d_print->expression);
+        spacing--;
+        break;
+    case s_parse:
+        space("ParseArgs\n");
+        spacing++;
+        space(NULL);
+        printf("Id(%s)\n", stmt->dec.d_args->id);
+        spacing--;
+        break;
+    case s_block:
+        space("Block\n");
+        break;
+    default:
+        break;
     }
 }
 
 void print_body(const func_body* body) {
+    if (!body) return;
     spacing++;
     while (body) {
-        switch(body->type) {
-            case b_var:
-                printer_var(body->dec.var);
-                break;
-            case b_stmt:
-                printer_stmt(body->dec.stmt);
-                break;
-            default:
-                break;
+        switch (body->type) {
+        case b_var:
+            printer_var(body->dec.var);
+            break;
+        case b_stmt:
+            printer_stmt(body->dec.stmt);
+            break;
+        default:
+            break;
         }
         body = body->next;
     }
 }
 
 void printer_func(const func_dec* node) {
+    if (!node) return;
     func_header* header = node->f_header;
     param_dec* param = header->param;
     func_body* body = node->f_body;
@@ -293,9 +374,9 @@ void printer_func(const func_dec* node) {
     printf("Id(%s)\n", header->id);
     if (header->typespec != v_void) printer_type(header->typespec);
     space("FuncParams\n");
-    if (param) { 
+    if (param) {
         spacing++;
-        while(param) {
+        while (param) {
             space("ParamDecl\n");
             spacing++;
             printer_type(param->typespec);
@@ -312,6 +393,7 @@ void printer_func(const func_dec* node) {
 }
 
 void print_ast(const prog_node* head) {
+    if (!head) return;
     printf("Program\n");
     dec_node* d_list = head->dlist;
     while (d_list) {

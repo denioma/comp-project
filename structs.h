@@ -8,14 +8,23 @@ typedef struct {
 } var_dec;
 
 typedef enum {
-    nop, op_or, op_and, op_eq, op_lt, op_gt,
-    op_le, op_ge, op_add, op_ne, op_sub, 
-    op_mul, op_div, op_mod, op_not, 
-    op_minus, op_plus, op_call
-} operation;
+    op_add, op_and, op_call, op_div,
+    op_eq, op_ge, op_gt, op_le, op_lt, 
+    op_minus, op_mod, op_mul, op_ne, 
+    op_not, op_or, op_plus, op_sub, nop
+} op;
+
+typedef enum { e_int, e_real, e_expr, e_func, e_id } e_type;
 
 typedef struct _expr {
-    operation operator;
+    e_type type;
+    op operator;
+    union {
+        char* token;
+        struct _expr* exp_1;
+        /* TODO func_invocation* pointer */
+    } arg1;
+    struct _expr* arg2;
 } expr;
 
 typedef struct _assign_stmt {
@@ -53,6 +62,7 @@ typedef struct _stmt_dec {
         print_stmt* d_print;
         assign_stmt* d_assign;
         if_stmt* d_if;
+        expr* d_expr;
         struct _stmt_dec* d_block;
     } dec;
 } stmt_dec;
