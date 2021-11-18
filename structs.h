@@ -1,6 +1,6 @@
 #pragma once
 
-typedef enum { v_void, v_int, v_float, v_bool, v_string } v_type;
+typedef enum { v_int, v_float, v_bool, v_string, v_void } v_type;
 
 typedef struct {
     v_type typespec;
