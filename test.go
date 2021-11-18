@@ -1,6 +1,7 @@
 package main
 
 var mybool bool;
+var poggers, kekw, pogchamp int;
 
 func main() {
     var arg1 int;
