@@ -41,3 +41,6 @@ y.output
 
 # Output
 gocompiler.zip
+
+#VS Code
+.vscode
