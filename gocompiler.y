@@ -20,6 +20,8 @@
     stmt_dec* stmt;
     expr* expression;
     stmt_block* s_block;
+    func_invoc* s_call;
+    f_invoc_opts* fi_opts;
 }
 
 %token <token> STRLIT ID INTLIT REALLIT
@@ -42,6 +44,9 @@
 %type <stmt> Statement Stmt ElseStmt ParseArgs
 %type <expression> Expr ExprOpt
 %type <s_block> StmtBlock
+%type <s_call> FuncInvocation
+%type <fi_opts> FuncInvocationOpts ExprReps
+
 
 %right ASSIGN
 %left OR
@@ -129,7 +134,7 @@ Statement:
     |   IF Expr LBRACE Stmt RBRACE ElseStmt             {$$=create_if($2, $4, $6);}
     |   FOR ExprOpt LBRACE Stmt RBRACE                  {$$=create_for($2, $4);}
     |   RETURN ExprOpt                                  {$$=create_return($2);}
-    |   FuncInvocation                                  {$$=create_call(NULL /* $1 */);}
+    |   FuncInvocation                                  {$$=create_call($1);}
     |   ParseArgs                                       {$$=$1;}
     |   PRINT LPAR STRLIT RPAR                          {$$=create_print($3, NULL);}
     |   PRINT LPAR Expr RPAR                            {$$=create_print(NULL, $3);}
@@ -164,18 +169,18 @@ ParseArgs:
 ;
 
 FuncInvocation: 
-        ID LPAR FuncInvocationOpts RPAR                 {;}
-    |   ID LPAR error RPAR                              {;}
+        ID LPAR FuncInvocationOpts RPAR                 {$$=create_func_invocation($1,$3);}
+    |   ID LPAR error RPAR                              {$$=NULL;}
 ;
 
 FuncInvocationOpts: 
-        Expr ExprReps                                   {;}
-    |   /* empty */                                     {;} // $$=NULL;
+        Expr ExprReps                                   {$$=create_fi_opts($1, NULL);}
+    |   /* empty */                                     {$$=NULL;}
 ;
     
 ExprReps: 
-        ExprReps COMMA Expr                             {;}
-    |   /* empty */                                     {;} // $$=NULL;
+        ExprReps COMMA Expr                             {$$=NULL;}
+    |   /* empty */                                     {$$=NULL;}
 ;
 
 Expr:
@@ -198,7 +203,7 @@ Expr:
     |   INTLIT                                          {$$=create_expr(e_int, nop, $1, NULL);}
     |   REALLIT                                         {$$=create_expr(e_real, nop, $1, NULL);}
     |   ID                                              {$$=create_expr(e_id, nop, $1, NULL);}
-    |   FuncInvocation                                  {$$=NULL; /* TODO */}
+    |   FuncInvocation                                  {$$=create_expr(e_func, nop, $1, NULL);}
     |   LPAR Expr RPAR                                  {$$=$2;}
     |   LPAR error RPAR                                 {$$=NULL;}
 ;

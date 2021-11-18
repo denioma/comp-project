@@ -22,7 +22,7 @@ typedef struct _expr {
     union {
         char* token;
         struct _expr* exp_1;
-        /* TODO func_invocation* pointer */
+        struct _func_invoc* call;
     } arg1;
     struct _expr* arg2;
 } expr;
@@ -60,6 +60,16 @@ typedef struct _stmt_block {
     struct _stmt_block* next;
 } stmt_block;
 
+typedef struct _f_invoc_opts {
+    expr* opt;
+    struct _f_invoc_opts* next;
+} f_invoc_opts;
+
+typedef struct _func_invoc {
+    char* id;
+    f_invoc_opts* opts;
+} func_invoc;
+
 typedef struct _stmt_dec {
     s_type type;
     union {
@@ -69,6 +79,7 @@ typedef struct _stmt_dec {
         if_stmt* d_if;
         expr* d_expr;
         stmt_block* d_block;
+        func_invoc* d_fi;
     } dec;
 } stmt_dec;
 

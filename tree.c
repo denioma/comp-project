@@ -19,8 +19,7 @@ dec_node* alloc_node() {
 dec_node* insert_var_dec_list(dec_node* head, dec_node* list) {
     if (!head) {
         head = list;
-    }
-    else {
+    }     else {
         dec_node* tmp = head;
         for (; tmp->next; tmp = tmp->next);
         tmp->next = list;
@@ -56,7 +55,7 @@ dec_node* set_id_reps_head(dec_node* head, char* id, v_type typespec) {
     var_dec* var = create_var(id, typespec);
     dec_node* n_head = insert_var_dec(NULL, var);
 
-    for (dec_node* tmp = head; tmp; tmp = tmp->next){
+    for (dec_node* tmp = head; tmp; tmp = tmp->next) {
         tmp->dec.var->typespec = typespec;
     }
 
@@ -92,10 +91,10 @@ func_body* create_body_var(dec_node* head) {
     func_body* f_body_head = (func_body*)malloc(sizeof(func_body));
     func_body* body = f_body_head;
 
-    for (dec_node* tmp = head; tmp; tmp = tmp->next){
+    for (dec_node* tmp = head; tmp; tmp = tmp->next) {
         body->type = b_var;
         body->dec.var = tmp->dec.var;
-        if(tmp->next) {
+        if (tmp->next) {
             body->next = (func_body*)malloc(sizeof(func_body));
             body = body->next;
         } else body->next = NULL;
@@ -214,8 +213,9 @@ stmt_dec* create_return(expr* expression) {
     return stmt;
 }
 
-stmt_dec* create_call() {
+stmt_dec* create_call(func_invoc* call) {
     stmt_dec* stmt = create_stmt(s_call);
+    stmt->dec.d_fi = call;
 
     return stmt;
 }
@@ -231,6 +231,8 @@ expr* create_expr(e_type type, op operator, void* arg1, expr* arg2) {
         expression->arg1.exp_1 = (expr*)arg1;
         break;
     case e_func:
+        expression->operator = nop;
+        expression->arg1.call = (func_invoc*)arg1;
         break;
     case e_int:
     case e_real:
@@ -269,6 +271,20 @@ stmt_block* create_block(stmt_block* chain, stmt_dec* stmt) {
     return block;
 }
 
+f_invoc_opts* create_fi_opts(expr* first, f_invoc_opts* chain) {
+    f_invoc_opts* fi_opts = (f_invoc_opts*)malloc(sizeof(f_invoc_opts));
+    fi_opts->opt = first;
+    fi_opts->next = chain;
+    return fi_opts;
+}
+
+func_invoc* create_func_invocation(char* id, f_invoc_opts* opts) {
+    func_invoc* fi = (func_invoc*)malloc(sizeof(func_invoc));
+    fi->id = id;
+    fi->opts = opts;
+    return fi;
+}
+
 /* ------ Pretty printers ------ */
 
 int spacing = 0;
@@ -295,12 +311,27 @@ void printer_var(const var_dec* node) {
 
 void printer_expr(const expr*);
 
+void printer_fi_opts(const f_invoc_opts* node) {
+    if (!node) return;
+    printer_expr(node->opt);
+    printer_fi_opts(node->next);
+}
+
+void printer_fi(const func_invoc* node) {
+    space("Call\n");
+    spacing++;
+    space(NULL);
+    printf("Id(%s)\n", node->id);
+    printer_fi_opts(node->opts);
+    spacing--;
+}
+
 void printer_op(const expr* node) {
     if (!node) return;
     const char* type[] = {
         "Add\n", "And\n", "Call\n", "Div\n",
         "Eq\n", "Ge\n", "Gt\n", "Le\n", "Lt\n",
-        "Minus\n", "Mod\n", "Mul\n", "Ne\n", 
+        "Minus\n", "Mod\n", "Mul\n", "Ne\n",
         "Not\n", "Or\n", "Plus\n", "Sub\n"
     };
     space(type[node->operator]);
@@ -328,7 +359,8 @@ void printer_expr(const expr* node) {
     case e_expr:
         printer_op(node);
         break;
-    default:
+    case e_func:
+        printer_fi(node->arg1.call);
         break;
     }
 }
@@ -338,7 +370,7 @@ void printer_stmt(const stmt_dec*);
 void printer_block(const stmt_block* block) {
     if (!block) return;
     printer_stmt(block->stmt);
-    printer_block(block->next); 
+    printer_block(block->next);
 }
 
 void printer_if(const if_stmt* stmt) {
@@ -381,6 +413,7 @@ void printer_stmt(const stmt_dec* stmt) {
         break;
     case s_for:
         space("For\n");
+        /* TODO Print For stmt */
         break;
     case s_return:
         space("Return\n");
@@ -389,7 +422,7 @@ void printer_stmt(const stmt_dec* stmt) {
         spacing--;
         break;
     case s_call:
-        space("Call\n");
+        printer_fi(stmt->dec.d_fi);
         break;
     case s_print:
         space("Print\n");

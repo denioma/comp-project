@@ -11,8 +11,6 @@ func_body* create_body_var(dec_node* var);
 dec_node* insert_var_dec_list(dec_node* head, dec_node* list);
 dec_node* set_id_reps_head(dec_node* head, char* id, v_type typespec);
 dec_node* save_id_reps(dec_node* head, char* id);
-
-/* TODO */
 func_body* create_body_stmt(stmt_dec* stmt);
 stmt_dec* create_stmt(s_type type);
 stmt_dec* create_pargs(char* id, expr* index);
@@ -26,7 +24,8 @@ stmt_dec* create_stmt_block(stmt_block* block);
 stmt_block* create_block(stmt_block* chain, stmt_dec* stmt);
 stmt_block* add_block_stmt(stmt_block* block, stmt_dec* stmt);
 expr* create_expr(e_type type, op operator, void* arg1, expr* arg2);
-/* End TODO */
+f_invoc_opts* create_fi_opts(expr* first, f_invoc_opts* chain);
+func_invoc* create_func_invocation(char* id, f_invoc_opts* opts);
 
 void print_ast(const prog_node* head);
 void printer_block(const stmt_block* block);
