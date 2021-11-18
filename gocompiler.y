@@ -19,6 +19,7 @@
     func_body* f_body;
     stmt_dec* stmt;
     expr* expression;
+    stmt_block* s_block;
 }
 
 %token <token> STRLIT ID INTLIT REALLIT
@@ -38,8 +39,9 @@
 %type <func> FuncDeclaration
 %type <params> FuncParams Parameters ParamOpts
 %type <f_body> VarsAndStatements VASOpts FuncBody
-%type <stmt> Statement Stmt StmtBlock ElseStmt ParseArgs
+%type <stmt> Statement Stmt ElseStmt ParseArgs
 %type <expression> Expr ExprOpt
+%type <s_block> StmtBlock
 
 %right ASSIGN
 %left OR
@@ -137,13 +139,13 @@ Statement:
 Stmt:
         /* empty */                                     {$$=NULL;}
     |   Statement SEMICOLON                             {$$=$1;}
-    |   StmtBlock                                       {$$=create_stmt(s_block);}
+    |   StmtBlock                                       {printer_block($1);$$=create_stmt_block($1);}
 ;
 
 StmtBlock: 
         /* TODO create stmt_dec* chain */
-        StmtBlock Statement SEMICOLON                   {$$=NULL;}
-    |   Statement SEMICOLON Statement SEMICOLON         {$$=NULL;}
+        StmtBlock Statement SEMICOLON                   {$$=add_block_stmt($1, $2);}
+    |   Statement SEMICOLON Statement SEMICOLON         {$$=create_block(create_block(NULL, $3), $1);}
 ;
 
 ElseStmt: 

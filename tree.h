@@ -22,7 +22,11 @@ stmt_dec* create_if(expr* condition, stmt_dec* block1, stmt_dec* block2);
 stmt_dec* create_for(expr* expression, stmt_dec* block);
 stmt_dec* create_return(expr* expression);
 stmt_dec* create_call();
+stmt_dec* create_stmt_block(stmt_block* block);
+stmt_block* create_block(stmt_block* chain, stmt_dec* stmt);
+stmt_block* add_block_stmt(stmt_block* block, stmt_dec* stmt);
 expr* create_expr(e_type type, op operator, void* arg1, expr* arg2);
 /* End TODO */
 
 void print_ast(const prog_node* head);
+void printer_block(const stmt_block* block);

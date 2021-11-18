@@ -26,8 +26,8 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 %option yylineno
 %x BADSTR COMMENT
 %%
-{hex}           {col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "INTLIT(%s)\n", yytext); else return INTLIT;}
-{octal}         {col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "INTLIT(%s)\n", yytext); else return INTLIT;}
+{hex}           {col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "INTLIT(%s)\n", yytext); else {yylval.token = strdup(yytext); return INTLIT;}}
+{octal}         {col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "INTLIT(%s)\n", yytext); else {yylval.token = strdup(yytext); return INTLIT;}}
 0[0-9]*         {printf("Line %d, column %d: invalid octal constant (%s)\n", yylineno, col, yytext); col += yyleng;}
 {integer}		{col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "INTLIT(%s)\n", yytext); else {yylval.token = strdup(yytext); return INTLIT;}}
 {real}			{col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "REALLIT(%s)\n", yytext); else {yylval.token = strdup(yytext); return REALLIT;}}

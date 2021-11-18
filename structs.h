@@ -1,6 +1,6 @@
 #pragma once
 
-typedef enum { v_void, v_int, v_float, v_bool, v_string } v_type;
+typedef enum { v_int, v_float, v_bool, v_string, v_void } v_type;
 
 typedef struct {
     v_type typespec;
@@ -55,6 +55,11 @@ typedef struct _for_stmt {
 
 typedef enum { s_block, s_if, s_for, s_return, s_call, s_print, s_parse, s_assign } s_type;
 
+typedef struct _stmt_block {
+    struct _stmt_dec* stmt;
+    struct _stmt_block* next;
+} stmt_block;
+
 typedef struct _stmt_dec {
     s_type type;
     union {
@@ -63,7 +68,7 @@ typedef struct _stmt_dec {
         assign_stmt* d_assign;
         if_stmt* d_if;
         expr* d_expr;
-        struct _stmt_dec* d_block;
+        stmt_block* d_block;
     } dec;
 } stmt_dec;
 

@@ -11,6 +11,7 @@ func main() {
     if 1 {
         fmt.Println("Stmt 1");
         fmt.Println("Stmt 2");
+        fmt.Println("Stmt 3");
     }   
 	return 0
 }
