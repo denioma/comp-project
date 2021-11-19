@@ -44,3 +44,6 @@ gocompiler.zip
 
 #VS Code
 .vscode
+
+# Allow testcases output
+!testcases/**/*.out
