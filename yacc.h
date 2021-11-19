@@ -1,9 +1,9 @@
 #include "tree.h"
 extern char* yytext;
-extern int yylineno;
+extern int yylineno, yyleng;
 
 extern char lflag, tflag, semicolon, build;
-extern int col, line, temp;
+extern int col, line, temp, ycol;
 
 extern int yylex();
 extern prog_node* program;

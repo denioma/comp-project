@@ -51,12 +51,11 @@
 %right ASSIGN
 %left OR
 %left AND
-%left EQ GE GT LE LT NE
-%left MOD
+%left EQ NE GE GT LE LT
 %left PLUS MINUS
-%left STAR DIV
+%left STAR DIV MOD
+%right NOT UNARY
 %nonassoc LPAR RPAR
-%nonassoc NOT
 %%
 
 Program: 
@@ -188,22 +187,22 @@ ExprReps:
 ;
 
 Expr:
-        Expr PLUS Expr                                  {if (build) $$=create_expr(e_expr, op_add, $1, $3);}
+        Expr OR Expr                                    {if (build) $$=create_expr(e_expr, op_or, $1, $3);}
+    |   Expr AND Expr                                   {if (build) $$=create_expr(e_expr, op_and, $1, $3);}
+    |   Expr EQ Expr                                    {if (build) $$=create_expr(e_expr, op_eq, $1, $3);}
+    |   Expr NE Expr                                    {if (build) $$=create_expr(e_expr, op_ne, $1, $3);}
+    |   Expr LT Expr                                    {if (build) $$=create_expr(e_expr, op_lt, $1, $3);}
+    |   Expr GT Expr                                    {if (build) $$=create_expr(e_expr, op_gt, $1, $3);}
+    |   Expr GE Expr                                    {if (build) $$=create_expr(e_expr, op_ge, $1, $3);}
+    |   Expr LE Expr                                    {if (build) $$=create_expr(e_expr, op_le, $1, $3);}
+    |   Expr PLUS Expr                                  {if (build) $$=create_expr(e_expr, op_add, $1, $3);}
     |   Expr MINUS Expr                                 {if (build) $$=create_expr(e_expr, op_sub, $1, $3);}
     |   Expr STAR Expr                                  {if (build) $$=create_expr(e_expr, op_mul, $1, $3);}
     |   Expr DIV Expr                                   {if (build) $$=create_expr(e_expr, op_div, $1, $3);}
     |   Expr MOD Expr                                   {if (build) $$=create_expr(e_expr, op_mod, $1, $3);}
-    |   Expr OR Expr                                    {if (build) $$=create_expr(e_expr, op_or, $1, $3);}
-    |   Expr AND Expr                                   {if (build) $$=create_expr(e_expr, op_and, $1, $3);}
-    |   Expr LT Expr                                    {if (build) $$=create_expr(e_expr, op_lt, $1, $3);}
-    |   Expr GT Expr                                    {if (build) $$=create_expr(e_expr, op_gt, $1, $3);}
-    |   Expr EQ Expr                                    {if (build) $$=create_expr(e_expr, op_eq, $1, $3);}
-    |   Expr GE Expr                                    {if (build) $$=create_expr(e_expr, op_ge, $1, $3);}
-    |   Expr LE Expr                                    {if (build) $$=create_expr(e_expr, op_le, $1, $3);}
-    |   Expr NE Expr                                    {if (build) $$=create_expr(e_expr, op_ne, $1, $3);}
     |   NOT Expr                                        {if (build) $$=create_expr(e_expr, op_not, $2, NULL);}
-    |   MINUS Expr                                      {if (build) $$=create_expr(e_expr, op_minus, $2, NULL);}
-    |   PLUS Expr                                       {if (build) $$=create_expr(e_expr, op_plus, $2, NULL);}
+    |   MINUS Expr %prec UNARY                          {if (build) $$=create_expr(e_expr, op_minus, $2, NULL);}
+    |   PLUS Expr  %prec UNARY                          {if (build) $$=create_expr(e_expr, op_plus, $2, NULL);}
     |   INTLIT                                          {if (build) $$=create_expr(e_int, nop, $1, NULL);}
     |   REALLIT                                         {if (build) $$=create_expr(e_real, nop, $1, NULL);}
     |   ID                                              {if (build) $$=create_expr(e_id, nop, $1, NULL);}
@@ -213,6 +212,6 @@ Expr:
 ;
 %%
 void yyerror(const char* s) {
-    printf("Line %d, column %d: %s: %s\n", yylineno, col, s, yytext);
+    printf("Line %d, column %d: %s: %s\n", yylineno, ycol, s, yytext);
     build = 0;
 }
