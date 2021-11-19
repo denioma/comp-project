@@ -41,9 +41,9 @@
 %type <func> FuncDeclaration
 %type <params> FuncParams Parameters ParamOpts
 %type <f_body> VarsAndStatements VASOpts FuncBody
-%type <stmt> Statement Stmt ElseStmt ParseArgs
+%type <stmt> Statement Stmt ParseArgs
 %type <expression> Expr ExprOpt
-%type <s_block> StmtBlock
+%type <s_block> StmtBlock ExplicitBlock ElseStmt
 %type <s_call> FuncInvocation
 %type <fi_opts> FuncInvocationOpts ExprReps
 
@@ -60,151 +60,155 @@
 %%
 
 Program: 
-        PACKAGE ID SEMICOLON Declarations               {$$=program=new_prog($4);} 
+        PACKAGE ID SEMICOLON Declarations               {if (build) $$=program=new_prog($4);} 
 ;
 
 Declarations:
-        Declarations VarDeclaration SEMICOLON           {$$=insert_var_dec_list($1, $2);}
-    |   Declarations FuncDeclaration SEMICOLON          {$$=insert_func_dec($1, $2);}
+        Declarations VarDeclaration SEMICOLON           {if (build) $$=insert_var_dec_list($1, $2);}
+    |   Declarations FuncDeclaration SEMICOLON          {if (build) $$=insert_func_dec($1, $2);}
     |   /* empty */                                     {$$=NULL;}
 ;
 
 VarDeclaration: 
-        VAR VarSpec                                     {$$=$2;}
-    |   VAR LPAR VarSpec SEMICOLON RPAR                 {$$=$3;}
+        VAR VarSpec                                     {if (build) $$=$2;}
+    |   VAR LPAR VarSpec SEMICOLON RPAR                 {if (build) $$=$3;}
 ;
 
 FuncDeclaration: 
-        FUNC ID LPAR FuncParams RPAR FuncType FuncBody  {$$=create_func($2, $6, $4, $7);}
+        FUNC ID LPAR FuncParams RPAR FuncType FuncBody  {if (build) $$=create_func($2, $6, $4, $7);}
 ;
 
 FuncParams: 
-        Parameters                                      {$$=$1;}
+        Parameters                                      {if (build) $$=$1;}
     |   /* empty */                                     {$$=NULL;}
 ;
 
 FuncType: 
-        Type                                            {$$=$1;}
-    |   /* empty */                                     {$$=v_void;}
+        Type                                            {if (build) $$=$1;}
+    |   /* empty */                                     {if (build) $$=v_void;}
 ;
 
 VarSpec: 
-        ID IdReps Type                                  {$$=set_id_reps_head($2, $1, $3);}
+        ID IdReps Type                                  {if (build) $$=set_id_reps_head($2, $1, $3);}
 ;
 
 IdReps: 
-        IdReps COMMA ID                                 {$$=save_id_reps($1,$3);} 
+        IdReps COMMA ID                                 {if (build) $$=save_id_reps($1,$3);} 
     |   /* empty */                                     {$$=NULL;} 
 ;
         
 Type: 
-        INT                                             {$$=v_int;}
-    |   FLOAT32                                         {$$=v_float;}
-    |   BOOL                                            {$$=v_bool;}
-    |   STRING                                          {$$=v_string;}
+        INT                                             {if (build) $$=v_int;}
+    |   FLOAT32                                         {if (build) $$=v_float;}
+    |   BOOL                                            {if (build) $$=v_bool;}
+    |   STRING                                          {if (build) $$=v_string;}
 ;
 
 Parameters: 
-        ID Type ParamOpts                               {$$=create_param($1, $2, $3);}
+        ID Type ParamOpts                               {if (build) $$=create_param($1, $2, $3);}
 ;
 
 ParamOpts: 
-        ParamOpts COMMA ID Type                         {$$=create_param($3, $4, $1);}
+        ParamOpts COMMA ID Type                         {if (build) $$=create_param($3, $4, $1);}
     |   /* empty */                                     {$$=NULL;}
 ;
 
 FuncBody: 
-        LBRACE VarsAndStatements RBRACE                 {$$=$2;}
+        LBRACE VarsAndStatements RBRACE                 {if (build) $$=$2;}
 ;
 
 VarsAndStatements: 
-        VarsAndStatements VASOpts SEMICOLON             {$$=insert_to_body($2, $1);}
+        VarsAndStatements VASOpts SEMICOLON             {if (build) $$=insert_to_body($2, $1);}
     |   /* empty */                                     {$$=NULL;}
 ;
 
 VASOpts: 
-        VarDeclaration                                  {$$=create_body_var($1);} 
-    |   Statement                                       {$$=create_body_stmt($1);}
+        VarDeclaration                                  {if (build) $$=create_body_var($1);} 
+    |   Statement                                       {if (build) $$=create_body_stmt($1);}
     |   /* empty */                                     {$$=NULL;}
 ;
 
 Statement:
-        ID ASSIGN Expr                                  {$$=create_assign($1, $3);}
-    |   LBRACE Stmt RBRACE                              {$$=$2;}
-    |   IF Expr LBRACE Stmt RBRACE ElseStmt             {$$=create_if($2, $4, $6);}
-    |   FOR ExprOpt LBRACE Stmt RBRACE                  {$$=create_for($2, $4);}
-    |   RETURN ExprOpt                                  {$$=create_return($2);}
-    |   FuncInvocation                                  {$$=create_call($1);}
-    |   ParseArgs                                       {$$=$1;}
-    |   PRINT LPAR STRLIT RPAR                          {$$=create_print($3, NULL);}
-    |   PRINT LPAR Expr RPAR                            {$$=create_print(NULL, $3);}
+        ID ASSIGN Expr                                  {if (build) $$=create_assign($1, $3);}
+    |   LBRACE Stmt RBRACE                              {if (build) $$=$2;}
+    |   IF Expr LBRACE ExplicitBlock RBRACE ElseStmt    {if (build) $$=create_if($2, create_stmt_block($4), create_stmt_block($6));}
+    |   FOR ExprOpt LBRACE ExplicitBlock RBRACE         {if (build) $$=create_for($2, create_stmt_block($4));}
+    |   RETURN ExprOpt                                  {if (build) $$=create_return($2);}
+    |   FuncInvocation                                  {if (build) $$=create_call($1);}
+    |   ParseArgs                                       {if (build) $$=$1;}
+    |   PRINT LPAR STRLIT RPAR                          {if (build) $$=create_print($3, NULL);}
+    |   PRINT LPAR Expr RPAR                            {if (build) $$=create_print(NULL, $3);}
     |   error                                           {$$=NULL;}
 ;
 
+ExplicitBlock:
+        Statement SEMICOLON ExplicitBlock               {if (build) $$=create_block($3, $1);}
+    |   /* empty */                                     {$$=NULL;}
+;
+
 Stmt:
-        /* empty */                                     {$$=NULL;}
-    |   Statement SEMICOLON                             {$$=$1;}
-    |   StmtBlock                                       {$$=create_stmt_block($1);}
+        Statement SEMICOLON                             {if (build) $$=$1;}
+    |   StmtBlock                                       {if (build) $$=create_stmt_block($1);}
+    |   /* empty */                                     {$$=NULL;}
 ;
 
 StmtBlock: 
-        /* TODO create stmt_dec* chain */
-        StmtBlock Statement SEMICOLON                   {$$=add_block_stmt($1, $2);}
-    |   Statement SEMICOLON Statement SEMICOLON         {$$=create_block(create_block(NULL, $3), $1);}
+        Statement SEMICOLON StmtBlock                   {if (build) $$=create_block($3, $1);}
+    |   Statement SEMICOLON Statement SEMICOLON         {if (build) $$=create_block(create_block(NULL, $3), $1);}
 ;
 
 ElseStmt: 
-        ELSE LBRACE Stmt RBRACE                         {$$=$3;}
+        ELSE LBRACE ExplicitBlock RBRACE                {if (build) $$=$3;}
     |   /* empty */                                     {$$=NULL;}
 ;
 
 ExprOpt: 
-        Expr                                            {$$=$1;}
+        Expr                                            {if (build) $$=$1;}
     |   /* empty */                                     {$$=NULL;} // $$=NULL;
 ;
 
 ParseArgs: 
-        ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ Expr RSQ RPAR     {$$=create_pargs($1, $9);}
+        ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ Expr RSQ RPAR     {if (build) $$=create_pargs($1, $9);}
     |   ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ error RSQ RPAR    {$$=NULL;} 
 ;
 
 FuncInvocation: 
-        ID LPAR FuncInvocationOpts RPAR                 {$$=create_func_invocation($1,$3);}
+        ID LPAR FuncInvocationOpts RPAR                 {if (build) $$=create_func_invocation($1,$3);}
     |   ID LPAR error RPAR                              {$$=NULL;}
 ;
 
 FuncInvocationOpts: 
-        Expr ExprReps                                   {$$=create_fi_opts($1, NULL);}
+        Expr ExprReps                                   {if (build) $$=create_fi_opts(NULL, $1);}
     |   /* empty */                                     {$$=NULL;}
 ;
     
 ExprReps: 
-        ExprReps COMMA Expr                             {$$=NULL;}
+        COMMA Expr ExprReps                             {if (build) $$=create_fi_opts($3, $2);}
     |   /* empty */                                     {$$=NULL;}
 ;
 
 Expr:
-        Expr PLUS Expr                                  {$$=create_expr(e_expr, op_add, $1, $3);}
-    |   Expr MINUS Expr                                 {$$=create_expr(e_expr, op_sub, $1, $3);}
-    |   Expr STAR Expr                                  {$$=create_expr(e_expr, op_mul, $1, $3);}
-    |   Expr DIV Expr                                   {$$=create_expr(e_expr, op_div, $1, $3);}
-    |   Expr MOD Expr                                   {$$=create_expr(e_expr, op_mod, $1, $3);}
-    |   Expr OR Expr                                    {$$=create_expr(e_expr, op_or, $1, $3);}
-    |   Expr AND Expr                                   {$$=create_expr(e_expr, op_and, $1, $3);}
-    |   Expr LT Expr                                    {$$=create_expr(e_expr, op_lt, $1, $3);}
-    |   Expr GT Expr                                    {$$=create_expr(e_expr, op_gt, $1, $3);}
-    |   Expr EQ Expr                                    {$$=create_expr(e_expr, op_eq, $1, $3);}
-    |   Expr GE Expr                                    {$$=create_expr(e_expr, op_ge, $1, $3);}
-    |   Expr LE Expr                                    {$$=create_expr(e_expr, op_le, $1, $3);}
-    |   Expr NE Expr                                    {$$=create_expr(e_expr, op_ne, $1, $3);}
-    |   NOT Expr                                        {$$=create_expr(e_expr, op_not, $2, NULL);}
-    |   MINUS Expr                                      {$$=create_expr(e_expr, op_minus, $2, NULL);}
-    |   PLUS Expr                                       {$$=create_expr(e_expr, op_plus, $2, NULL);}
-    |   INTLIT                                          {$$=create_expr(e_int, nop, $1, NULL);}
-    |   REALLIT                                         {$$=create_expr(e_real, nop, $1, NULL);}
-    |   ID                                              {$$=create_expr(e_id, nop, $1, NULL);}
-    |   FuncInvocation                                  {$$=create_expr(e_func, nop, $1, NULL);}
-    |   LPAR Expr RPAR                                  {$$=$2;}
+        Expr PLUS Expr                                  {if (build) $$=create_expr(e_expr, op_add, $1, $3);}
+    |   Expr MINUS Expr                                 {if (build) $$=create_expr(e_expr, op_sub, $1, $3);}
+    |   Expr STAR Expr                                  {if (build) $$=create_expr(e_expr, op_mul, $1, $3);}
+    |   Expr DIV Expr                                   {if (build) $$=create_expr(e_expr, op_div, $1, $3);}
+    |   Expr MOD Expr                                   {if (build) $$=create_expr(e_expr, op_mod, $1, $3);}
+    |   Expr OR Expr                                    {if (build) $$=create_expr(e_expr, op_or, $1, $3);}
+    |   Expr AND Expr                                   {if (build) $$=create_expr(e_expr, op_and, $1, $3);}
+    |   Expr LT Expr                                    {if (build) $$=create_expr(e_expr, op_lt, $1, $3);}
+    |   Expr GT Expr                                    {if (build) $$=create_expr(e_expr, op_gt, $1, $3);}
+    |   Expr EQ Expr                                    {if (build) $$=create_expr(e_expr, op_eq, $1, $3);}
+    |   Expr GE Expr                                    {if (build) $$=create_expr(e_expr, op_ge, $1, $3);}
+    |   Expr LE Expr                                    {if (build) $$=create_expr(e_expr, op_le, $1, $3);}
+    |   Expr NE Expr                                    {if (build) $$=create_expr(e_expr, op_ne, $1, $3);}
+    |   NOT Expr                                        {if (build) $$=create_expr(e_expr, op_not, $2, NULL);}
+    |   MINUS Expr                                      {if (build) $$=create_expr(e_expr, op_minus, $2, NULL);}
+    |   PLUS Expr                                       {if (build) $$=create_expr(e_expr, op_plus, $2, NULL);}
+    |   INTLIT                                          {if (build) $$=create_expr(e_int, nop, $1, NULL);}
+    |   REALLIT                                         {if (build) $$=create_expr(e_real, nop, $1, NULL);}
+    |   ID                                              {if (build) $$=create_expr(e_id, nop, $1, NULL);}
+    |   FuncInvocation                                  {if (build) $$=create_expr(e_func, nop, $1, NULL);}
+    |   LPAR Expr RPAR                                  {if (build) $$=$2;}
     |   LPAR error RPAR                                 {$$=NULL;}
 ;
 %%

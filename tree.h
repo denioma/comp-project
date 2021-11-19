@@ -24,7 +24,7 @@ stmt_dec* create_stmt_block(stmt_block* block);
 stmt_block* create_block(stmt_block* chain, stmt_dec* stmt);
 stmt_block* add_block_stmt(stmt_block* block, stmt_dec* stmt);
 expr* create_expr(e_type type, op operator, void* arg1, expr* arg2);
-f_invoc_opts* create_fi_opts(expr* first, f_invoc_opts* chain);
+f_invoc_opts* create_fi_opts(f_invoc_opts* chain, expr* expression);
 func_invoc* create_func_invocation(char* id, f_invoc_opts* opts);
 
 void print_ast(const prog_node* head);

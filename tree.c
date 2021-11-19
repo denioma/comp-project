@@ -256,7 +256,7 @@ stmt_dec* create_stmt_block(stmt_block* block) {
 stmt_block* add_block_stmt(stmt_block* block, stmt_dec* stmt) {
     stmt_block* new_block = (stmt_block*)malloc(sizeof(stmt_block));
     new_block->stmt = stmt;
-    new_block->stmt = NULL;
+    new_block->next = NULL;
     if (!block) return new_block;
     stmt_block* last = block;
     for (; last->next; last = last->next);
@@ -268,13 +268,13 @@ stmt_block* create_block(stmt_block* chain, stmt_dec* stmt) {
     stmt_block* block = (stmt_block*)malloc(sizeof(stmt_block));
     block->stmt = stmt;
     if (chain) block->next = chain;
-    else block->next = NULL;
+    else block->next = NULL;   
     return block;
 }
 
-f_invoc_opts* create_fi_opts(expr* first, f_invoc_opts* chain) {
+f_invoc_opts* create_fi_opts(f_invoc_opts* chain, expr* expression) {
     f_invoc_opts* fi_opts = (f_invoc_opts*)malloc(sizeof(f_invoc_opts));
-    fi_opts->opt = first;
+    fi_opts->opt = expression;
     fi_opts->next = chain;
     return fi_opts;
 }
@@ -390,7 +390,6 @@ void printer_if(const if_stmt* stmt) {
         printer_stmt(stmt->block2);
         spacing--;
     }
-    spacing--;
 }
 
 void printer_for(const for_stmt* node) {
@@ -404,7 +403,7 @@ void printer_for(const for_stmt* node) {
         printer_stmt(node->block);
         spacing--;
     }
-    spacing--;
+    // spacing--;
 }
 
 void printer_assign(const assign_stmt* stmt) {
@@ -443,7 +442,7 @@ void printer_stmt(const stmt_dec* stmt) {
         spacing++;
         space(NULL);
         if (stmt->dec.d_print->strlit)
-            printf("Strlit(%s)\n", stmt->dec.d_print->strlit);
+            printf("StrLit(%s)\n", stmt->dec.d_print->strlit);
         else printer_expr(stmt->dec.d_print->expression);
         spacing--;
         break;
