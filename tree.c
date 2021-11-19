@@ -233,6 +233,7 @@ stmt_dec* create_stmt_block(stmt_block* block) {
 
 stmt_dec* create_stmt_block_nullable(stmt_block* block) {
     if (!block) return NULL;
+    else if (!block->next) return block->stmt;
     return create_stmt_block(block);
 }
 
@@ -289,7 +290,8 @@ stmt_block* block_or_null(stmt_block* chain, stmt_dec* stmt) {
 f_invoc_opts* create_fi_opts(f_invoc_opts* chain, expr* expression) {
     f_invoc_opts* fi_opts = (f_invoc_opts*)malloc(sizeof(f_invoc_opts));
     fi_opts->opt = expression;
-    fi_opts->next = chain;
+    if (chain) fi_opts->next = chain;
+    else fi_opts->next = NULL;
     return fi_opts;
 }
 

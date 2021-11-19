@@ -31,21 +31,21 @@ Rodrigo Alexandre da Mota Machado
 ❌ FAILED testcases/meta2/errors.dgo
 ✅ PASSED testcases/meta2/expressionHard.dgo
 ✅ PASSED testcases/meta2/expressions.dgo
-❌ FAILED testcases/meta2/expressions_2.dgo
+✅ PASSED testcases/meta2/expressions_2.dgo
 ✅ PASSED testcases/meta2/factorial.dgo
-❌ FAILED testcases/meta2/funcParams.dgo
+✅ PASSED testcases/meta2/funcParams.dgo
 ✅ PASSED testcases/meta2/multiple_funcdecl_blocks.dgo
 ✅ PASSED testcases/meta2/precedence.dgo
 ✅ PASSED testcases/meta2/smallest.dgo
 ✅ PASSED testcases/meta2/stat_error.dgo
 ✅ PASSED testcases/meta2/stat_error2.dgo
-❌ FAILED testcases/meta2/statements.dgo
+✅ PASSED testcases/meta2/statements.dgo
 ❌ FAILED testcases/meta2/statements_ast.dgo
 ✅ PASSED testcases/meta2/sum.dgo
 ❌ FAILED testcases/meta2/syntax_errors_stmt.dgo
 ❌ FAILED testcases/meta2/testeErros.dgo
 ✅ PASSED testcases/meta2/varfuncdecl.dgo
-❌ FAILED testcases/meta2/variable_func_declarations.dgo
+✅ PASSED testcases/meta2/variable_func_declarations.dgo
 ```
 
 # Meta 1

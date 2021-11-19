@@ -109,7 +109,7 @@ Parameters:
 ;
 
 ParamOpts: 
-        ParamOpts COMMA ID Type                         {if (build) $$=create_param($3, $4, $1);}
+        COMMA ID Type ParamOpts                         {if (build) $$=create_param($2, $3, $4);}
     |   /* empty */                                     {$$=NULL;}
 ;
 
@@ -178,7 +178,7 @@ FuncInvocation:
 ;
 
 FuncInvocationOpts: 
-        Expr ExprReps                                   {if (build) $$=create_fi_opts(NULL, $1);}
+        Expr ExprReps                                   {if (build) $$=create_fi_opts($2, $1);}
     |   /* empty */                                     {$$=NULL;}
 ;
     
