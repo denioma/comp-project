@@ -82,7 +82,7 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 <BADSTR>\\				{temp++; fprintf(stdout, "Line %d, column %d: invalid escape sequence (\\)\n", yylineno, temp);}
 <BADSTR>\\[fnrt\\\"]	{temp += 2;}
 <BADSTR>\\.				{temp++; fprintf(stdout, "Line %d, column %d: invalid escape sequence (%s)\n", yylineno, temp++, yytext);}
-<BADSTR>\"				{col = temp + 1; temp = 1; BEGIN 0;}
+<BADSTR>\"				{col = temp + 2; temp = 1; BEGIN 0;}
 <BADSTR>{newline}		{fprintf(stdout, "Line %d, column %d: unterminated string literal\n", yylineno-1, col); col = 1; BEGIN 0;}
 <BADSTR><<EOF>>			{fprintf(stdout, "Line %d, column %d: unterminated string literal\n", yylineno, col); yyterminate();}
 <BADSTR>.				{++temp;}
