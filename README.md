@@ -17,7 +17,7 @@ Rodrigo Alexandre da Mota Machado
 
 # Meta 2
 
-## Current work - fix testing errors
+## Next step: 💀 Mooshak 💀
 
 ## Test Status
 
@@ -27,8 +27,8 @@ Rodrigo Alexandre da Mota Machado
 ✅ PASSED testcases/meta2/circle.dgo
 ✅ PASSED testcases/meta2/eof.dgo
 ✅ PASSED testcases/meta2/eof1.dgo
-❌ FAILED testcases/meta2/error_unbalanced_par.dgo
-❌ FAILED testcases/meta2/errors.dgo
+✅ PASSED testcases/meta2/error_unbalanced_par.dgo
+✅ PASSED testcases/meta2/errors.dgo
 ✅ PASSED testcases/meta2/expressionHard.dgo
 ✅ PASSED testcases/meta2/expressions.dgo
 ✅ PASSED testcases/meta2/expressions_2.dgo
@@ -40,10 +40,10 @@ Rodrigo Alexandre da Mota Machado
 ✅ PASSED testcases/meta2/stat_error.dgo
 ✅ PASSED testcases/meta2/stat_error2.dgo
 ✅ PASSED testcases/meta2/statements.dgo
-❌ FAILED testcases/meta2/statements_ast.dgo
+✅ PASSED testcases/meta2/statements_ast.dgo
 ✅ PASSED testcases/meta2/sum.dgo
-❌ FAILED testcases/meta2/syntax_errors_stmt.dgo
-❌ FAILED testcases/meta2/testeErros.dgo
+✅ PASSED testcases/meta2/syntax_errors_stmt.dgo
+✅ PASSED testcases/meta2/testeErros.dgo
 ✅ PASSED testcases/meta2/varfuncdecl.dgo
 ✅ PASSED testcases/meta2/variable_func_declarations.dgo
 ```
@@ -62,7 +62,7 @@ We did it gaymers!
   * illegal character
   * unterminated string literal
   * invalid escape sequence
-  * invalid octal constant 
+  * invalid octal constant
   * unterminated comment (occurs when a multi line comment isn't closed before EOF)
 * RESERVED tokens
 * Automatic `SEMICOLON` after `LIT`, `ID`, `RETURN`, `RPAR`, `RSQ` ou `RBRACE`
