@@ -131,8 +131,8 @@ VASOpts:
 Statement:
         ID ASSIGN Expr                                  {if (build) $$=create_assign($1, $3);}
     |   LBRACE Stmt RBRACE                              {if (build) $$=$2;}
-    |   IF Expr LBRACE ExplicitBlock RBRACE ElseStmt    {if (build) $$=create_if($2, create_stmt_block($4), create_stmt_block($6));}
-    |   FOR ExprOpt LBRACE ExplicitBlock RBRACE         {if (build) $$=create_for($2, create_stmt_block($4));}
+    |   IF Expr LBRACE ExplicitBlock RBRACE ElseStmt    {if (build) $$=create_if($2, $4, $6);}
+    |   FOR ExprOpt LBRACE ExplicitBlock RBRACE         {if (build) $$=create_for($2, $4);}
     |   RETURN ExprOpt                                  {if (build) $$=create_return($2);}
     |   FuncInvocation                                  {if (build) $$=create_call($1);}
     |   ParseArgs                                       {if (build) $$=$1;}
@@ -148,13 +148,13 @@ ExplicitBlock:
 
 Stmt:
         Statement SEMICOLON                             {if (build) $$=$1;}
-    |   StmtBlock                                       {if (build) $$=create_stmt_block($1);}
+    |   StmtBlock                                       {if (build) $$=create_stmt_block_nullable($1);}
     |   /* empty */                                     {$$=NULL;}
 ;
 
 StmtBlock: 
-        Statement SEMICOLON StmtBlock                   {if (build) $$=create_block($3, $1);}
-    |   Statement SEMICOLON Statement SEMICOLON         {if (build) $$=create_block(create_block(NULL, $3), $1);}
+        Statement SEMICOLON StmtBlock                   {if (build) $$=block_or_null($3, $1);}
+    |   Statement SEMICOLON Statement SEMICOLON         {if (build) $$=block_or_null(block_or_null(NULL, $3), $1);}
 ;
 
 ElseStmt: 

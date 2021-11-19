@@ -1,1 +1,1 @@
-./gocompiler.out -l < testcases/$1.dgo | diff testcases/$1.out - -y
+./gocompiler.out -t < testcases/$1.dgo | diff testcases/$1.out - -y

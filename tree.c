@@ -186,28 +186,6 @@ stmt_dec* create_assign(char* id, expr* expression) {
     return stmt;
 }
 
-stmt_dec* create_if(expr* condition, stmt_dec* block1, stmt_dec* block2) {
-    if_stmt* d_if = (if_stmt*)malloc(sizeof(if_stmt));
-    d_if->condition = condition;
-    d_if->block1 = block1;
-    d_if->block2 = block2;
-
-    stmt_dec* stmt = create_stmt(s_if);
-    stmt->dec.d_if = d_if;
-
-    return stmt;
-}
-
-stmt_dec* create_for(expr* expression, stmt_dec* block) {
-    for_stmt* d_for = (for_stmt*)malloc(sizeof(for_stmt));
-    d_for->condition = expression;
-    d_for->block = block;
-    stmt_dec* stmt = create_stmt(s_for);
-    stmt->dec.d_for = d_for;
-
-    return stmt;
-}
-
 stmt_dec* create_return(expr* expression) {
     stmt_dec* stmt = create_stmt(s_return);
     stmt->dec.d_expr = expression;
@@ -253,6 +231,34 @@ stmt_dec* create_stmt_block(stmt_block* block) {
     return stmt;
 }
 
+stmt_dec* create_stmt_block_nullable(stmt_block* block) {
+    if (!block) return NULL;
+    return create_stmt_block(block);
+}
+
+stmt_dec* create_for(expr* expression, stmt_block* block) {
+    for_stmt* d_for = (for_stmt*)malloc(sizeof(for_stmt));
+    d_for->condition = expression;
+    d_for->block = create_stmt_block(block);
+    stmt_dec* stmt = create_stmt(s_for);
+    stmt->dec.d_for = d_for;
+
+    return stmt;
+}
+
+stmt_dec* create_if(expr* condition, stmt_block* block1, stmt_block* block2) {
+    if_stmt* d_if = (if_stmt*)malloc(sizeof(if_stmt));
+
+    d_if->condition = condition;
+    d_if->block1 = create_stmt_block(block1);
+    d_if->block2 = create_stmt_block(block2);
+
+    stmt_dec* stmt = create_stmt(s_if);
+    stmt->dec.d_if = d_if;
+
+    return stmt;
+}
+
 stmt_block* add_block_stmt(stmt_block* block, stmt_dec* stmt) {
     stmt_block* new_block = (stmt_block*)malloc(sizeof(stmt_block));
     new_block->stmt = stmt;
@@ -270,6 +276,14 @@ stmt_block* create_block(stmt_block* chain, stmt_dec* stmt) {
     if (chain) block->next = chain;
     else block->next = NULL;   
     return block;
+}
+
+stmt_block* block_or_null(stmt_block* chain, stmt_dec* stmt) {
+    if (!stmt) {
+        if (chain) return chain;
+        else return NULL;
+    }
+    return create_block(chain, stmt);
 }
 
 f_invoc_opts* create_fi_opts(f_invoc_opts* chain, expr* expression) {
