@@ -210,4 +210,5 @@ Expr:
 %%
 void yyerror(const char* s) {
     printf("Line %d, column %d: %s: %s\n", yylineno, col, s, yytext);
+    build = 0;
 }

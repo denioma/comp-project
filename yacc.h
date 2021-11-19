@@ -2,7 +2,7 @@
 extern char* yytext;
 extern int yylineno;
 
-extern char lflag, tflag, semicolon;
+extern char lflag, tflag, semicolon, build;
 extern int col, line, temp;
 
 extern int yylex();
