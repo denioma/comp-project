@@ -32,7 +32,7 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 {integer}		{col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "INTLIT(%s)\n", yytext); else {yylval.token = strdup(yytext); return INTLIT;}}
 {real}			{col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "REALLIT(%s)\n", yytext); else {yylval.token = strdup(yytext); return REALLIT;}}
 {string}		{col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "STRLIT(%s)\n", yytext); else {yylval.token = strdup(yytext); return STRLIT;}}
-\"				{temp = col; semicolon = 0; BEGIN(STRLIT);}
+\"				{temp = col; semicolon = 0; BEGIN(BADSTR);}
 "//".*			{;}
 "/*"            {temp = col + 2; line = yylineno; BEGIN COMMENT;}
 ";"				{col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "SEMICOLON\n"); else return SEMICOLON;}
@@ -77,7 +77,7 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 {identifier}	{col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "ID(%s)\n", yytext); else {yylval.token = strdup(yytext); return ID;}}
 {whitespace}    {++col;}
 {newline}		{col = 1; if (semicolon) {semicolon = 0; if (lflag) fprintf(yyout, "SEMICOLON\n"); else return SEMICOLON;}}
-.				{fprintf(stdout, "Line %d, column %d: illegal character (%c)\n", yylineno, col++, *yytext);}
+.				{fprintf(stdout, "Line %d, column %d: illegal character (%c)\n", yylineno, col++, *yytext); semicolon = 0;}
 
 <BADSTR>\\				{temp++; fprintf(stdout, "Line %d, column %d: invalid escape sequence (\\)\n", yylineno, temp);}
 <BADSTR>\\[fnrt\\\"]	{temp += 2;}
