@@ -310,7 +310,7 @@ void space(const char* str) {
 }
 
 void printer_type(v_type type) {
-    const char* types[4] = { "Int\n", "Float32\n", "String\n", "Bool\n" };
+    const char* types[4] = { "Int\n", "Float32\n", "Bool\n", "String\n" };
     space(types[type]);
 }
 

@@ -44,7 +44,7 @@ Rodrigo Alexandre da Mota Machado
 ✅ PASSED testcases/meta2/sum.dgo
 ❌ FAILED testcases/meta2/syntax_errors_stmt.dgo
 ❌ FAILED testcases/meta2/testeErros.dgo
-❌ FAILED testcases/meta2/varfuncdecl.dgo
+✅ PASSED testcases/meta2/varfuncdecl.dgo
 ❌ FAILED testcases/meta2/variable_func_declarations.dgo
 ```
 
