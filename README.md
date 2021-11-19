@@ -17,15 +17,12 @@ Rodrigo Alexandre da Mota Machado
 
 # Meta 2
 
-## Missing
-
-* Stmt chain in StmtBlock
-* Expr chain in FuncInvationOpts
+## Current status - Testing
 
 ## Test Status
 
 ```
-❌ FAILED testcases/meta2/blocks.dgo
+✅ PASSED testcases/meta2/blocks.dgo
 ❌ FAILED testcases/meta2/braces.dgo
 ❌ FAILED testcases/meta2/circle.dgo
 ✅ PASSED testcases/meta2/eof.dgo
@@ -38,7 +35,7 @@ Rodrigo Alexandre da Mota Machado
 ❌ FAILED testcases/meta2/factorial.dgo
 ❌ FAILED testcases/meta2/funcParams.dgo
 ❌ FAILED testcases/meta2/multiple_funcdecl_blocks.dgo
-❌ FAILED testcases/meta2/precedence.dgo
+✅ PASSED testcases/meta2/precedence.dgo
 ✅ PASSED testcases/meta2/smallest.dgo
 ✅ PASSED testcases/meta2/stat_error.dgo
 ✅ PASSED testcases/meta2/stat_error2.dgo
