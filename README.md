@@ -1,5 +1,57 @@
 # comp-project
+
 Compilers' Project
+
+# Authors
+
+José Miguel Rocha Gonçalves
+
+Rodrigo Alexandre da Mota Machado
+
+
+# Index
+
+[Go To Meta 1](#meta-1)
+
+[Go To Meta 2](#meta-2)
+
+# Meta 2
+
+## Missing
+
+* Stmt chain in StmtBlock
+* Expr chain in FuncInvationOpts
+
+## Test Status
+
+```
+❌ FAILED testcases/meta2/blocks.dgo
+❌ FAILED testcases/meta2/braces.dgo
+❌ FAILED testcases/meta2/circle.dgo
+✅ PASSED testcases/meta2/eof.dgo
+✅ PASSED testcases/meta2/eof1.dgo
+❌ FAILED testcases/meta2/error_unbalanced_par.dgo
+❌ FAILED testcases/meta2/errors.dgo
+✅ PASSED testcases/meta2/expressionHard.dgo
+❌ FAILED testcases/meta2/expressions.dgo
+❌ FAILED testcases/meta2/expressions_2.dgo
+❌ FAILED testcases/meta2/factorial.dgo
+❌ FAILED testcases/meta2/funcParams.dgo
+❌ FAILED testcases/meta2/multiple_funcdecl_blocks.dgo
+❌ FAILED testcases/meta2/precedence.dgo
+✅ PASSED testcases/meta2/smallest.dgo
+✅ PASSED testcases/meta2/stat_error.dgo
+✅ PASSED testcases/meta2/stat_error2.dgo
+❌ FAILED testcases/meta2/statements.dgo
+❌ FAILED testcases/meta2/statements_ast.dgo
+❌ FAILED testcases/meta2/sum.dgo
+❌ FAILED testcases/meta2/syntax_errors_stmt.dgo
+❌ FAILED testcases/meta2/testeErros.dgo
+❌ FAILED testcases/meta2/varfuncdecl.dgo
+❌ FAILED testcases/meta2/variable_func_declarations.dgo
+```
+
+# Meta 1
 
 ## Mooshak
 
@@ -17,10 +69,6 @@ We did it gaymers!
   * unterminated comment (occurs when a multi line comment isn't closed before EOF)
 * RESERVED tokens
 * Automatic `SEMICOLON` after `LIT`, `ID`, `RETURN`, `RPAR`, `RSQ` ou `RBRACE`
-
-## Authors
-José Miguel Rocha Gonçalves
-Rodrigo Alexandre da Mota Machado
 
 ## Tests Status
 
