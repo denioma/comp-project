@@ -23,7 +23,6 @@ func main() {
         i = i - 1
     }
 
-    call(1, n-1)
 
 	return 0
 }
