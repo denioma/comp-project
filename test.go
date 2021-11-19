@@ -12,7 +12,18 @@ func main() {
         fmt.Println("Stmt 1");
         fmt.Println("Stmt 2");
         fmt.Println("Stmt 3");
-    }   
+    }
+    
+    for (i < 10) {
+        i = i + 1
+    }
+
+    for i < 10 {
+        i = i + 1
+        i = i - 1
+    }
+
+
 	return 0
 }
 

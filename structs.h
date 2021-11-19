@@ -49,7 +49,7 @@ typedef struct _if_stmt {
 } if_stmt;
 
 typedef struct _for_stmt {
-    expr* expression;
+    expr* condition;
     struct _stmt_dec* block;
 } for_stmt;
 
@@ -77,6 +77,7 @@ typedef struct _stmt_dec {
         print_stmt* d_print;
         assign_stmt* d_assign;
         if_stmt* d_if;
+        for_stmt* d_for;
         expr* d_expr;
         stmt_block* d_block;
         func_invoc* d_fi;

@@ -200,9 +200,10 @@ stmt_dec* create_if(expr* condition, stmt_dec* block1, stmt_dec* block2) {
 
 stmt_dec* create_for(expr* expression, stmt_dec* block) {
     for_stmt* d_for = (for_stmt*)malloc(sizeof(for_stmt));
-    d_for->expression = expression;
+    d_for->condition = expression;
     d_for->block = block;
     stmt_dec* stmt = create_stmt(s_for);
+    stmt->dec.d_for = d_for;
 
     return stmt;
 }
@@ -392,6 +393,20 @@ void printer_if(const if_stmt* stmt) {
     spacing--;
 }
 
+void printer_for(const for_stmt* node) {
+    if (!node) return;
+    space("For\n");
+    spacing++;
+    printer_expr(node->condition);
+    spacing--;
+    if (node->block) {
+        spacing++;
+        printer_stmt(node->block);
+        spacing--;
+    }
+    spacing--;
+}
+
 void printer_assign(const assign_stmt* stmt) {
     if (!stmt) return;
     space("Assign\n");
@@ -412,8 +427,7 @@ void printer_stmt(const stmt_dec* stmt) {
         printer_if(stmt->dec.d_if);
         break;
     case s_for:
-        space("For\n");
-        /* TODO Print For stmt */
+        printer_for(stmt->dec.d_for);        
         break;
     case s_return:
         space("Return\n");
