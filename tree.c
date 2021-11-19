@@ -157,7 +157,7 @@ stmt_dec* create_stmt(s_type type) {
 stmt_dec* create_pargs(char* id, expr* index) {
     parse_args* args = (parse_args*)malloc(sizeof(parse_args));
     args->id = id;
-    // args->index = index;
+    args->index = index;
     stmt_dec* stmt = create_stmt(s_parse);
     stmt->dec.d_args = args;
 
@@ -332,7 +332,7 @@ void printer_fi_opts(const f_invoc_opts* node) {
     printer_fi_opts(node->next);
 }
 
-void printer_fi(const func_invoc* node) {
+void printer_call(const func_invoc* node) {
     space("Call\n");
     spacing++;
     space(NULL);
@@ -375,7 +375,7 @@ void printer_expr(const expr* node) {
         printer_op(node);
         break;
     case e_func:
-        printer_fi(node->arg1.call);
+        printer_call(node->arg1.call);
         break;
     }
 }
@@ -430,6 +430,33 @@ void printer_assign(const assign_stmt* stmt) {
     spacing--;
 }
 
+void printer_parse(const parse_args* node) {
+    space("ParseArgs\n");
+    spacing++;
+    space(NULL);
+    printf("Id(%s)\n", node->id);
+    printer_expr(node->index);
+    spacing--;
+}
+
+void printer_return(const stmt_dec* stmt) {
+    space("Return\n");
+    spacing++;
+    if (stmt->dec.d_expr) printer_expr(stmt->dec.d_expr);
+    spacing--;
+}
+
+void printer_print(const print_stmt* node) {
+    space("Print\n");
+    spacing++;
+    if (node->strlit) {
+        space(NULL);
+        printf("StrLit(%s)\n", node->strlit);
+    }
+    else printer_expr(node->expression);
+    spacing--;
+}
+
 void printer_stmt(const stmt_dec* stmt) {
     if (!stmt) return;
     switch (stmt->type) {
@@ -443,29 +470,16 @@ void printer_stmt(const stmt_dec* stmt) {
         printer_for(stmt->dec.d_for);        
         break;
     case s_return:
-        space("Return\n");
-        spacing++;
-        if (stmt->dec.d_expr) printer_expr(stmt->dec.d_expr);
-        spacing--;
+        printer_return(stmt);
         break;
     case s_call:
-        printer_fi(stmt->dec.d_fi);
+        printer_call(stmt->dec.d_fi);
         break;
     case s_print:
-        space("Print\n");
-        spacing++;
-        space(NULL);
-        if (stmt->dec.d_print->strlit)
-            printf("StrLit(%s)\n", stmt->dec.d_print->strlit);
-        else printer_expr(stmt->dec.d_print->expression);
-        spacing--;
+        printer_print(stmt->dec.d_print);
         break;
     case s_parse:
-        space("ParseArgs\n");
-        spacing++;
-        space(NULL);
-        printf("Id(%s)\n", stmt->dec.d_args->id);
-        spacing--;
+        printer_parse(stmt->dec.d_args);
         break;
     case s_block:
         space("Block\n");

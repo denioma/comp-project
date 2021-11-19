@@ -39,7 +39,7 @@ typedef struct _print_stmt {
 
 typedef struct _parse_args {
     char* id;
-    int index;
+    expr* index;
 } parse_args;
 
 typedef struct _if_stmt {
