@@ -17,7 +17,7 @@ Rodrigo Alexandre da Mota Machado
 
 # Meta 2
 
-## Next step: 💀 Mooshak 💀
+## Next step: Meta 3
 
 ## Test Status
 
