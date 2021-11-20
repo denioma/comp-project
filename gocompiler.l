@@ -89,7 +89,7 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 
 <COMMENT>"*/"       {col = temp + 2; temp = 1; BEGIN 0;}
 <COMMENT>.          {++temp;}
-<COMMENT>\n         {temp = 1;}
+<COMMENT>\n         {temp = 1; if(semicolon) {semicolon = 0; if (lflag) fprintf(yyout, "SEMICOLON\n"); else return SEMICOLON;}}
 <COMMENT><<EOF>>	{yline = yylineno; ycol = col; if (semicolon) {semicolon = 0; if (lflag) fprintf(yyout, "SEMICOLON\n"); else return SEMICOLON;}
 					 printf("Line %d, column %d: unterminated comment\n", line, col); yyterminate();}
 
