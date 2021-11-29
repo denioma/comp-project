@@ -1,10 +1,17 @@
 #pragma once
+#include "symtab.h"
+
+typedef struct _token {
+    char* value;
+    int line;
+    int col; 
+} token;
 
 typedef enum { v_int, v_float, v_bool, v_string, v_void } v_type;
 
 typedef struct {
     v_type typespec;
-    char* id;
+    token* tkn;
 } var_dec;
 
 typedef enum {
@@ -19,8 +26,8 @@ typedef enum { e_int, e_real, e_expr, e_func, e_id } e_type;
 typedef struct _expr {
     e_type type;
     op operator;
+    token* tkn;
     union {
-        char* token;
         struct _expr* exp_1;
         struct _func_invoc* call;
     } arg1;
@@ -28,7 +35,7 @@ typedef struct _expr {
 } expr;
 
 typedef struct _assign_stmt {
-    char* id;
+    token* tkn;
     expr* expression;
 } assign_stmt;
 
@@ -38,7 +45,7 @@ typedef struct _print_stmt {
 } print_stmt;
 
 typedef struct _parse_args {
-    char* id;
+    token* tkn;
     expr* index;
 } parse_args;
 
@@ -66,7 +73,7 @@ typedef struct _f_invoc_opts {
 } f_invoc_opts;
 
 typedef struct _func_invoc {
-    char* id;
+    token* tkn;
     f_invoc_opts* opts;
 } func_invoc;
 
@@ -98,13 +105,13 @@ typedef struct _func_body {
 // function parameter declaration node
 typedef struct _param_dec {
     v_type typespec;
-    char* id;
+    token* tkn;
     struct _param_dec* next;
 } param_dec;
 
 // function header node
 typedef struct _func_header {
-    char* id;
+    token* tkn;
     v_type typespec;
     param_dec* param;
 } func_header;

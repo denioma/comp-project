@@ -1,8 +1,17 @@
 #include "structs.h"
 #include <stdlib.h>
+#include <string.h>
 
 // Only useful for debug printing, remove later!
 #include <stdio.h> 
+
+token* create_tkn(char* value, int line, int col) {
+    token* tkn = (token*)malloc(sizeof(token));
+    tkn->value = strdup(value);
+    tkn->col = col;
+    tkn->line = line;
+    return tkn;
+}
 
 prog_node* new_prog(dec_node* declarations) {
     prog_node* pn = (prog_node*)malloc(sizeof(prog_node));
@@ -43,16 +52,16 @@ dec_node* insert_var_dec(dec_node* head, var_dec* var) {
     return head;
 }
 
-var_dec* create_var(char* id, const v_type typespec) {
+var_dec* create_var(token* tkn, const v_type typespec) {
     var_dec* var = (var_dec*)malloc(sizeof(var_dec));
     var->typespec = typespec;
-    var->id = id;
-
+    var->tkn = tkn;
+    
     return var;
 }
 
-dec_node* set_id_reps_head(dec_node* head, char* id, v_type typespec) {
-    var_dec* var = create_var(id, typespec);
+dec_node* set_id_reps_head(dec_node* head, token* tkn, v_type typespec) {
+    var_dec* var = create_var(tkn, typespec);
     dec_node* n_head = insert_var_dec(NULL, var);
 
     for (dec_node* tmp = head; tmp; tmp = tmp->next) {
@@ -60,13 +69,15 @@ dec_node* set_id_reps_head(dec_node* head, char* id, v_type typespec) {
     }
 
     n_head->next = head;
+    ;
     return n_head;
 }
 
-dec_node* save_id_reps(dec_node* head, char* id) {
+dec_node* save_id_reps(dec_node* head, token* tkn) {
     var_dec* var = (var_dec*)malloc(sizeof(var_dec));
-    var->id = id;
+    var->tkn = tkn;
     head = insert_var_dec(head, var);
+    
     return head;
 }
 
@@ -121,28 +132,29 @@ func_body* insert_to_body(func_body* node, func_body* chain) {
     return chain;
 }
 
-param_dec* create_param(char* id, v_type typespec, param_dec* chain) {
+param_dec* create_param(token* tkn, v_type typespec, param_dec* chain) {
     param_dec* param = (param_dec*)malloc(sizeof(param_dec));
-    param->id = id;
+    param->tkn = tkn;
     param->typespec = typespec;
     if (chain) param->next = chain;
     else param->next = NULL;
-
+    
     return param;
 }
 
-func_header* create_func_header(char* id, v_type typespec, param_dec* param_list) {
+func_header* create_func_header(token* tkn, v_type typespec, param_dec* param_list) {
     func_header* header = (func_header*)malloc(sizeof(func_header));
-    header->id = id;
+    header->tkn = tkn;
     header->typespec = typespec;
     header->param = NULL;
     if (param_list) header->param = param_list;
+    
     return header;
 }
 
-func_dec* create_func(char* id, v_type typespec, param_dec* param_list, func_body* body) {
+func_dec* create_func(token* tkn, v_type typespec, param_dec* param_list, func_body* body) {
     func_dec* func = (func_dec*)malloc(sizeof(func_dec));
-    func->f_header = create_func_header(id, typespec, param_list);
+    func->f_header = create_func_header(tkn, typespec, param_list);
     func->f_body = body;
     return func;
 }
@@ -154,35 +166,36 @@ stmt_dec* create_stmt(s_type type) {
     return stmt;
 }
 
-stmt_dec* create_pargs(char* id, expr* index) {
+stmt_dec* create_pargs(token* tkn, expr* index) {
     parse_args* args = (parse_args*)malloc(sizeof(parse_args));
-    args->id = id;
+    args->tkn = tkn;
     args->index = index;
     stmt_dec* stmt = create_stmt(s_parse);
     stmt->dec.d_args = args;
-
+    
     return stmt;
 }
 
-stmt_dec* create_print(char* strlit, expr* expression) {
+stmt_dec* create_print(token* tkn, expr* expression) {
     print_stmt* print = (print_stmt*)malloc(sizeof(print_stmt));
-    print->strlit = strlit;
+    if (tkn) print->strlit = tkn->value;
+    else print->strlit = NULL;
     print->expression = expression;
 
     stmt_dec* stmt = create_stmt(s_print);
     stmt->dec.d_print = print;
-
+    
     return stmt;
 }
 
-stmt_dec* create_assign(char* id, expr* expression) {
+stmt_dec* create_assign(token* tkn, expr* expression) {
     assign_stmt* assign = (assign_stmt*)malloc(sizeof(assign_stmt));
-    assign->id = id;
+    assign->tkn = tkn;
     assign->expression = expression;
 
     stmt_dec* stmt = create_stmt(s_assign);
     stmt->dec.d_assign = assign;
-
+    
     return stmt;
 }
 
@@ -199,9 +212,10 @@ stmt_dec* create_call(func_invoc* call) {
     return stmt;
 }
 
-expr* create_expr(e_type type, op operator, void* arg1, expr* arg2) {
+expr* create_expr(e_type type, op operator, token* tkn, void* arg1, expr* arg2) {
     expr* expression = (expr*)malloc(sizeof(expr));
     expression->type = type;
+    expression->tkn = tkn;
     expression->operator = operator;
     expression->arg2 = arg2;
 
@@ -217,7 +231,7 @@ expr* create_expr(e_type type, op operator, void* arg1, expr* arg2) {
     case e_real:
     case e_id:
         expression->operator = nop;
-        expression->arg1.token = (char*)arg1;
+        expression->tkn = (token*)arg1;
         break;
     }
     return expression;
@@ -295,23 +309,24 @@ f_invoc_opts* create_fi_opts(f_invoc_opts* chain, expr* expression) {
     return fi_opts;
 }
 
-func_invoc* create_func_invocation(char* id, f_invoc_opts* opts) {
+func_invoc* create_func_invocation(token* tkn, f_invoc_opts* opts) {
     func_invoc* fi = (func_invoc*)malloc(sizeof(func_invoc));
-    fi->id = id;
+    fi->tkn = tkn;
     fi->opts = opts;
+    
     return fi;
 }
 
 void destroy_params(param_dec* node) {
     if (!node) return;
     if (node->next) destroy_params(node->next);
-    free(node->id);
+    free(node->tkn);
     free(node);
 }
 
 void destroy_func(func_dec* node) {
     if (!node) return;
-    free(node->f_header->id);
+    free(node->f_header->tkn);
     destroy_params(node->f_header->param);
 }
 
@@ -353,7 +368,7 @@ void printer_var(const var_dec* node) {
     spacing++;
     printer_type(node->typespec);
     space(NULL);
-    printf("Id(%s)\n", node->id);
+    printf("Id(%s)\n", node->tkn->value);
     spacing--;
 }
 
@@ -369,7 +384,7 @@ void printer_call(const func_invoc* node) {
     space("Call\n");
     spacing++;
     space(NULL);
-    printf("Id(%s)\n", node->id);
+    printf("Id(%s)\n", node->tkn->value);
     printer_fi_opts(node->opts);
     spacing--;
 }
@@ -394,15 +409,15 @@ void printer_expr(const expr* node) {
     switch (node->type) {
     case e_int:
         space(NULL);
-        printf("IntLit(%s)\n", node->arg1.token);
+        printf("IntLit(%s)\n", node->tkn->value);
         break;
     case e_real:
         space(NULL);
-        printf("RealLit(%s)\n", node->arg1.token);
+        printf("RealLit(%s)\n", node->tkn->value);
         break;
     case e_id:
         space(NULL);
-        printf("Id(%s)\n", node->arg1.token);
+        printf("Id(%s)\n", node->tkn->value);
         break;
     case e_expr:
         printer_op(node);
@@ -458,7 +473,7 @@ void printer_assign(const assign_stmt* stmt) {
     space("Assign\n");
     spacing++;
     space(NULL);
-    printf("Id(%s)\n", stmt->id);
+    printf("Id(%s)\n", stmt->tkn->value);
     printer_expr(stmt->expression);
     spacing--;
 }
@@ -467,7 +482,7 @@ void printer_parse(const parse_args* node) {
     space("ParseArgs\n");
     spacing++;
     space(NULL);
-    printf("Id(%s)\n", node->id);
+    printf("Id(%s)\n", node->tkn->value);
     printer_expr(node->index);
     spacing--;
 }
@@ -553,7 +568,7 @@ void printer_func(const func_dec* node) {
     space("FuncHeader\n");
     spacing++;
     space(NULL);
-    printf("Id(%s)\n", header->id);
+    printf("Id(%s)\n", header->tkn->value);
     if (header->typespec != v_void) printer_type(header->typespec);
     space("FuncParams\n");
     if (param) {
@@ -563,7 +578,7 @@ void printer_func(const func_dec* node) {
             spacing++;
             printer_type(param->typespec);
             space(NULL);
-            printf("Id(%s)\n", param->id);
+            printf("Id(%s)\n", param->tkn->value);
             param = param->next;
             spacing--;
         }

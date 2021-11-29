@@ -9,6 +9,7 @@
     prog_node* program;
 %}
 %union{
+    token* tkn;
     char* token;
     dec_node* decl;
     var_dec* var;
@@ -24,15 +25,9 @@
     f_invoc_opts* fi_opts;
 }
 
-%token <token> STRLIT ID INTLIT REALLIT
+%token <tkn> STRLIT ID INTLIT REALLIT
+%token <tkn> PLUS MINUS STAR DIV MOD EQ GE GT LE LT NE NOT AND OR LPAR RPAR LBRACE RBRACE LSQ RSQ PACKAGE RETURN PRINT PARSEINT FUNC CMDARGS IF ELSE FOR INT FLOAT32 BOOL STRING
 %token SEMICOLON COMMA BLANKID ASSIGN VAR
-%token PLUS MINUS STAR DIV MOD
-%token EQ GE GT LE LT NE 
-%token NOT AND OR
-%token LPAR RPAR LBRACE RBRACE LSQ RSQ
-%token PACKAGE RETURN PRINT PARSEINT FUNC CMDARGS
-%token IF ELSE FOR 
-%token INT FLOAT32 BOOL STRING
 %token RESERVED
 
 %type <prog> Program
@@ -187,26 +182,26 @@ ExprReps:
 ;
 
 Expr:
-        Expr OR Expr                                    {if (build) $$=create_expr(e_expr, op_or, $1, $3);}
-    |   Expr AND Expr                                   {if (build) $$=create_expr(e_expr, op_and, $1, $3);}
-    |   Expr EQ Expr                                    {if (build) $$=create_expr(e_expr, op_eq, $1, $3);}
-    |   Expr NE Expr                                    {if (build) $$=create_expr(e_expr, op_ne, $1, $3);}
-    |   Expr LT Expr                                    {if (build) $$=create_expr(e_expr, op_lt, $1, $3);}
-    |   Expr GT Expr                                    {if (build) $$=create_expr(e_expr, op_gt, $1, $3);}
-    |   Expr GE Expr                                    {if (build) $$=create_expr(e_expr, op_ge, $1, $3);}
-    |   Expr LE Expr                                    {if (build) $$=create_expr(e_expr, op_le, $1, $3);}
-    |   Expr PLUS Expr                                  {if (build) $$=create_expr(e_expr, op_add, $1, $3);}
-    |   Expr MINUS Expr                                 {if (build) $$=create_expr(e_expr, op_sub, $1, $3);}
-    |   Expr STAR Expr                                  {if (build) $$=create_expr(e_expr, op_mul, $1, $3);}
-    |   Expr DIV Expr                                   {if (build) $$=create_expr(e_expr, op_div, $1, $3);}
-    |   Expr MOD Expr                                   {if (build) $$=create_expr(e_expr, op_mod, $1, $3);}
-    |   NOT Expr                                        {if (build) $$=create_expr(e_expr, op_not, $2, NULL);}
-    |   MINUS Expr %prec UNARY                          {if (build) $$=create_expr(e_expr, op_minus, $2, NULL);}
-    |   PLUS Expr  %prec UNARY                          {if (build) $$=create_expr(e_expr, op_plus, $2, NULL);}
-    |   INTLIT                                          {if (build) $$=create_expr(e_int, nop, $1, NULL);}
-    |   REALLIT                                         {if (build) $$=create_expr(e_real, nop, $1, NULL);}
-    |   ID                                              {if (build) $$=create_expr(e_id, nop, $1, NULL);}
-    |   FuncInvocation                                  {if (build) $$=create_expr(e_func, nop, $1, NULL);}
+        Expr OR Expr                                    {if (build) $$=create_expr(e_expr, op_or, $2, $1, $3);}
+    |   Expr AND Expr                                   {if (build) $$=create_expr(e_expr, op_and, $2, $1, $3);}
+    |   Expr EQ Expr                                    {if (build) $$=create_expr(e_expr, op_eq, $2, $1, $3);}
+    |   Expr NE Expr                                    {if (build) $$=create_expr(e_expr, op_ne, $2, $1, $3);}
+    |   Expr LT Expr                                    {if (build) $$=create_expr(e_expr, op_lt, $2, $1, $3);}
+    |   Expr GT Expr                                    {if (build) $$=create_expr(e_expr, op_gt, $2, $1, $3);}
+    |   Expr GE Expr                                    {if (build) $$=create_expr(e_expr, op_ge, $2, $1, $3);}
+    |   Expr LE Expr                                    {if (build) $$=create_expr(e_expr, op_le, $2, $1, $3);}
+    |   Expr PLUS Expr                                  {if (build) $$=create_expr(e_expr, op_add, $2, $1, $3);}
+    |   Expr MINUS Expr                                 {if (build) $$=create_expr(e_expr, op_sub, $2, $1, $3);}
+    |   Expr STAR Expr                                  {if (build) $$=create_expr(e_expr, op_mul, $2, $1, $3);}
+    |   Expr DIV Expr                                   {if (build) $$=create_expr(e_expr, op_div, $2, $1, $3);}
+    |   Expr MOD Expr                                   {if (build) $$=create_expr(e_expr, op_mod, $2, $1, $3);}
+    |   NOT Expr                                        {if (build) $$=create_expr(e_expr, op_not, NULL, $2, NULL);}
+    |   MINUS Expr %prec UNARY                          {if (build) $$=create_expr(e_expr, op_minus, NULL, $2, NULL);}
+    |   PLUS Expr  %prec UNARY                          {if (build) $$=create_expr(e_expr, op_plus, NULL, $2, NULL);}
+    |   INTLIT                                          {if (build) $$=create_expr(e_int, nop, NULL, $1, NULL);}
+    |   REALLIT                                         {if (build) $$=create_expr(e_real, nop, NULL, $1, NULL);}
+    |   ID                                              {if (build) $$=create_expr(e_id, nop, NULL, $1, NULL);}
+    |   FuncInvocation                                  {if (build) $$=create_expr(e_func, nop, NULL, $1, NULL);}
     |   LPAR Expr RPAR                                  {if (build) $$=$2;}
     |   LPAR error RPAR                                 {$$=NULL;}
 ;
