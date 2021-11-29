@@ -1,11 +1,15 @@
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
 
-typedef enum {int, float32, }
+typedef enum { t_int, t_float32, t_bool, t_string } type;
 
 typedef struct _symtab {
     char* id;
+    type type;
+} symtab;
 
-}
+symtab* insert_el(symtab* tab, char* id, type type);
+symtab* search_el(symtab* tab, char* id);
+void show_table(symtab* tab);
 
 #endif
