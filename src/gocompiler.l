@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
 		yyparse();
 		if (tflag && build) print_ast(program);
 		else if (sflag); // TODO call semantic checking
-		destroy(program);
+		/* destroy(program); */
 	}
 	return 0;
 }
