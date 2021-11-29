@@ -1,17 +1,21 @@
-lex = gocompiler.l
-yacc = gocompiler.y
-src = lex.yy.c y.tab.c tree.c
-out = gocompiler.out
+lex = src/gocompiler.l
+yacc = src/gocompiler.y
+src = src/lex.yy.c src/y.tab.c src/tree.c
+out = gocompiler
 
 $(out): $(src) 
 	clang-7 -g $^ -o $@
 
-lex.yy.c: $(lex)
-	flex $^
+src/lex.yy.c: $(lex)
+	flex -o $@ $^
 
-y.tab.c: $(yacc)
-	yacc -d $^
+src/y.tab.c: $(yacc)
+	yacc -o $@ -d $^
+
+###################################################
+
+temp = src/lex.yy.c src/y.tab.c src/y.tab.h
 
 .PHONY: clean
 clean:
-	rm -rf lex.yy.c y.tab.c y.tab.h
+	rm -rf $(temp)
