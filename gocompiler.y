@@ -59,7 +59,7 @@
 %%
 
 Program: 
-        PACKAGE ID SEMICOLON Declarations               {if (build) $$=program=new_prog($4);} 
+        PACKAGE ID SEMICOLON Declarations               {free($2); if (build) $$=program=new_prog($4);} 
 ;
 
 Declarations:
@@ -153,7 +153,7 @@ Stmt:
 
 StmtBlock: 
         Statement SEMICOLON StmtBlock                   {if (build) $$=block_or_null($3, $1);}
-    |   Statement SEMICOLON Statement SEMICOLON         {if (build) $$=block_or_null(block_or_null(NULL, $3), $1);}
+    |   Statement SEMICOLON Statement SEMICOLON         {stmt_block* debug; if (build) $$=block_or_null(debug = block_or_null(NULL, $3), $1);}
 ;
 
 ElseStmt: 

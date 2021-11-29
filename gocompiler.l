@@ -6,7 +6,8 @@
 	#include "y.tab.h"
 	#include <string.h>
 
-	char lflag = 0, tflag = 0, semicolon = 0, build = 1;
+	char lflag = 0, tflag = 0, sflag = 0;
+	char semicolon = 0, build = 1;
 	int col = 1, line = 1, temp = 0, ycol = 1, yline = 1;
 	prog_node* program;
 %}
@@ -89,7 +90,7 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 
 <COMMENT>"*/"       {col = temp + 2; temp = 1; BEGIN 0;}
 <COMMENT>.          {++temp;}
-<COMMENT>\n         {temp = 1; if(semicolon) {semicolon = 0; if (lflag) fprintf(yyout, "SEMICOLON\n"); else return SEMICOLON;}}
+<COMMENT>\n         {yline = yylineno; ycol = col; temp = 1; if(semicolon) {semicolon = 0; if (lflag) fprintf(yyout, "SEMICOLON\n"); else return SEMICOLON;}}
 <COMMENT><<EOF>>	{yline = yylineno; ycol = col; if (semicolon) {semicolon = 0; if (lflag) fprintf(yyout, "SEMICOLON\n"); else return SEMICOLON;}
 					 printf("Line %d, column %d: unterminated comment\n", line, col); yyterminate();}
 
@@ -99,11 +100,19 @@ int main(int argc, char** argv) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(*(argv+i), "-l") == 0) lflag = 1;
 		if (strcmp(*(argv+i), "-t") == 0) tflag = 1;
+		if (strcmp(*(argv+i), "-s") == 0) sflag = 1;
     }
+
+	if (lflag) {
+		tflag = 0; sflag = 0;
+	} else if (lflag) sflag = 0;
+	
 	if (lflag) yylex();
 	else {
 		yyparse();
 		if (tflag && build) print_ast(program);
+		else if (sflag); // TODO call semantic checking
+		destroy(program);
 	}
 	return 0;
 }

@@ -60,8 +60,7 @@ dec_node* set_id_reps_head(dec_node* head, char* id, v_type typespec) {
     }
 
     n_head->next = head;
-    head = n_head;
-    return head;
+    return n_head;
 }
 
 dec_node* save_id_reps(dec_node* head, char* id) {
@@ -136,6 +135,7 @@ func_header* create_func_header(char* id, v_type typespec, param_dec* param_list
     func_header* header = (func_header*)malloc(sizeof(func_header));
     header->id = id;
     header->typespec = typespec;
+    header->param = NULL;
     if (param_list) header->param = param_list;
     return header;
 }
@@ -300,6 +300,37 @@ func_invoc* create_func_invocation(char* id, f_invoc_opts* opts) {
     fi->id = id;
     fi->opts = opts;
     return fi;
+}
+
+void destroy_params(param_dec* node) {
+    if (!node) return;
+    if (node->next) destroy_params(node->next);
+    free(node->id);
+    free(node);
+}
+
+void destroy_func(func_dec* node) {
+    if (!node) return;
+    free(node->f_header->id);
+    destroy_params(node->f_header->param);
+}
+
+void destroy_dec(dec_node* node) {
+    if (!node) return;
+    if (node->next) destroy_dec(node->next);
+    switch (node->type) {
+    case d_func:
+        destroy_func(node->dec.func);
+    case d_var:
+        break;
+    }
+}
+
+void destroy(prog_node* program) {
+    if (program->dlist) {
+        destroy_dec(program->dlist);
+        // free(program);
+    }
 }
 
 /* ------ Pretty printers ------ */

@@ -1,2 +1,5 @@
-package main /* sdad
-test */ func empty() {}
+package main 
+
+func test() {
+    {{};a=1;{};}
+}

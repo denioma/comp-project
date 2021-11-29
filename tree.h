@@ -30,4 +30,4 @@ f_invoc_opts* create_fi_opts(f_invoc_opts* chain, expr* expression);
 func_invoc* create_func_invocation(char* id, f_invoc_opts* opts);
 
 void print_ast(const prog_node* head);
-void printer_block(const stmt_block* block);
+void destroy(prog_node* program);
