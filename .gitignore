@@ -47,4 +47,4 @@ gocompiler
 .vscode
 
 # Allow testcases output
-!testcases/**/*.out
+!**/*.out

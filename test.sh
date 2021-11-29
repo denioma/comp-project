@@ -14,7 +14,7 @@ fi
 
 for input in $path/*.dgo; do
     filename=`echo $input | cut -d "." -f1`
-    out=$(./gocompiler.out $flag < $filename.dgo | diff $filename.out -)
+    out=$(./gocompiler $flag < $filename.dgo | diff $filename.out -)
     if [ $? -eq 0 ]; then
         echo "✅ PASSED $filename.dgo"
     else
