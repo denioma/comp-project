@@ -8,4 +8,8 @@ typedef struct _symtab {
     type type;
 } symtab;
 
+symtab* insert_el(symtab* tab, char* id, type type);
+symtab* search_el(symtab* tab, char* id);
+void show_table(symtab* tab);
+
 #endif
