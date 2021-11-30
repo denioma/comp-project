@@ -24,7 +24,7 @@ t_type convert_v_type(v_type type) {
 }
 
 int check_bool_var(symtab** tab, var_dec* var) {
-    if (insert_el(tab, var->tkn->value, t_bool, 0, 0, 0))
+    if (insert_el(tab, var->tkn->value, t_bool, 0, 0, 0, 0))
         return 0;
 
     printf("Line %d, col %d: Symbol %s already defined\n",
@@ -33,7 +33,7 @@ int check_bool_var(symtab** tab, var_dec* var) {
 }
 
 int check_float_var(symtab** tab, var_dec* var) {
-    if (insert_el(tab, var->tkn->value, t_float32, 0, 0, 0))
+    if (insert_el(tab, var->tkn->value, t_float32, 0, 0, 0, 0))
         return 0;
 
     printf("Line %d, col: %d: Symbol %s already defined\n",
@@ -42,7 +42,7 @@ int check_float_var(symtab** tab, var_dec* var) {
 }
 
 int check_int_var(symtab** tab, var_dec* var) {
-    if (insert_el(tab, var->tkn->value, t_int, 0, 0, 0))
+    if (insert_el(tab, var->tkn->value, t_int, 0, 0, 0, 0))
         return 0;
 
     printf("Line %d, col %d: Symbol %s already defined\n",
@@ -51,7 +51,7 @@ int check_int_var(symtab** tab, var_dec* var) {
 }
 
 int check_string_var(symtab** tab, var_dec* var) {
-    if (insert_el(tab, var->tkn->value, t_string, 0, 0, 0))
+    if (insert_el(tab, var->tkn->value, t_string, 0, 0, 0, 0))
         return 0;
 
     printf("Line %d, col %d: Symbol %s already defined\n",
@@ -76,11 +76,28 @@ int check_var(symtab** tab, var_dec* var) {
     }
 }
 
-f_params* check_params(param_dec* params) {
+int check_func_body(symtab** functab, func_body* body) {
+    if (!body) return 0;
+    int error = 0;
+    func_body* aux = body;
+    for (; aux; aux = aux->next) {
+        switch(aux->type) {
+        case b_var:
+            error = check_var(functab, aux->dec.var);
+            break;
+        case b_stmt:
+            break;
+        }
+    }
+    return error;
+}
+
+f_params* check_params(symtab** funtab, param_dec* params) {
     if (!params) return NULL;
     f_params* fparams = (f_params*)malloc(sizeof(f_params));
     fparams->type = convert_v_type(params->typespec);
     fparams->next = NULL;
+    insert_el(funtab, params->tkn->value, fparams->type, 0, 0, 1, 0);
 
     f_params* faux = fparams;
     param_dec* aux = params->next;
@@ -89,22 +106,27 @@ f_params* check_params(param_dec* params) {
         faux = faux->next;
         faux->type = convert_v_type(aux->typespec);
         faux->next = NULL;
+        insert_el(funtab, aux->tkn->value, faux->type, 0, 0, 1, 0);
     }
 
     return fparams;
 }
 
 int check_func(symtab** tab, func_dec* func) {
+    int error = 0;
+    symtab** localtab = &func->localsym;
     char* id = func->f_header->tkn->value;
     t_type type = convert_v_type(func->f_header->typespec);
-    f_params* params = check_params(func->f_header->param);
-    if (insert_el(tab, id, type, 1, params, 0))
-        return 0;
-
+    insert_el(localtab, 0, type, 0, 0, 0, 1);
+    f_params* params = check_params(localtab, func->f_header->param);
+    error = check_func_body(localtab, func->f_body);
+    if (insert_el(tab, id, type, 1, params, 0, 0))
+        return error;
+    else error += 1;
     token* tkn = func->f_header->tkn;
     printf("Line %d, col %d: Symbol %s already defined\n",
         tkn->line, tkn->col, tkn->value);
-    return 1;
+    return error;
 }
 
 int semantic_check(symtab** tab, prog_node* program) {

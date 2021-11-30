@@ -4,23 +4,24 @@
 #include "symtab.h"
 
 // insert a new symbol in symbol table if it is not there yet
-symtab* insert_el(symtab** tab, char* id, t_type type, char is_func, f_params* params, char is_param) {
+symtab* insert_el(symtab** tab, char* id, t_type type, char is_func, f_params* params, char is_param, char is_return) {
     // alocate space for new symbol
     symtab* newSym = (symtab*)malloc(sizeof(symtab));
     symtab* aux;
     symtab* prev;
     // populate symbol fields
-    newSym->next = 0;
-    newSym->id = strdup(id);
+    if (id) newSym->id = strdup(id);
+    else newSym->id = NULL;
     newSym->type = type;
     newSym->is_func = is_func;
-    if (is_func) {
-        newSym->params = params;
-    }
+    newSym->params = params;
     newSym->is_param = is_param;
+    newSym->is_return = is_return;
+    newSym->next = NULL;
+    
     if (*tab) {
         for (aux = *tab; aux; aux = aux->next) {
-            if (strcmp(aux->id, id) == 0) {
+            if (!aux->is_return && strcmp(aux->id, id) == 0) {
                 // if the symbol was already declared in tab, free space
                 free(newSym->id);
                 if (is_func) {} //invoque destroy f_params function;
@@ -86,12 +87,19 @@ void show_table(symtab* tab) {
     if (!tab) return;
 
     for (symtab* aux = tab; aux; aux = aux->next) {
+        if (aux->is_return) {
+            printf("return\t\t");
+            print_sym_type(aux->type);
+            printf("\n");
+            continue;
+        }
         printf("%s\t", aux->id);
         if (aux->is_func) {
             print_params(aux->params);
         }
         printf("\t");
         print_sym_type(aux->type);
+        if (aux->is_param) printf("\tparam");
         printf("\n");
     }
 }
