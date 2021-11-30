@@ -1,6 +1,6 @@
 lex = src/gocompiler.l
 yacc = src/gocompiler.y
-src = src/lex.yy.c src/y.tab.c src/tree.c
+src = src/lex.yy.c src/y.tab.c src/tree.c src/semantic.c src/symtab.c
 out = gocompiler
 
 $(out): $(src) 

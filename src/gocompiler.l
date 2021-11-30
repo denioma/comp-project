@@ -3,6 +3,8 @@
 	// Rodrigo Alexandre da Mota Machado - 2019218299
 	// -------------------------------------------------
 	#include "tree.h"
+	#include "semantic.h"
+	#include "symtab.h"
 	#include "y.tab.h"
 	#include <string.h>
 
@@ -61,10 +63,10 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 ")"				{yline = yylineno; ycol = col; col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "RPAR\n"); else return RPAR;}
 "]"				{yline = yylineno; ycol = col; col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "RSQ\n"); else return RSQ;}
 "package"		{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "PACKAGE\n"); else return PACKAGE;}
-"return"		{yline = yylineno; ycol = col; col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "RETURN\n"); else return RETURN;}
+"return"		{yline = yylineno; ycol = col; col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "RETURN\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return RETURN;}}
 "else"			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "ELSE\n"); else return ELSE;}
-"for"			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "FOR\n"); else return FOR;}
-"if"			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "IF\n"); else return IF;}
+"for"			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "FOR\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return FOR;}}
+"if"			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "IF\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol);  return IF;}}
 "var"			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "VAR\n"); else return VAR;}
 "int"			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "INT\n"); else return INT;}
 "float32"		{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "FLOAT32\n"); else return FLOAT32;}
@@ -108,10 +110,15 @@ int main(int argc, char** argv) {
 	} else if (lflag) sflag = 0;
 	
 	if (lflag) yylex();
-	else {
+	else if (tflag || sflag) {
 		yyparse();
-		if (tflag && build) print_ast(program);
-		else if (sflag); // TODO call semantic checking
+		if (!build) return 1;
+		else if (tflag) print_ast(program);
+		else if (sflag) {
+			symtab* global;
+			if (semantic_check(&global, program)) return 1;
+			else show_table(global);
+		}
 		/* destroy(program); */
 	}
 	return 0;

@@ -156,6 +156,7 @@ func_dec* create_func(token* tkn, v_type typespec, param_dec* param_list, func_b
     func_dec* func = (func_dec*)malloc(sizeof(func_dec));
     func->f_header = create_func_header(tkn, typespec, param_list);
     func->f_body = body;
+    func->localsym = NULL;
     return func;
 }
 

@@ -120,6 +120,7 @@ typedef struct _func_header {
 typedef struct _func_dec {
     func_header* f_header;
     func_body* f_body;
+    symtab* localsym;
 } func_dec;
 
 typedef enum { d_var, d_func } d_type;
