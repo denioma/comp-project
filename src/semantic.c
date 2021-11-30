@@ -86,6 +86,7 @@ int check_func_body(symtab** functab, func_body* body) {
             error = check_var(functab, aux->dec.var);
             break;
         case b_stmt:
+            // TODO check statements for semantic errors
             break;
         }
     }
