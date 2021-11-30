@@ -66,7 +66,7 @@ void print_sym_type(t_type type) {
         printf("string");
         break;
     case t_void:
-        printf("void");
+        printf("none");
         break;
     }
 }
@@ -75,22 +75,22 @@ void print_params(f_params* params) {
     printf("(");
     if (params) {
         for (f_params* aux = params; aux; aux = aux->next) {
-            if (aux != params) printf(", ");
+            if (aux != params) printf(",");
             print_sym_type(aux->type);
         }
     }
-    printf(")\t");
+    printf(")");
 }
 
 void show_table(symtab* tab) {
     if (!tab) return;
 
     for (symtab* aux = tab; aux; aux = aux->next) {
+        printf("%s\t", aux->id);
         if (aux->is_func) {
-            printf("func\t%s\t", aux->id);
             print_params(aux->params);
         }
-        else printf("symbol\t%s\t", aux->id);
+        printf("\t");
         print_sym_type(aux->type);
         printf("\n");
     }
