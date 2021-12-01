@@ -17,6 +17,8 @@ symtab* insert_el(symtab** tab, char* id, t_type type, char is_func, f_params* p
     newSym->params = params;
     newSym->is_param = is_param;
     newSym->is_return = is_return;
+    if (is_func) newSym->used = 1;
+    else newSym->used = 0;
     newSym->next = NULL;
     
     if (*tab) {

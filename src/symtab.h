@@ -15,6 +15,7 @@ typedef struct _symtab {
     f_params* params;
     char is_param;
     char is_return;
+    char used;
     struct _symtab* next;
 } symtab;
 

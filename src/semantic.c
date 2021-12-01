@@ -87,6 +87,7 @@ t_type convert_e_type(e_type type) {
 }
 
 t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
+    // TODO Finish all posible expression checking needed
     symtab* symbol;
     char* id;
     switch (expression->type) {
@@ -103,7 +104,6 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
             case op_lt:
             case op_ne:
                 return t_bool;
-            // TODO Finish
             }         
         case e_func:
             // TODO Check function call params
@@ -222,6 +222,17 @@ int check_statement(symtab** globaltab, symtab** functab, stmt_dec* stmt) {
     return 0;
 }
 
+void check_unused(symtab* table) {
+    // TODO symtab struct needs to hold line and column for unused warnings
+    symtab* aux = table;
+    for (; aux; aux = aux->next) {
+        int line, col;  // Placeholders for true line and col
+        if (!aux->used)
+            printf("Line %d, column %d: Symbol %s declared but never used\n",
+                line, col, aux->id);
+    }
+}
+
 int check_func_body(symtab** globaltab, symtab** functab, func_body* body) {
     if (!body) return 0;
     int error = 0;
@@ -236,6 +247,7 @@ int check_func_body(symtab** globaltab, symtab** functab, func_body* body) {
             break;
         }
     }
+    check_unused(functab);
     return error;
 }
 
