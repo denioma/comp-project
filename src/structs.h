@@ -40,6 +40,7 @@ typedef struct _assign_stmt {
 } assign_stmt;
 
 typedef struct _print_stmt {
+    token* tkn;
     char* strlit;
     expr* expression;
 } print_stmt;

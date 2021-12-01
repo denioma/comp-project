@@ -15,7 +15,7 @@ dec_node* save_id_reps(dec_node* head, token* tkn);
 func_body* create_body_stmt(stmt_dec* stmt);
 stmt_dec* create_stmt(s_type type);
 stmt_dec* create_pargs(token* tkn, expr* index);
-stmt_dec* create_print(token* tkn, expr* expression);
+stmt_dec* create_print(token* tkn, token* strlit, expr* expression);
 stmt_dec* create_assign(token* tkn, expr* expression);
 stmt_dec* create_if(expr* condition, stmt_block* block1, stmt_block* block2);
 stmt_dec* create_for(expr* expression, stmt_block* block);

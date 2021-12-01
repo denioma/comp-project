@@ -177,9 +177,10 @@ stmt_dec* create_pargs(token* tkn, expr* index) {
     return stmt;
 }
 
-stmt_dec* create_print(token* tkn, expr* expression) {
+stmt_dec* create_print(token* tkn, token* strlit, expr* expression) {
     print_stmt* print = (print_stmt*)malloc(sizeof(print_stmt));
-    if (tkn) print->strlit = tkn->value;
+    print->tkn = tkn;
+    if (strlit) print->strlit = strlit->value;
     else print->strlit = NULL;
     print->expression = expression;
 

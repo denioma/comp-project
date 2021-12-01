@@ -130,8 +130,8 @@ Statement:
     |   RETURN ExprOpt                                  {if (build) $$=create_return($2);}
     |   FuncInvocation                                  {if (build) $$=create_call($1);}
     |   ParseArgs                                       {if (build) $$=$1;}
-    |   PRINT LPAR STRLIT RPAR                          {if (build) $$=create_print($3, NULL);}
-    |   PRINT LPAR Expr RPAR                            {if (build) $$=create_print(NULL, $3);}
+    |   PRINT LPAR STRLIT RPAR                          {if (build) $$=create_print($1, $3, NULL);}
+    |   PRINT LPAR Expr RPAR                            {if (build) $$=create_print($1, NULL, $3);}
     |   error                                           {$$=NULL;}
 ;
 

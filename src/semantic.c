@@ -108,8 +108,10 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
         case e_func:
             // TODO Check function call params
             symbol = search_el(globaltab, expression->arg1.call->tkn->value);
-            if (!symbol) printf("Not found\n");
-            return symbol->type;
+            if (symbol) return symbol->type;
+            printf("Line %d, column %d: Cannot find symbol %s",
+                expression->arg1.call->tkn->line, expression->arg1.call->tkn->col, expression->arg1.call->tkn->value);
+            return t_undef;
             break;
         case e_id:
             // TODO pass some sort of error in case ID is not in symbol tables
@@ -189,6 +191,17 @@ int check_if(symtab* globaltab, symtab* functab, if_stmt* stmt) {
     return errors;
 }
 
+int check_print(symtab* globaltab, symtab* functab, print_stmt* stmt) {
+    if (!stmt->expression) return 0;
+    t_type type = check_expr(globaltab, functab, stmt->expression);
+    if (stmt->expression->type != e_func && type == t_undef) {
+        printf("Line %d, column %d: Incompatible type undef in %s statement\n", 
+                stmt->tkn->line, stmt->tkn->col, stmt->tkn->value);
+        return 1;
+    }
+    return 0;
+}
+
 int check_statement(symtab** globaltab, symtab** functab, stmt_dec* stmt) {
     stmt_block* aux;
     switch (stmt->type) {
@@ -213,7 +226,7 @@ int check_statement(symtab** globaltab, symtab** functab, stmt_dec* stmt) {
         // return check_parse(tab, stmt->dec.d_args);
         break;
     case s_print:
-        // return check_print(tab, stmt->dec.d_print);
+        return check_print(*globaltab, *functab, stmt->dec.d_print);
         break;
     case s_return:
         return check_return(*globaltab, *functab, stmt->dec.d_expr);
@@ -247,7 +260,7 @@ int check_func_body(symtab** globaltab, symtab** functab, func_body* body) {
             break;
         }
     }
-    check_unused(functab);
+    // check_unused(*functab); // TODO uncomment when finished
     return error;
 }
 
