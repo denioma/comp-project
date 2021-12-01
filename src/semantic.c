@@ -4,6 +4,7 @@
 #include "semantic.h"
 
 extern void print_sym_type(t_type);
+int check_statement(symtab** globaltab, symtab** functab, stmt_dec* stmt);
 
 t_type convert_v_type(v_type type) {
     switch (type) {
@@ -87,13 +88,20 @@ t_type convert_e_type(e_type type) {
 
 t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
     symtab* symbol;
+    char* id;
     switch (expression->type) {
         case e_expr:
             switch (expression->operator) {
             case op_not:
-                return convert_e_type(expression->type);
+                return check_expr(globaltab, functab, expression->arg1.exp_1);
             case op_and:
             case op_or:
+            case op_eq:
+            case op_ge:
+            case op_gt:
+            case op_le:
+            case op_lt:
+            case op_ne:
                 return t_bool;
             // TODO Finish
             }         
@@ -103,6 +111,14 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
             if (!symbol) printf("Not found\n");
             return symbol->type;
             break;
+        case e_id:
+            // TODO pass some sort of error in case ID is not in symbol tables
+            id = expression->tkn->value;
+            symbol = search_el(functab, id);
+            if (symbol) return symbol->type;
+            symbol = search_el(globaltab, id);
+            if (symbol) return symbol->type;
+            return t_undef;
         default:
             return convert_e_type(expression->type);    
     }
@@ -134,22 +150,64 @@ int check_return(symtab* globaltab, symtab* functab, expr* expression) {
     return 1;
 }
 
+int check_for(symtab* globaltab, symtab* functab, for_stmt* stmt) {
+    if (stmt->condition) {
+        t_type type = check_expr(globaltab, functab, stmt->condition);
+        if (type == t_undef) {
+            token* tkn = stmt->condition->tkn;
+            printf("Line %d, column %d: Cannot find symbol %s\n", 
+                tkn->line, tkn->col, tkn->value);
+        } else if (type != t_bool) {
+            printf("Line %d, column %d: Incompatible type ", 
+                stmt->condition->tkn->line, stmt->condition->tkn->col);
+            print_sym_type(type);
+            printf(" in for statement\n");
+        }
+    }
+    if (stmt->block)
+        return check_statement(&globaltab, &functab, stmt->block);
+    return 0;
+}
+
+int check_if(symtab* globaltab, symtab* functab, if_stmt* stmt) {
+    if (stmt->condition) {
+        t_type type = check_expr(globaltab, functab, stmt->condition);
+        if (type == t_undef) {
+            printf("Cannot find symbol %s\n", stmt->condition->tkn->value);
+        } else if (type != t_bool) {
+            printf("Line %d, column %d: Incompatible type ", 
+                stmt->condition->tkn->line, stmt->condition->tkn->col);
+            print_sym_type(type);
+            printf(" in if statement\n");
+        }
+    }
+    int errors = 0;
+    if (stmt->block1)
+        errors += check_statement(&globaltab, &functab, stmt->block1);
+    if (stmt->block2) 
+        errors += check_statement(&globaltab, &functab, stmt->block2);
+    return errors;
+}
+
 int check_statement(symtab** globaltab, symtab** functab, stmt_dec* stmt) {
+    stmt_block* aux;
     switch (stmt->type) {
     case s_assign:
         // return check_assign(tab, stmt->dec.d_assign);
         break;
     case s_block:
-        // return check_block(tab, stmt->dec.d_block);
+        aux = stmt->dec.d_block;
+        for (; aux; aux = aux->next)
+            check_statement(globaltab, functab, aux->stmt);
         break;
     case s_call:
         // return check_call(globaltab, stmt->dec.d_fi);
         break;
     case s_for:
-        // return check_for(tab, stmt->dec.d_if);
+        return check_for(*globaltab, *functab, stmt->dec.d_for);
         break;
     case s_if:
-        // return check_if(tab, stmt->dec.d_if);
+        return check_if(*globaltab, *functab, stmt->dec.d_if);
         break;
     case s_parse:
         // return check_parse(tab, stmt->dec.d_args);

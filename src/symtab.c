@@ -69,6 +69,9 @@ void print_sym_type(t_type type) {
     case t_void:
         printf("none");
         break;
+    case t_undef:
+        printf("undef");
+        break;
     }
 }
 

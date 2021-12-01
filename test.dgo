@@ -1,9 +1,10 @@
 package main 
 
 func test() bool {
-    return 1;
+	for a {}
+	return 1;
 }
 
 func main() {
-    test()
+	test()
 }
