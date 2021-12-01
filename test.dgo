@@ -1,5 +1,9 @@
 package main 
 
-func test() {
-    {{};a=1;{};}
+func test() bool {
+    return 1;
+}
+
+func main() {
+    test()
 }

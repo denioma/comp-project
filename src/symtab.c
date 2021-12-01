@@ -45,7 +45,7 @@ symtab* insert_el(symtab** tab, char* id, t_type type, char is_func, f_params* p
 symtab* search_el(symtab* tab, char* id) {
     symtab* aux;
     for (aux = tab; aux; aux = aux->next) {
-        if (strcmp(aux->id, id) == 0) {
+        if (!aux->is_return && strcmp(aux->id, id) == 0) {
             return aux;
         }
     }
