@@ -167,9 +167,10 @@ stmt_dec* create_stmt(s_type type) {
     return stmt;
 }
 
-stmt_dec* create_pargs(token* tkn, expr* index) {
+stmt_dec* create_pargs(token* tkn, token* var, expr* index) {
     parse_args* args = (parse_args*)malloc(sizeof(parse_args));
     args->tkn = tkn;
+    args->var = var;
     args->index = index;
     stmt_dec* stmt = create_stmt(s_parse);
     stmt->dec.d_args = args;
@@ -190,9 +191,10 @@ stmt_dec* create_print(token* tkn, token* strlit, expr* expression) {
     return stmt;
 }
 
-stmt_dec* create_assign(token* tkn, expr* expression) {
+stmt_dec* create_assign(token* tkn, token* var, expr* expression) {
     assign_stmt* assign = (assign_stmt*)malloc(sizeof(assign_stmt));
     assign->tkn = tkn;
+    assign->var = var;
     assign->expression = expression;
 
     stmt_dec* stmt = create_stmt(s_assign);

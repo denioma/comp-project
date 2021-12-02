@@ -26,8 +26,8 @@
 }
 
 %token <tkn> STRLIT ID INTLIT REALLIT
-%token <tkn> PLUS MINUS STAR DIV MOD EQ GE GT LE LT NE NOT AND OR LPAR RPAR LBRACE RBRACE LSQ RSQ PACKAGE RETURN PRINT PARSEINT FUNC CMDARGS IF ELSE FOR INT FLOAT32 BOOL STRING
-%token SEMICOLON COMMA BLANKID ASSIGN VAR
+%token <tkn> PLUS MINUS STAR DIV MOD EQ GE GT LE LT NE NOT AND OR LPAR RPAR LBRACE RBRACE LSQ RSQ PACKAGE RETURN PRINT PARSEINT FUNC CMDARGS IF ELSE FOR INT FLOAT32 BOOL STRING ASSIGN
+%token SEMICOLON COMMA BLANKID VAR
 %token RESERVED
 
 %type <prog> Program
@@ -123,7 +123,7 @@ VASOpts:
 ;
 
 Statement:
-        ID ASSIGN Expr                                  {if (build) $$=create_assign($1, $3);}
+        ID ASSIGN Expr                                  {if (build) $$=create_assign($2, $1, $3);}
     |   LBRACE Stmt RBRACE                              {if (build) $$=$2;}
     |   IF Expr LBRACE ExplicitBlock RBRACE ElseStmt    {if (build) $$=create_if($2, $4, $6);}
     |   FOR ExprOpt LBRACE ExplicitBlock RBRACE         {if (build) $$=create_for($2, $4);}
@@ -162,7 +162,7 @@ ExprOpt:
 ;
 
 ParseArgs: 
-        ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ Expr RSQ RPAR     {if (build) $$=create_pargs($1, $9);}
+        ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ Expr RSQ RPAR     {if (build) $$=create_pargs($5, $1, $9);}
     |   ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ error RSQ RPAR    {$$=NULL;} 
 ;
 

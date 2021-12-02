@@ -10,6 +10,7 @@ typedef struct _f_params {
 
 typedef struct _symtab {
     char* id;
+    int line, col;
     t_type type;
     char is_func;
     f_params* params;
@@ -19,7 +20,8 @@ typedef struct _symtab {
     struct _symtab* next;
 } symtab;
 
-symtab* insert_el(symtab** tab, char* id, t_type type, char is_func, f_params* params, char is_param, char is_return);
+// symtab* insert_el(symtab** tab, char* id, t_type type, char is_func, f_params* params, char is_param, char is_return);
+symtab* insert_el(symtab** tab, char* id, int line, int col, t_type type, char is_func, f_params* params, char is_param, char is_return);
 symtab* search_el(symtab* tab, char* id);
 void show_table(symtab* tab);
 

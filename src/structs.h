@@ -36,6 +36,7 @@ typedef struct _expr {
 
 typedef struct _assign_stmt {
     token* tkn;
+    token* var;
     expr* expression;
 } assign_stmt;
 
@@ -47,6 +48,7 @@ typedef struct _print_stmt {
 
 typedef struct _parse_args {
     token* tkn;
+    token* var;
     expr* index;
 } parse_args;
 
