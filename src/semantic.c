@@ -1,13 +1,32 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "structs.h"
 #include "semantic.h"
 
 extern void print_sym_type(t_type);
+t_type check_expr(symtab* globaltab, symtab* functab, expr* expression);
 int check_statement(symtab** globaltab, symtab** functab, stmt_dec* stmt);
 
-void no_symbol(int line, int col, char* id) {
-    printf("Line %d, column %d: Cannot find symbol %s\n", line, col, id);
+void no_symbol(int line, int col, char* id, char is_func, f_invoc_opts* params, symtab* global, symtab* func) {
+    if (!is_func) {
+        printf("Line %d, column %d: Cannot find symbol %s\n", line, col, id);
+        return;
+    }
+
+    // TODO
+    f_invoc_opts* aux = params;
+    const char types[6][8] = {"int", "float32", "bool", "string", "void", "undef"};
+    char errorstr[1024];
+    t_type type;
+    snprintf(errorstr, sizeof errorstr, "Line %d, column %d: Cannot find symbol %s(", line, col, id);
+    for (;aux;aux = aux->next) {
+        if (aux != params) strcat(errorstr, ",");
+        type = check_expr(global, func, aux->opt);
+        strcat(errorstr, types[type]);
+    }
+    printf("%s)\n", errorstr);
+
 }
 
 void op_types2(int line, int col, char* op, t_type type1, t_type type2) {
@@ -99,15 +118,40 @@ t_type convert_e_type(e_type type) {
         return t_float32;
 }
 
+int check_call_params(symtab* global, symtab* func, f_params* params, f_invoc_opts* call_opts) {
+    if (!params) {
+        if (!call_opts) return 1;
+        else return 0;
+    }
+    
+    if (!call_opts) return 0;
+    
+    f_params* aux = params;
+    f_invoc_opts* caux = call_opts;
+    t_type expr_type;
+    for (;aux;aux = aux->next) {
+        if (!caux) return 0;
+        expr_type = check_expr(global, func, caux->opt);
+        if (expr_type != aux->type) return 0;
+        caux = caux->next;
+    }
+
+    return 1;
+}
+
 t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
     // TODO Finish all posible expression checking needed
+    token* tkn = expression->tkn;
     symtab* symbol;
+    func_invoc* call;
     char* id;
+    t_type type1, type2;
     switch (expression->type) {
         case e_expr:
             switch (expression->operator) {
             case op_not:
-                return check_expr(globaltab, functab, expression->arg1.exp_1);
+                return t_bool;
+                // return check_expr(globaltab, functab, expression->arg1.exp_1);
             case op_and:
             case op_or:
             case op_eq:
@@ -116,40 +160,49 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
             case op_le:
             case op_lt:
             case op_ne:
-                return t_bool;
+                type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
+                type2 = check_expr(globaltab, functab, expression->arg2);
+                if (type1 == type2) return t_bool;
+                return t_undef;
+            case op_add:
+            case op_sub:
+            case op_div:
+            case op_mul:
+                type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
+                type2 = check_expr(globaltab, functab, expression->arg2);
+                if (type1 == type2) return type1;
+                op_types2(tkn->line, tkn->col, tkn->value, type1, type2);
+                return t_undef;
             }
             break;         
         case e_func:
             // TODO Check function call params
-            symbol = search_el(functab, expression->arg1.call->tkn->value);
-            if (!symbol) symbol = search_el(globaltab, expression->arg1.call->tkn->value);
-            if (symbol) return symbol->type;
-            no_symbol(expression->arg1.call->tkn->line, expression->arg1.call->tkn->col, expression->arg1.call->tkn->value);
+            call = expression->arg1.call;
+            symbol = search_el(functab, call->tkn->value);
+            if (!symbol) symbol = search_el(globaltab, call->tkn->value);
+            if (symbol && check_call_params(globaltab, functab, symbol->params, call->opts)) 
+                return symbol->type;
+            no_symbol(call->tkn->line, call->tkn->col, call->tkn->value, 1, call->opts, globaltab, functab);
             return t_undef;
             break;
         case e_id:
             id = expression->tkn->value;
             symbol = search_el(functab, id);
+            if (!symbol) symbol = search_el(globaltab, id);
             if (symbol) return symbol->type;
-            symbol = search_el(globaltab, id);
-            if (symbol) return symbol->type;
+            no_symbol(tkn->line, tkn->col, tkn->value, 0, 0, 0, 0);
             return t_undef;
         default:
             return convert_e_type(expression->type);    
     }
 }
 
-int check_call_params(func_invoc* func, symtab* symbol) {
-    f_params* paux = symbol->params;
-    return 0;
-}
-
-int check_call(symtab** tab, func_invoc* call) {
+int check_call(symtab* global, symtab* func, func_invoc* call) {
     char* id = call->tkn->value;
-    symtab* symbol = search_el(*tab, id);
-    if (!symbol) no_symbol(call->tkn->line, call->tkn->col, call->tkn->value);
-    if (!check_call_params(call, symbol)) return 0;
-    printf("WIP: PARAMS MISMATCH\n");
+    symtab* symbol = search_el(global, id);
+    if (symbol && check_call_params(global, func, symbol->params, call->opts)) 
+        return 0;
+    no_symbol(call->tkn->line, call->tkn->col, id, 1, call->opts, global, func);
     return 1;
 }
 
@@ -170,9 +223,10 @@ int check_return(symtab* globaltab, symtab* functab, expr* expression) {
 int check_for(symtab* globaltab, symtab* functab, for_stmt* stmt) {
     if (stmt->condition) {
         t_type type = check_expr(globaltab, functab, stmt->condition);
-        if (type == t_undef) {
+        if (type == t_undef && stmt->condition->type == e_func) {
             token* tkn = stmt->condition->tkn;
-            no_symbol(tkn->line, tkn->col, tkn->value);
+            func_invoc* call = stmt->condition->arg1.call;
+            no_symbol(tkn->line, tkn->col, tkn->value, 1, call->opts, globaltab, functab);
         } else if (type != t_bool) {
             printf("Line %d, column %d: Incompatible type ", 
                 stmt->condition->tkn->line, stmt->condition->tkn->col);
@@ -188,9 +242,9 @@ int check_for(symtab* globaltab, symtab* functab, for_stmt* stmt) {
 int check_if(symtab* globaltab, symtab* functab, if_stmt* stmt) {
     if (stmt->condition) {
         t_type type = check_expr(globaltab, functab, stmt->condition);
-        if (type == t_undef) {
+        if (type == t_undef && stmt->condition->type == e_func) {
             token* tkn = stmt->condition->tkn;
-            no_symbol(tkn->line, tkn->col, tkn->value);
+            no_symbol(tkn->line, tkn->col, tkn->value, 0, 0, 0, 0);
         } else if (type != t_bool) {
             printf("Line %d, column %d: Incompatible type ", 
                 stmt->condition->tkn->line, stmt->condition->tkn->col);
@@ -222,7 +276,7 @@ int check_parse(symtab* globaltab, symtab* functab, parse_args* stmt) {
     symtab* symbol = search_el(functab, stmt->var->value);
     if (!symbol) symbol = search_el(globaltab, stmt->tkn->value);
     if (!symbol) {
-        no_symbol(stmt->var->line, stmt->var->col, stmt->var->value);
+        no_symbol(stmt->var->line, stmt->var->col, stmt->var->value, 0, 0, 0, 0);
         return 1;
     }
     if (symbol->type != t_string) error = 1;
@@ -243,7 +297,7 @@ int check_assign(symtab* globaltab, symtab* functab, assign_stmt* stmt) {
     symtab* symbol = search_el(functab, stmt->var->value);
     if (!symbol) symbol = search_el(globaltab, stmt->var->value);
     if (!symbol) {
-        no_symbol(stmt->var->line, stmt->var->col, stmt->var->value);
+        no_symbol(stmt->var->line, stmt->var->col, stmt->var->value, 0, 0, 0, 0);
         return 1;
     }
     t_type expr_type = check_expr(globaltab, functab, stmt->expression);
@@ -267,7 +321,7 @@ int check_statement(symtab** globaltab, symtab** functab, stmt_dec* stmt) {
             check_statement(globaltab, functab, aux->stmt);
         break;
     case s_call:
-        // return check_call(globaltab, stmt->dec.d_fi);
+        return check_call(*globaltab, *functab, stmt->dec.d_fi);
         break;
     case s_for:
         return check_for(*globaltab, *functab, stmt->dec.d_for);
