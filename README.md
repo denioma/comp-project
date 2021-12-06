@@ -22,14 +22,15 @@ Rodrigo Alexandre da Mota Machado
 ## Test Status
 
 ```
-❌ FAILED meta3/errors.dgo
+✅ PASSED meta3/errors.dgo
 ✅ PASSED meta3/errors_parseargs.dgo
 ✅ PASSED meta3/factorial.dgo
 ✅ PASSED meta3/logical_operators.dgo
-❌ FAILED meta3/statements_expressions.dgo
+✅ PASSED meta3/statements_expressions.dgo
 ✅ PASSED meta3/valid_program.dgo
-❌ FAILED meta3/variable_func_assign_errors.dgo
+✅ PASSED meta3/variable_func_assign_errors.dgo
 ✅ PASSED meta3/variable_func_symtab_aast.dgo
+
 ```
 
 # Meta 2

@@ -12,6 +12,7 @@
 	char semicolon = 0, build = 1;
 	int col = 1, line = 1, temp = 0, ycol = 1, yline = 1;
 	prog_node* program;
+	symtab* global;
 %}
 letter			[A-Za-z_]
 number			[0-9]
@@ -115,13 +116,15 @@ int main(int argc, char** argv) {
 		if (!build) return 1;
 		else if (tflag) print_ast(program);
 		else if (sflag) {
-			symtab* global;
 			if (semantic_check(&global, program)) return 1;
 			show_tables(global, program);
 			print_annotations(program);
 		}
-		/* destroy(program); */
+	} else {
+		yyparse();
+		if (build) semantic_check(&global, program);
 	}
+	/* destroy(program); */
 	return 0;
 }
 

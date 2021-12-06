@@ -61,6 +61,7 @@ t_type convert_v_type(v_type type) {
         return t_void;
         break;
     }
+    return t_undef;
 }
 
 int check_bool_var(symtab** tab, var_dec* var) {
@@ -261,7 +262,6 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
 }
 
 int check_call(symtab* global, symtab* func, func_invoc* call) {
-    int errors = 0;
     char* id = call->tkn->value;
     symtab* symbol = search_el(global, id);
     int check;
@@ -535,7 +535,7 @@ int semantic_check(symtab** tab, prog_node* program) {
         ** enable unused checks after checking all symbols
         ** otherwise it spits a million warnings about unused symbols
         */
-        // check_unused(dec->dec.func->localsym);
+        check_unused(dec->dec.func->localsym);
     }
     // check_unused(*tab);
 
