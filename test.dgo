@@ -1,11 +1,5 @@
 package main 
 
-var a float32;
-
 func main() {
-	var x int;
-
-	h(a+x);
+	noWhereToBeFound = noWhereToBeFound(a == b, c, d >= f);
 }
-
-func h(q bool) int {};

@@ -582,7 +582,7 @@ void printer_call(const func_invoc* node, const char annotations) {
 void printer_op(const expr* node, const char annotations) {
     if (!node) return;
     const char* type[] = {
-        "Add", "And", "Call", "Div",
+        "Add", "And", "Div",
         "Eq", "Ge", "Gt", "Le", "Lt",
         "Minus", "Mod", "Mul", "Ne",
         "Not", "Or", "Plus", "Sub"

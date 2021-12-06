@@ -19,7 +19,7 @@ typedef struct {
 } var_dec;
 
 typedef enum {
-    op_add, op_and, op_call, op_div,
+    op_add, op_and, op_div,
     op_eq, op_ge, op_gt, op_le, op_lt, 
     op_minus, op_mod, op_mul, op_ne, 
     op_not, op_or, op_plus, op_sub, nop
