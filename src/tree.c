@@ -415,7 +415,7 @@ void destroy_stmt_dec(stmt_dec* node) {
         destroy_assign_stmt(node->dec.d_assign);
         break;
     case s_print:
-        destroy_print_tmt(node->dec.d_print);
+        destroy_print_stmt(node->dec.d_print);
         break;
     case s_parse:
         destroy_parse_args(node->dec.d_args);
