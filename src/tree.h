@@ -32,4 +32,22 @@ func_invoc* create_func_invocation(token* tkn, f_invoc_opts* opts);
 
 void print_ast(const prog_node* head);
 void print_annotations(const prog_node* head);
+
+/* ------ AST DESTRUCTION ------ */
+void destroy_tkn(token* tkn);
 void destroy(prog_node* program);
+void destroy_dec(dec_node* node);
+void destroy_func(func_dec* node);
+void destroy_func_header(func_header* node);
+void destroy_func_body(func_body* node);
+void destroy_func_params(param_dec* node);
+void destroy_var_dec(var_dec* node);
+void destroy_stmt_dec(stmt_dec* node);
+void destroy_assign_stmt(assign_stmt* node);
+void destroy_print_stmt(print_stmt* node);
+void destroy_parse_args(parse_args* node);
+void destroy_if_stmt(if_stmt* node);
+void destroy_for_stmt(for_stmt* node);
+void destroy_stmt_block(stmt_block* node);
+void destroy_func_invoc(func_invoc* node);
+void destroy_expr(expr* node);
