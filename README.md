@@ -19,6 +19,19 @@ Rodrigo Alexandre da Mota Machado
 
 # Meta 3
 
+## Mooshak 
+
+```
+B: 25/25
+C: 58/58
+D: 84/84
+E: 22/33
+F: 28/50
+
+Total: 217/250
+Missing: 33
+```
+
 ## Test Status
 
 ```
