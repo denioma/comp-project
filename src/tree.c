@@ -408,26 +408,33 @@ void destroy_var_dec(var_dec* node) {
 // destroy statement declaration
 void destroy_stmt_dec(stmt_dec* node) {
     if (!node) return;
+    destroy_tkn(node->tkn);
     switch (node->type) {
     case s_assign:
         destroy_assign_smt(node->dec.d_assign);
         break;
     case s_print:
+        destroy_print_stmt(node->dec.d_print);
         break;
     case s_parse:
+        destroy_parse_args(node->dec.d_args);
         break;
     case s_if:
+        destroy_if_stmt(node->dec.d_if);
         break;
     case s_for:
+        destroy_for_stmt(node->dec.d_for);
         break;
     case s_block:
+        destroy_stmt_block(node->dec.d_block);
         break;
     case s_call:
+        destroy_func_invoc(node->dec.d_fi);
         break;
     case s_return:
+        destroy_expr(node->dec.d_expr);
         break;
     }
-
     // free(node);
 }
 
@@ -439,15 +446,67 @@ void destroy_assign_stmt(assign_stmt* node) {
     destroy_expr(node->expression);
     // free(node);
 }
-void destroy_print_stmt(print_stmt* node);
-void destroy_parse_args(parse_args* node);
-void destroy_if_stmt(if_stmt* node);
-void destroy_for_stmt(for_stmt* node);
-void destroy_stmt_block(stmt_block* node);
-void destroy_func_invoc(func_invoc* node);
 
+// destroy print statement
+void destroy_print_stmt(print_stmt* node) {
+    if (!node) return;
+    destroy_tkn(node->tkn);
+    // destroy string literal ???
+    if (node->expression) destroy_expr(node->expression);
+    // free(node);
+}
+
+// destroy argument parsing statement
+void destroy_parse_args(parse_args* node) {
+    if (!node) return;
+    destroy_tkn(node->tkn);
+    destroy_tkn(node->var);
+    destroy_expr(node->index);
+    // free(node);
+}
+
+// destroy if statement
+void destroy_if_stmt(if_stmt* node) {
+    if (!node) return;
+    destroy_expr(node->condition);
+    destroy_stmt_dec(node->block1);
+    destroy_stmt_dec(node->block2);
+    // free(node);
+}
+
+// destroy for statement
+void destroy_for_stmt(for_stmt* node) {
+    if (!node) return;
+    destroy_expr(node->condition);
+    destroy_stmt_dec(node->block);
+    // free(node);
+}
+
+void destroy_stmt_block(stmt_block* node) {
+    if (!node) return;
+    if (node->next) destroy_stmt_block(node->next);
+    destroy_stmt_dec(node->stmt);
+    // free(node);
+}
+void destroy_func_invoc(func_invoc* node) {
+    if (!node) return;
+    destroy_tkn(node->tkn);
+    // destroy f_params
+    // destroy f_invoc_opts
+    // free(node);
+}
+
+// destroy expression node
 void destroy_expr(expr* node) {
     if (!node) return;
+    destroy_tkn(node->tkn);
+    // destroy expression operands
+    if (node->type == e_func)
+        destroy_func_invoc(node->arg1.call);
+    else 
+        destroy_expr(node->arg1.exp_1);
+    destroy_expr(node->arg2);
+    // free(node);
 }
 
 /* ------ Pretty printers ------ */

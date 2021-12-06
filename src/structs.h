@@ -2,7 +2,7 @@
 #include "symtab.h"
 
 // token node
-// - includes the token id and it's position
+// - includes the token id and its position
 typedef struct _token {
     char* value;
     int line;
@@ -27,6 +27,9 @@ typedef enum {
 
 typedef enum { e_int, e_real, e_expr, e_func, e_id } e_type;
 
+// expression node
+// - caracterized by an operator and type
+// - operation involving at least one and no more than two other expressions
 typedef struct _expr {
     e_type type;
     op operator;
@@ -39,7 +42,7 @@ typedef struct _expr {
     struct _expr* arg2;
 } expr;
 
-// assignment statement declaration
+// assignment statement node
 // - composed by the '=' token, the variable token and expression assigned
 // - <var>'='<expr>
 typedef struct _assign_stmt {
@@ -49,12 +52,16 @@ typedef struct _assign_stmt {
     expr* expression;
 } assign_stmt;
 
+// print statement node
+// - besides its token, it stores the strlit or expression to print
 typedef struct _print_stmt {
     token* tkn;
     char* strlit;
     expr* expression;
 } print_stmt;
 
+// argument parsing node
+// - includes the token where the result is saved and the argument index expression
 typedef struct _parse_args {
     token* tkn;
     token* var;
@@ -62,12 +69,17 @@ typedef struct _parse_args {
     expr* index;
 } parse_args;
 
+// if statement node
+// - composed by a condition expression and if and else blocks
 typedef struct _if_stmt {
     expr* condition;
     struct _stmt_dec* block1;
     struct _stmt_dec* block2;
 } if_stmt;
 
+
+// for statement node
+// - has an condition expression and a statement block
 typedef struct _for_stmt {
     expr* condition;
     struct _stmt_dec* block;
@@ -85,6 +97,8 @@ typedef struct _f_invoc_opts {
     struct _f_invoc_opts* next;
 } f_invoc_opts;
 
+// function call statement
+// - stores function to be called in token and the parameters passed to it
 typedef struct _func_invoc {
     token* tkn;
     t_type annotation;
@@ -131,7 +145,7 @@ typedef struct _param_dec {
 } param_dec;
 
 // function header node
-// - defined by it's return type and parameters
+// - defined by its return type and parameters
 typedef struct _func_header {
     token* tkn;
     v_type typespec;
