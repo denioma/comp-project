@@ -14,18 +14,16 @@ void no_symbol(int line, int col, char* id, char is_func, f_invoc_opts* params, 
         return;
     }
 
-    // TODO
     f_invoc_opts* aux = params;
     const char types[6][8] = {"int", "float32", "bool", "string", "void", "undef"};
-    char errorstr[1024];
     t_type type;
-    snprintf(errorstr, sizeof errorstr, "Line %d, column %d: Cannot find symbol %s(", line, col, id);
+    printf("Line %d, column %d: Cannot find symbol %s(", line, col, id);
     for (;aux;aux = aux->next) {
-        if (aux != params) strcat(errorstr, ",");
+        if (aux != params) printf(",");
         type = aux->opt->annotation;
-        strcat(errorstr, types[type]);
+        printf("%s", types[type]);
     }
-    printf("%s)\n", errorstr);
+    printf(")\n");
 
 }
 
@@ -127,6 +125,11 @@ t_type convert_e_type(e_type type) {
 }
 
 int check_call_params(symtab* global, symtab* func, f_params* params, f_invoc_opts* call_opts) {
+    f_invoc_opts* caux = call_opts;
+    for (;caux;caux = caux->next) {
+        caux->opt->annotation = check_expr(global, func, caux->opt);
+    }
+
     if (!params) {
         if (!call_opts) return 1;
         else return 0;
@@ -134,17 +137,16 @@ int check_call_params(symtab* global, symtab* func, f_params* params, f_invoc_op
 
     if (!call_opts) return 0;
 
+    int ret = 1;
     f_params* aux = params;
-    f_invoc_opts* caux = call_opts;
-    t_type expr_type;
+    caux = call_opts;
     for (;aux;aux = aux->next) {
         if (!caux) return 0;
-        expr_type = check_expr(global, func, caux->opt);
-        if (expr_type != aux->type) return 0;
+        if (caux->opt->annotation != aux->type) ret = 0;
         caux = caux->next;
     }
 
-    return 1;
+    return ret;
 }
 
 t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
@@ -229,7 +231,6 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
             }
             break;
         case e_func:
-            // TODO Check function call params
             call = expression->arg1.call;
             symbol = search_el(functab, call->tkn->value);
             if (!symbol) symbol = search_el(globaltab, call->tkn->value);
