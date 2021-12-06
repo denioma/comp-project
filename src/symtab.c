@@ -134,3 +134,20 @@ void show_table(symtab* tab) {
         printf("\n");
     }
 }
+
+/* ------ SYMBOL TABLE DESTRUCTION ------ */
+
+// destroy symbol table
+void destroy_table(symtab* tab) {
+    if (!tab) return;
+    if (tab->next) destroy_table(tab->next);
+    destroy_f_params(tab->params);
+    free(tab);
+}
+
+// destroy function parameters type list
+void destroy_f_params(f_params* param) {
+    if (!param) return;
+    if (param->next) destroy_f_params(param->next);
+    free(param);
+}

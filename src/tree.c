@@ -336,7 +336,7 @@ void destroy_tkn(token* tkn) {
 void destroy(prog_node* program) {
     if (program->dlist) {
         destroy_dec(program->dlist);
-        // free(program);
+        free(program);
     }
 }
 
@@ -354,7 +354,7 @@ void destroy_dec(dec_node* node) {
         // destroy variable declaration
         break;
     }
-    // free(node);
+    free(node);
 }
 
 // destroy function declaration
@@ -362,8 +362,8 @@ void destroy_func(func_dec* node) {
     if (!node) return;
     destroy_func_header(node->f_header);
     destroy_func_body(node->f_body);
-    // destroy table
-    // free(node);
+    destroy_table(node->localsym);
+    free(node);
 }
 
 // destroy function parameter list, then function header
@@ -371,7 +371,7 @@ void destroy_func_header(func_header* node) {
     if (!node) return;
     destroy_tkn(node->tkn);
     destroy_func_params(node->param);
-    // free(node);
+    free(node);
 }
 
 // destroy function body declarations, then the node itself
@@ -388,7 +388,7 @@ void destroy_func_body(func_body* node) {
         destroy_stmt_dec(node->dec.stmt);
         break;
     }
-    // free(node);
+    free(node);
 }
 
 // destroy function parameters, then the node itself
@@ -396,14 +396,14 @@ void destroy_func_params(param_dec* node) {
     if (!node) return;
     if (node->next) destroy_func_params(node->next);
     destroy_tkn(node->tkn);
-    // free(node);
+    free(node);
 }
 
 // destroy variable declaration
 void destroy_var_dec(var_dec* node) {
     if (!node) return;
     destroy_tkn(node->tkn);
-    // free(node);
+    free(node);
 }
 
 // destroy statement declaration
@@ -436,7 +436,7 @@ void destroy_stmt_dec(stmt_dec* node) {
         destroy_expr(node->dec.d_expr);
         break;
     }
-    // free(node);
+    free(node);
 }
 
 // destroy assignment statement
@@ -445,7 +445,7 @@ void destroy_assign_stmt(assign_stmt* node) {
     destroy_tkn(node->tkn);
     destroy_tkn(node->var);
     destroy_expr(node->expression);
-    // free(node);
+    free(node);
 }
 
 // destroy print statement
@@ -454,7 +454,7 @@ void destroy_print_stmt(print_stmt* node) {
     destroy_tkn(node->tkn);
     // destroy string literal ???
     if (node->expression) destroy_expr(node->expression);
-    // free(node);
+    free(node);
 }
 
 // destroy argument parsing statement
@@ -463,7 +463,7 @@ void destroy_parse_args(parse_args* node) {
     destroy_tkn(node->tkn);
     destroy_tkn(node->var);
     destroy_expr(node->index);
-    // free(node);
+    free(node);
 }
 
 // destroy if statement
@@ -472,7 +472,7 @@ void destroy_if_stmt(if_stmt* node) {
     destroy_expr(node->condition);
     destroy_stmt_dec(node->block1);
     destroy_stmt_dec(node->block2);
-    // free(node);
+    free(node);
 }
 
 // destroy for statement
@@ -480,21 +480,32 @@ void destroy_for_stmt(for_stmt* node) {
     if (!node) return;
     destroy_expr(node->condition);
     destroy_stmt_dec(node->block);
-    // free(node);
+    free(node);
 }
 
+// destroy all declarations inside the block statement
 void destroy_stmt_block(stmt_block* node) {
     if (!node) return;
     if (node->next) destroy_stmt_block(node->next);
     destroy_stmt_dec(node->stmt);
-    // free(node);
+    free(node);
 }
+
+// destroy function call and its parameters
 void destroy_func_invoc(func_invoc* node) {
     if (!node) return;
     destroy_tkn(node->tkn);
-    // destroy f_params
-    // destroy f_invoc_opts
-    // free(node);
+    destroy_f_params(node->params);
+    destroy_func_invoc_opts(node->opts);
+    free(node);
+}
+
+// destroy any parameters used in a function call
+void destroy_func_invoc_opts(f_invoc_opts* node) {
+    if (!node) return;
+    if (node->next) destroy_func_invoc_opts(node->next);
+    destroy_expr(node->opt);
+    free(node);
 }
 
 // destroy expression node
@@ -507,7 +518,7 @@ void destroy_expr(expr* node) {
     else 
         destroy_expr(node->arg1.exp_1);
     destroy_expr(node->arg2);
-    // free(node);
+    free(node);
 }
 
 /* ------ Pretty printers ------ */

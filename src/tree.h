@@ -50,4 +50,5 @@ void destroy_if_stmt(if_stmt* node);
 void destroy_for_stmt(for_stmt* node);
 void destroy_stmt_block(stmt_block* node);
 void destroy_func_invoc(func_invoc* node);
+void destroy_func_invoc_opts(f_invoc_opts* node);
 void destroy_expr(expr* node);
