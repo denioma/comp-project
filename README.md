@@ -43,7 +43,6 @@ Missing: 33
 ✅ PASSED meta3/valid_program.dgo
 ✅ PASSED meta3/variable_func_assign_errors.dgo
 ✅ PASSED meta3/variable_func_symtab_aast.dgo
-
 ```
 
 # Meta 2
