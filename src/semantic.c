@@ -15,7 +15,7 @@ void no_symbol(int line, int col, char* id, char is_func, f_invoc_opts* params, 
     }
 
     f_invoc_opts* aux = params;
-    const char types[6][8] = {"int", "float32", "bool", "string", "void", "undef"};
+    const char types[6][8] = {"int", "float32", "bool", "string", "none", "undef"};
     t_type type;
     printf("Line %d, column %d: Cannot find symbol %s(", line, col, id);
     for (;aux;aux = aux->next) {
