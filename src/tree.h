@@ -19,7 +19,7 @@ stmt_dec* create_print(token* tkn, token* strlit, expr* expression);
 stmt_dec* create_assign(token* tkn, token* var, expr* expression);
 stmt_dec* create_if(expr* condition, stmt_block* block1, stmt_block* block2);
 stmt_dec* create_for(expr* expression, stmt_block* block);
-stmt_dec* create_return(expr* expression);
+stmt_dec* create_return(token* tkn, expr* expression);
 stmt_dec* create_call();
 stmt_dec* create_stmt_block(stmt_block* block);
 stmt_dec* create_stmt_block_nullable(stmt_block* block);
@@ -31,4 +31,5 @@ f_invoc_opts* create_fi_opts(f_invoc_opts* chain, expr* expression);
 func_invoc* create_func_invocation(token* tkn, f_invoc_opts* opts);
 
 void print_ast(const prog_node* head);
+void print_annotations(const prog_node* head);
 void destroy(prog_node* program);

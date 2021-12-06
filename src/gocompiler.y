@@ -127,7 +127,7 @@ Statement:
     |   LBRACE Stmt RBRACE                              {if (build) $$=$2;}
     |   IF Expr LBRACE ExplicitBlock RBRACE ElseStmt    {if (build) $$=create_if($2, $4, $6);}
     |   FOR ExprOpt LBRACE ExplicitBlock RBRACE         {if (build) $$=create_for($2, $4);}
-    |   RETURN ExprOpt                                  {if (build) $$=create_return($2);}
+    |   RETURN ExprOpt                                  {if (build) $$=create_return($1, $2);}
     |   FuncInvocation                                  {if (build) $$=create_call($1);}
     |   ParseArgs                                       {if (build) $$=$1;}
     |   PRINT LPAR STRLIT RPAR                          {if (build) $$=create_print($1, $3, NULL);}

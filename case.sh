@@ -9,4 +9,4 @@ else
     flag="-s"
 fi
 
-./gocompiler $flag < $path/$2.dgo | diff $path/$2.out - -y
+./gocompiler $flag < $path/$2.dgo $sort | diff $path/$2.out - -y

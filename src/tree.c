@@ -3,7 +3,7 @@
 #include <string.h>
 
 // Only useful for debug printing, remove later!
-#include <stdio.h> 
+#include <stdio.h>
 
 token* create_tkn(char* value, int line, int col) {
     token* tkn = (token*)malloc(sizeof(token));
@@ -28,7 +28,7 @@ dec_node* alloc_node() {
 dec_node* insert_var_dec_list(dec_node* head, dec_node* list) {
     if (!head) {
         head = list;
-    }     else {
+    } else {
         dec_node* tmp = head;
         for (; tmp->next; tmp = tmp->next);
         tmp->next = list;
@@ -56,7 +56,7 @@ var_dec* create_var(token* tkn, const v_type typespec) {
     var_dec* var = (var_dec*)malloc(sizeof(var_dec));
     var->typespec = typespec;
     var->tkn = tkn;
-    
+
     return var;
 }
 
@@ -77,7 +77,7 @@ dec_node* save_id_reps(dec_node* head, token* tkn) {
     var_dec* var = (var_dec*)malloc(sizeof(var_dec));
     var->tkn = tkn;
     head = insert_var_dec(head, var);
-    
+
     return head;
 }
 
@@ -138,7 +138,7 @@ param_dec* create_param(token* tkn, v_type typespec, param_dec* chain) {
     param->typespec = typespec;
     if (chain) param->next = chain;
     else param->next = NULL;
-    
+
     return param;
 }
 
@@ -148,7 +148,7 @@ func_header* create_func_header(token* tkn, v_type typespec, param_dec* param_li
     header->typespec = typespec;
     header->param = NULL;
     if (param_list) header->param = param_list;
-    
+
     return header;
 }
 
@@ -174,7 +174,7 @@ stmt_dec* create_pargs(token* tkn, token* var, expr* index) {
     args->index = index;
     stmt_dec* stmt = create_stmt(s_parse);
     stmt->dec.d_args = args;
-    
+
     return stmt;
 }
 
@@ -187,7 +187,7 @@ stmt_dec* create_print(token* tkn, token* strlit, expr* expression) {
 
     stmt_dec* stmt = create_stmt(s_print);
     stmt->dec.d_print = print;
-    
+
     return stmt;
 }
 
@@ -199,13 +199,14 @@ stmt_dec* create_assign(token* tkn, token* var, expr* expression) {
 
     stmt_dec* stmt = create_stmt(s_assign);
     stmt->dec.d_assign = assign;
-    
+
     return stmt;
 }
 
-stmt_dec* create_return(expr* expression) {
+stmt_dec* create_return(token* tkn, expr* expression) {
     stmt_dec* stmt = create_stmt(s_return);
     stmt->dec.d_expr = expression;
+    stmt->tkn = tkn;
     return stmt;
 }
 
@@ -293,7 +294,7 @@ stmt_block* create_block(stmt_block* chain, stmt_dec* stmt) {
     stmt_block* block = (stmt_block*)malloc(sizeof(stmt_block));
     block->stmt = stmt;
     if (chain) block->next = chain;
-    else block->next = NULL;   
+    else block->next = NULL;
     return block;
 }
 
@@ -317,7 +318,7 @@ func_invoc* create_func_invocation(token* tkn, f_invoc_opts* opts) {
     func_invoc* fi = (func_invoc*)malloc(sizeof(func_invoc));
     fi->tkn = tkn;
     fi->opts = opts;
-    
+
     return fi;
 }
 
@@ -356,6 +357,8 @@ void destroy(prog_node* program) {
 
 int spacing = 0;
 
+extern void print_sym_type(t_type);
+
 void space(const char* str) {
     for (int i = 0; i < spacing; i++) printf("..");
     if (str) printf("%s", str);
@@ -376,167 +379,221 @@ void printer_var(const var_dec* node) {
     spacing--;
 }
 
-void printer_expr(const expr*);
+void printer_expr(const expr*, const char annotations);
 
-void printer_fi_opts(const f_invoc_opts* node) {
+void printer_fi_opts(const f_invoc_opts* node, const char annotations) {
     if (!node) return;
-    printer_expr(node->opt);
-    printer_fi_opts(node->next);
+    printer_expr(node->opt, annotations);
+    printer_fi_opts(node->next, annotations);
 }
 
-void printer_call(const func_invoc* node) {
-    space("Call\n");
+void printer_call(const func_invoc* node, const char annotations) {
+    space("Call");
+    if (annotations && node->annotation != t_void) {
+        printf(" - ");
+        print_sym_type(node->annotation);
+    }
+    printf("\n");
     spacing++;
     space(NULL);
-    printf("Id(%s)\n", node->tkn->value);
-    printer_fi_opts(node->opts);
+    printf("Id(%s)", node->tkn->value);
+    if (annotations) {
+        printf(" - (");
+        f_params* aux = node->params;
+        for (;aux;aux = aux->next) {
+            if (aux != node->params) printf(",");
+            print_sym_type(aux->type);
+        }
+        printf(")");
+    }
+    printf("\n");
+    printer_fi_opts(node->opts, annotations);
     spacing--;
 }
 
-void printer_op(const expr* node) {
+void printer_op(const expr* node, const char annotations) {
     if (!node) return;
     const char* type[] = {
-        "Add\n", "And\n", "Call\n", "Div\n",
-        "Eq\n", "Ge\n", "Gt\n", "Le\n", "Lt\n",
-        "Minus\n", "Mod\n", "Mul\n", "Ne\n",
-        "Not\n", "Or\n", "Plus\n", "Sub\n"
+        "Add", "And", "Call", "Div",
+        "Eq", "Ge", "Gt", "Le", "Lt",
+        "Minus", "Mod", "Mul", "Ne",
+        "Not", "Or", "Plus", "Sub"
     };
     space(type[node->operator]);
+    if (annotations) {
+        printf(" - ");
+        print_sym_type(node->annotation);
+    }
+    printf("\n");
     spacing++;
-    printer_expr(node->arg1.exp_1);
-    printer_expr(node->arg2);
+    printer_expr(node->arg1.exp_1, annotations);
+    printer_expr(node->arg2, annotations);
     spacing--;
 }
 
-void printer_expr(const expr* node) {
+void printer_expr(const expr* node, const char annotations) {
     if (!node) return;
     switch (node->type) {
     case e_int:
         space(NULL);
-        printf("IntLit(%s)\n", node->tkn->value);
+        printf("IntLit(%s)", node->tkn->value);
+        if (annotations) {
+            printf(" - ");
+            print_sym_type(node->annotation);
+        }
+        printf("\n");
         break;
     case e_real:
         space(NULL);
-        printf("RealLit(%s)\n", node->tkn->value);
+        printf("RealLit(%s)", node->tkn->value);
+        if (annotations) {
+            printf(" - ");
+            print_sym_type(node->annotation);
+        }
+        printf("\n");
         break;
     case e_id:
         space(NULL);
-        printf("Id(%s)\n", node->tkn->value);
+        printf("Id(%s)", node->tkn->value);
+        if (annotations) {
+            printf(" - ");
+            print_sym_type(node->annotation);
+        }
+        printf("\n");
         break;
     case e_expr:
-        printer_op(node);
+        printer_op(node, annotations);
         break;
     case e_func:
-        printer_call(node->arg1.call);
+        printer_call(node->arg1.call, annotations);
         break;
     }
 }
 
-void printer_stmt(const stmt_dec*);
+void printer_stmt(const stmt_dec*, const char annotations);
 
-void printer_block(const stmt_block* block) {
+void printer_block(const stmt_block* block, const char annotations) {
     if (!block) return;
-    printer_stmt(block->stmt);
-    printer_block(block->next);
+    printer_stmt(block->stmt, annotations);
+    printer_block(block->next, annotations);
 }
 
-void printer_if(const if_stmt* stmt) {
+void printer_if(const if_stmt* stmt, const char annotations) {
     if (!stmt) return;
     space("If\n");
     spacing++;
-    printer_expr(stmt->condition);
+    printer_expr(stmt->condition, annotations);
     spacing--;
     if (stmt->block1) {
         spacing++;
-        printer_stmt(stmt->block1);
+        printer_stmt(stmt->block1, annotations);
         spacing--;
     }
     if (stmt->block2) {
         spacing++;
-        printer_stmt(stmt->block2);
+        printer_stmt(stmt->block2, annotations);
         spacing--;
     }
 }
 
-void printer_for(const for_stmt* node) {
+void printer_for(const for_stmt* node, const char annotations) {
     if (!node) return;
     space("For\n");
     spacing++;
-    printer_expr(node->condition);
+    printer_expr(node->condition, annotations);
     spacing--;
     if (node->block) {
         spacing++;
-        printer_stmt(node->block);
+        printer_stmt(node->block, annotations);
         spacing--;
     }
     // spacing--;
 }
 
-void printer_assign(const assign_stmt* stmt) {
+void printer_assign(const assign_stmt* stmt, const char annotations) {
     if (!stmt) return;
-    space("Assign\n");
+    space("Assign");
+    if (annotations) {
+        printf(" - ");
+        print_sym_type(stmt->type);
+    }
+    puts("");
     spacing++;
     space(NULL);
-    printf("Id(%s)\n", stmt->tkn->value);
-    printer_expr(stmt->expression);
+    printf("Id(%s)", stmt->var->value);
+    if (annotations) {
+        printf(" - ");
+        print_sym_type(stmt->type);
+    }
+    puts("");
+    printer_expr(stmt->expression, annotations);
     spacing--;
 }
 
-void printer_parse(const parse_args* node) {
-    space("ParseArgs\n");
+void printer_parse(const parse_args* node, const char annotations) {
+    space("ParseArgs");
+    if (annotations) {
+        printf(" - ");
+        print_sym_type(node->type);
+    }
+    puts("");
     spacing++;
     space(NULL);
-    printf("Id(%s)\n", node->tkn->value);
-    printer_expr(node->index);
+    printf("Id(%s)", node->var->value);
+    if (annotations) {
+        printf(" - ");
+        print_sym_type(node->type);
+    }
+    puts("");
+    printer_expr(node->index, annotations);
     spacing--;
 }
 
-void printer_return(const stmt_dec* stmt) {
+void printer_return(const stmt_dec* stmt, const char annotations) {
     space("Return\n");
     spacing++;
-    if (stmt->dec.d_expr) printer_expr(stmt->dec.d_expr);
+    if (stmt->dec.d_expr) printer_expr(stmt->dec.d_expr, annotations);
     spacing--;
 }
 
-void printer_print(const print_stmt* node) {
+void printer_print(const print_stmt* node, const char annotations) {
     space("Print\n");
     spacing++;
     if (node->strlit) {
         space(NULL);
         printf("StrLit(%s)\n", node->strlit);
-    }
-    else printer_expr(node->expression);
+    }     else printer_expr(node->expression, annotations);
     spacing--;
 }
 
-void printer_stmt(const stmt_dec* stmt) {
+void printer_stmt(const stmt_dec* stmt, const char annotations) {
     if (!stmt) return;
     switch (stmt->type) {
     case s_assign:
-        printer_assign(stmt->dec.d_assign);
+        printer_assign(stmt->dec.d_assign, annotations);
         break;
     case s_if:
-        printer_if(stmt->dec.d_if);
+        printer_if(stmt->dec.d_if, annotations);
         break;
     case s_for:
-        printer_for(stmt->dec.d_for);        
+        printer_for(stmt->dec.d_for, annotations);
         break;
     case s_return:
-        printer_return(stmt);
+        printer_return(stmt, annotations);
         break;
     case s_call:
-        printer_call(stmt->dec.d_fi);
+        printer_call(stmt->dec.d_fi, annotations);
         break;
     case s_print:
-        printer_print(stmt->dec.d_print);
+        printer_print(stmt->dec.d_print, annotations);
         break;
     case s_parse:
-        printer_parse(stmt->dec.d_args);
+        printer_parse(stmt->dec.d_args, annotations);
         break;
     case s_block:
         space("Block\n");
         spacing++;
-        printer_block(stmt->dec.d_block);
+        printer_block(stmt->dec.d_block, annotations);
         spacing--;
         break;
     default:
@@ -544,7 +601,7 @@ void printer_stmt(const stmt_dec* stmt) {
     }
 }
 
-void print_body(const func_body* body) {
+void print_body(const func_body* body, const char annotations) {
     if (!body) return;
     spacing++;
     while (body) {
@@ -553,7 +610,7 @@ void print_body(const func_body* body) {
             printer_var(body->dec.var);
             break;
         case b_stmt:
-            printer_stmt(body->dec.stmt);
+            printer_stmt(body->dec.stmt, annotations);
             break;
         default:
             break;
@@ -562,7 +619,7 @@ void print_body(const func_body* body) {
     }
 }
 
-void printer_func(const func_dec* node) {
+void printer_func(const func_dec* node, const char annotations) {
     if (!node) return;
     func_header* header = node->f_header;
     param_dec* param = header->param;
@@ -590,10 +647,10 @@ void printer_func(const func_dec* node) {
     }
     spacing--;
     space("FuncBody\n");
-    if (body) print_body(body);
+    if (body) print_body(body, annotations);
 }
 
-void print_ast(const prog_node* head) {
+void print_tree(const prog_node* head, const char annotations) {
     if (!head) return;
     printf("Program\n");
     dec_node* d_list = head->dlist;
@@ -604,11 +661,19 @@ void print_ast(const prog_node* head) {
             printer_var(d_list->dec.var);
             break;
         case d_func:
-            printer_func(d_list->dec.func);
+            printer_func(d_list->dec.func, annotations);
             break;
         default:
             return;
         }
         d_list = d_list->next;
     }
+}
+
+void print_ast(const prog_node* head) {
+    print_tree(head, 0);
+}
+
+void print_annotations(const prog_node* head) {
+    print_tree(head, 1);
 }

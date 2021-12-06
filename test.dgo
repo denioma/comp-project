@@ -1,10 +1,11 @@
 package main 
 
-func test() bool {
-	for a {}
-	return 1;
+func test(i int, b bool) bool {
+	return b;
 }
 
 func main() {
-	test()
+	test(1, boolean)
 }
+
+var boolean bool;

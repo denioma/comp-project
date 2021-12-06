@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
 
 	if (lflag) {
 		tflag = 0; sflag = 0;
-	} else if (lflag) sflag = 0;
+	} else if (tflag) sflag = 0;
 	
 	if (lflag) yylex();
 	else if (tflag || sflag) {
@@ -117,7 +117,10 @@ int main(int argc, char** argv) {
 		else if (sflag) {
 			symtab* global;
 			if (semantic_check(&global, program)) return 1;
-			else show_tables(global, program);
+			else {
+				show_tables(global, program);
+				print_annotations(program);
+			}
 		}
 		/* destroy(program); */
 	}

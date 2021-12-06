@@ -15,9 +15,24 @@ Rodrigo Alexandre da Mota Machado
 
 [Go To Meta 2](#meta-2)
 
-# Meta 2
+[Go To Meta 3](#meta-3)
 
-## Next step: Meta 3
+# Meta 3
+
+## Test Status
+
+```
+❌ FAILED meta3/errors.dgo
+❌ FAILED meta3/errors_parseargs.dgo
+✅ PASSED meta3/factorial.dgo
+✅ PASSED meta3/logical_operators.dgo
+❌ FAILED meta3/statements_expressions.dgo
+✅ PASSED meta3/valid_program.dgo
+❌ FAILED meta3/variable_func_assign_errors.dgo
+✅ PASSED meta3/variable_func_symtab_aast.dgo
+```
+
+# Meta 2
 
 ## Test Status
 

@@ -98,27 +98,9 @@ symtab* search_el(symtab* tab, char* id) {
     return NULL;
 }
 
+const char types[6][8] = { "int", "float32", "bool", "string", "none", "undef" };
 void print_sym_type(t_type type) {
-    switch (type) {
-    case t_int:
-        printf("int");
-        break;
-    case t_float32:
-        printf("float32");
-        break;
-    case t_bool:
-        printf("bool");
-        break;
-    case t_string:
-        printf("string");
-        break;
-    case t_void:
-        printf("none");
-        break;
-    case t_undef:
-        printf("undef");
-        break;
-    }
+    printf("%s", types[type]);
 }
 
 void print_params(f_params* params) {

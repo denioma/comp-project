@@ -27,6 +27,7 @@ typedef struct _expr {
     e_type type;
     op operator;
     token* tkn;
+    t_type annotation;
     union {
         struct _expr* exp_1;
         struct _func_invoc* call;
@@ -37,6 +38,7 @@ typedef struct _expr {
 typedef struct _assign_stmt {
     token* tkn;
     token* var;
+    t_type type;
     expr* expression;
 } assign_stmt;
 
@@ -49,6 +51,7 @@ typedef struct _print_stmt {
 typedef struct _parse_args {
     token* tkn;
     token* var;
+    t_type type;
     expr* index;
 } parse_args;
 
@@ -77,10 +80,13 @@ typedef struct _f_invoc_opts {
 
 typedef struct _func_invoc {
     token* tkn;
+    t_type annotation;
+    f_params* params;
     f_invoc_opts* opts;
 } func_invoc;
 
 typedef struct _stmt_dec {
+    token *tkn;
     s_type type;
     union {
         parse_args* d_args;

@@ -116,6 +116,7 @@ t_type convert_e_type(e_type type) {
         return t_int;
     else if (type == e_real) 
         return t_float32;
+    return t_undef;
 }
 
 int check_call_params(symtab* global, symtab* func, f_params* params, f_invoc_opts* call_opts) {
@@ -147,12 +148,19 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
     char* id;
     t_type type1, type2;
     switch (expression->type) {
+        case e_int:
+            expression->annotation = t_int;
+            return t_int;
+        case e_real:
+            expression->annotation = t_float32;
+            return t_float32;
         case e_expr:
             switch (expression->operator) {
             case op_not:
                 type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
+                expression->annotation = t_bool;
                 if (type1 == t_bool) return type1;
-                return t_undef;
+                return t_bool;
             case op_and:
             case op_or:
             case op_eq:
@@ -163,17 +171,38 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
             case op_ne:
                 type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
                 type2 = check_expr(globaltab, functab, expression->arg2);
-                if (type1 == type2) return t_bool;
-                return t_undef;
+                expression->annotation = t_bool;
+                return t_bool;
             case op_add:
             case op_sub:
             case op_div:
             case op_mul:
                 type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
                 type2 = check_expr(globaltab, functab, expression->arg2);
-                if (type1 == type2) return type1;
+                if (type1 == type2) {
+                    expression->annotation = type1;    
+                    return type1;
+                }
                 op_types2(tkn->line, tkn->col, tkn->value, type1, type2);
+                expression->annotation = t_undef;
                 return t_undef;
+            case op_mod:
+                type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
+                type2 = check_expr(globaltab, functab, expression->arg2);
+                if (type1 == type2 && type1 == t_int) return type1;
+                op_types2(tkn->line, tkn->col, tkn->value, type1, type2);
+                expression->annotation = t_undef;
+                return t_undef;
+            case op_call:
+                // TODO
+                break;
+            case op_minus:
+            case op_plus:
+                type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
+                expression->annotation = type1;
+                return type1;
+            case nop:
+                break;
             }
             break;         
         case e_func:
@@ -181,8 +210,11 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
             call = expression->arg1.call;
             symbol = search_el(functab, call->tkn->value);
             if (!symbol) symbol = search_el(globaltab, call->tkn->value);
-            if (symbol && check_call_params(globaltab, functab, symbol->params, call->opts)) 
+            if (symbol && check_call_params(globaltab, functab, symbol->params, call->opts)) {
+                call->annotation = symbol->type;
+                call->params = symbol->params;
                 return symbol->type;
+            }
             no_symbol(call->tkn->line, call->tkn->col, call->tkn->value, 1, call->opts, globaltab, functab);
             return t_undef;
             break;
@@ -190,24 +222,33 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
             id = expression->tkn->value;
             symbol = search_el(functab, id);
             if (!symbol) symbol = search_el(globaltab, id);
-            if (symbol) return symbol->type;
+            if (symbol) {
+                expression->annotation = symbol->type;    
+                return symbol->type;
+            }
             no_symbol(tkn->line, tkn->col, tkn->value, 0, 0, 0, 0);
             return t_undef;
         default:
             return convert_e_type(expression->type);    
     }
+    return t_undef;
 }
 
 int check_call(symtab* global, symtab* func, func_invoc* call) {
     char* id = call->tkn->value;
     symtab* symbol = search_el(global, id);
-    if (symbol && check_call_params(global, func, symbol->params, call->opts)) 
+    if (symbol && check_call_params(global, func, symbol->params, call->opts)) {
+        call->annotation = symbol->type;
+        call->params = symbol->params;
         return 0;
+    }
+    
     no_symbol(call->tkn->line, call->tkn->col, id, 1, call->opts, global, func);
     return 1;
 }
 
-int check_return(symtab* globaltab, symtab* functab, expr* expression) {
+int check_return(symtab* globaltab, symtab* functab, stmt_dec* stmt) {
+    expr* expression = stmt->dec.d_expr;
     t_type type;
     if (expression) type = check_expr(globaltab, functab, expression);
     else type = t_void;
@@ -215,7 +256,7 @@ int check_return(symtab* globaltab, symtab* functab, expr* expression) {
     
     
     printf("Line %d, column %d: Incompatible type ", 
-        expression->tkn->line, expression->tkn->col);
+        stmt->tkn->line, stmt->tkn->col);
     print_sym_type(type);
     printf(" in return statement\n");
     return 1;
@@ -290,6 +331,7 @@ int check_parse(symtab* globaltab, symtab* functab, parse_args* stmt) {
         return 1;
     }
 
+    stmt->type = symbol->type;
     return 0;
 }
 
@@ -307,6 +349,7 @@ int check_assign(symtab* globaltab, symtab* functab, assign_stmt* stmt) {
         return 1;
     }
 
+    stmt->type = symbol->type;
     return 0;
 }
 
@@ -337,7 +380,7 @@ int check_statement(symtab** globaltab, symtab** functab, stmt_dec* stmt) {
         return check_print(*globaltab, *functab, stmt->dec.d_print);
         break;
     case s_return:
-        return check_return(*globaltab, *functab, stmt->dec.d_expr);
+        return check_return(*globaltab, *functab, stmt);
         break;   
     }
     return 0;
@@ -472,6 +515,6 @@ void show_tables(symtab* global, prog_node* program) {
         if (aux->type == d_func) {
             print_func_table(global, aux->dec.func);
         }
-
     }
+    puts("");
 }
