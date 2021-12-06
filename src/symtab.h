@@ -25,4 +25,8 @@ symtab* insert_el(symtab** tab, char* id, int line, int col, t_type type, char i
 symtab* search_el(symtab* tab, char* id);
 void show_table(symtab* tab);
 
+/* ------ SYMBOL TABLE DESTRUCTION ------ */
+void destroy_table(symtab* tab);
+void destroy_f_params(f_params* param);
+
 #endif

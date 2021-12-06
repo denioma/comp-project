@@ -87,17 +87,21 @@ typedef struct _for_stmt {
 
 typedef enum { s_block, s_if, s_for, s_return, s_call, s_print, s_parse, s_assign } s_type;
 
+// block statement node
+// - linked list of statement declarations in the same block
 typedef struct _stmt_block {
     struct _stmt_dec* stmt;
     struct _stmt_block* next;
 } stmt_block;
 
+// function call parameter node
+// - linked list of parameters passed to a function being called
 typedef struct _f_invoc_opts {
     expr* opt;
     struct _f_invoc_opts* next;
 } f_invoc_opts;
 
-// function call statement
+// function call statement node
 // - stores function to be called in token and the parameters passed to it
 typedef struct _func_invoc {
     token* tkn;
