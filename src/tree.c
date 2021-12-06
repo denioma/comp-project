@@ -394,7 +394,7 @@ void destroy_func_body(func_body* node) {
 // destroy function parameters, then the node itself
 void destroy_func_params(param_dec* node) {
     if (!node) return;
-    if (node->next) destroy_params(node->next);
+    if (node->next) destroy_func_params(node->next);
     destroy_tkn(node->tkn);
     // free(node);
 }
@@ -412,10 +412,10 @@ void destroy_stmt_dec(stmt_dec* node) {
     destroy_tkn(node->tkn);
     switch (node->type) {
     case s_assign:
-        destroy_assign_smt(node->dec.d_assign);
+        destroy_assign_stmt(node->dec.d_assign);
         break;
     case s_print:
-        destroy_print_stmt(node->dec.d_print);
+        destroy_print_tmt(node->dec.d_print);
         break;
     case s_parse:
         destroy_parse_args(node->dec.d_args);
