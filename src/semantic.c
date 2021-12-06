@@ -150,8 +150,9 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
         case e_expr:
             switch (expression->operator) {
             case op_not:
-                return t_bool;
-                // return check_expr(globaltab, functab, expression->arg1.exp_1);
+                type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
+                if (type1 == t_bool) return type1;
+                return t_undef;
             case op_and:
             case op_or:
             case op_eq:
@@ -279,7 +280,7 @@ int check_parse(symtab* globaltab, symtab* functab, parse_args* stmt) {
         no_symbol(stmt->var->line, stmt->var->col, stmt->var->value, 0, 0, 0, 0);
         return 1;
     }
-    if (symbol->type != t_string) error = 1;
+    if (symbol->type != t_int) error = 1;
     t_type expr_type = check_expr(globaltab, functab, stmt->index);
     if (expr_type != t_int) error = 1;
 
