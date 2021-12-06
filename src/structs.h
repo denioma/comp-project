@@ -1,6 +1,8 @@
 #pragma once
 #include "symtab.h"
 
+// token node
+// - includes the token id and it's position
 typedef struct _token {
     char* value;
     int line;
@@ -9,6 +11,8 @@ typedef struct _token {
 
 typedef enum { v_int, v_float, v_bool, v_string, v_void } v_type;
 
+// variable declaration node
+// - specifies token and respective type
 typedef struct {
     v_type typespec;
     token* tkn;
@@ -35,6 +39,9 @@ typedef struct _expr {
     struct _expr* arg2;
 } expr;
 
+// assignment statement declaration
+// - composed by the '=' token, the variable token and expression assigned
+// - <var>'='<expr>
 typedef struct _assign_stmt {
     token* tkn;
     token* var;
@@ -85,6 +92,8 @@ typedef struct _func_invoc {
     f_invoc_opts* opts;
 } func_invoc;
 
+// statement declaration node
+// - holds a specific statement type
 typedef struct _stmt_dec {
     token *tkn;
     s_type type;
@@ -102,6 +111,8 @@ typedef struct _stmt_dec {
 
 typedef enum { b_var, b_stmt } b_type;
 
+// function body node
+// - contains local variable declarations and statement declarations
 typedef struct _func_body {
     b_type type;
     union {
@@ -112,6 +123,7 @@ typedef struct _func_body {
 } func_body;
 
 // function parameter declaration node
+// - parameter token and respective type
 typedef struct _param_dec {
     v_type typespec;
     token* tkn;
@@ -119,6 +131,7 @@ typedef struct _param_dec {
 } param_dec;
 
 // function header node
+// - defined by it's return type and parameters
 typedef struct _func_header {
     token* tkn;
     v_type typespec;
@@ -126,6 +139,7 @@ typedef struct _func_header {
 } func_header;
 
 // function declaration node
+// - composed of an header, a body and local symbol table
 typedef struct _func_dec {
     func_header* f_header;
     func_body* f_body;
@@ -134,6 +148,8 @@ typedef struct _func_dec {
 
 typedef enum { d_var, d_func } d_type;
 
+// generic declaration node
+// - can declare either functions or variables
 typedef struct _dec_node {
     d_type type;
     union {
@@ -143,6 +159,8 @@ typedef struct _dec_node {
     struct _dec_node* next;
 } dec_node;
 
+// program root node
+// - composed by a list of declarations
 typedef struct _prog_node {
     dec_node* dlist;
 } prog_node;

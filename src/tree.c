@@ -322,35 +322,132 @@ func_invoc* create_func_invocation(token* tkn, f_invoc_opts* opts) {
     return fi;
 }
 
-void destroy_params(param_dec* node) {
-    if (!node) return;
-    if (node->next) destroy_params(node->next);
-    free(node->tkn);
-    free(node);
+/* ------ AST DESTRUCTION ------ */
+
+// destroy token
+void destroy_tkn(token* tkn) {
+    if (!tkn) return;
+    free(tkn->value);
+    free(tkn);
 }
 
-void destroy_func(func_dec* node) {
-    if (!node) return;
-    free(node->f_header->tkn);
-    destroy_params(node->f_header->param);
-}
-
-void destroy_dec(dec_node* node) {
-    if (!node) return;
-    if (node->next) destroy_dec(node->next);
-    switch (node->type) {
-    case d_func:
-        destroy_func(node->dec.func);
-    case d_var:
-        break;
-    }
-}
-
+// recursivly destroys declarations, then program root node
 void destroy(prog_node* program) {
     if (program->dlist) {
         destroy_dec(program->dlist);
         // free(program);
     }
+}
+
+// destroy declaration list
+void destroy_dec(dec_node* node) {
+    if (!node) return;
+    // recursivly destroy list from tail to head
+    if (node->next) destroy_dec(node->next);
+    switch (node->type) {
+    case d_func:
+        // destroy function declaration
+        destroy_func(node->dec.func);
+        break;
+    case d_var:
+        // destroy variable declaration
+        break;
+    }
+    // free(node);
+}
+
+// destroy function declaration
+void destroy_func(func_dec* node) {
+    if (!node) return;
+    destroy_func_header(node->f_header);
+    destroy_func_body(node->f_body);
+    // destroy table
+    // free(node);
+}
+
+// destroy function parameter list, then function header
+void destroy_func_header(func_header* node) {
+    if (!node) return;
+    destroy_tkn(node->tkn);
+    destroy_func_params(node->param);
+    // free(node);
+}
+
+// destroy function body declarations, then the node itself
+void destroy_func_body(func_body* node) {
+    if (!node) return;
+    if (node->next) destroy_func_body(node->next);
+    switch (node->type) {
+    case b_var:
+        // destroy variable declaration
+        destroy_var_dec(node->dec.var);
+        break;
+    case b_stmt:
+        // destroy statement declaration
+        destroy_stmt_dec(node->dec.stmt);
+        break;
+    }
+    // free(node);
+}
+
+// destroy function parameters, then the node itself
+void destroy_func_params(param_dec* node) {
+    if (!node) return;
+    if (node->next) destroy_params(node->next);
+    destroy_tkn(node->tkn);
+    // free(node);
+}
+
+// destroy variable declaration
+void destroy_var_dec(var_dec* node) {
+    if (!node) return;
+    destroy_tkn(node->tkn);
+    // free(node);
+}
+
+// destroy statement declaration
+void destroy_stmt_dec(stmt_dec* node) {
+    if (!node) return;
+    switch (node->type) {
+    case s_assign:
+        destroy_assign_smt(node->dec.d_assign);
+        break;
+    case s_print:
+        break;
+    case s_parse:
+        break;
+    case s_if:
+        break;
+    case s_for:
+        break;
+    case s_block:
+        break;
+    case s_call:
+        break;
+    case s_return:
+        break;
+    }
+
+    // free(node);
+}
+
+// destroy assignment statement
+void destroy_assign_stmt(assign_stmt* node) {
+    if (!node) return;
+    destroy_tkn(node->tkn);
+    destroy_tkn(node->var);
+    destroy_expr(node->expression);
+    // free(node);
+}
+void destroy_print_stmt(print_stmt* node);
+void destroy_parse_args(parse_args* node);
+void destroy_if_stmt(if_stmt* node);
+void destroy_for_stmt(for_stmt* node);
+void destroy_stmt_block(stmt_block* node);
+void destroy_func_invoc(func_invoc* node);
+
+void destroy_expr(expr* node) {
+    if (!node) return;
 }
 
 /* ------ Pretty printers ------ */
