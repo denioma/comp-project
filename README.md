@@ -23,7 +23,7 @@ Rodrigo Alexandre da Mota Machado
 
 ```
 ❌ FAILED meta3/errors.dgo
-❌ FAILED meta3/errors_parseargs.dgo
+✅ PASSED meta3/errors_parseargs.dgo
 ✅ PASSED meta3/factorial.dgo
 ✅ PASSED meta3/logical_operators.dgo
 ❌ FAILED meta3/statements_expressions.dgo

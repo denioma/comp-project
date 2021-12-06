@@ -161,14 +161,26 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
                 expression->annotation = t_bool;
                 if (type1 == t_bool) return type1;
                 return t_bool;
-            case op_and:
-            case op_or:
             case op_eq:
+            case op_ne:
+                type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
+                type2 = check_expr(globaltab, functab, expression->arg2);
+                expression->annotation = t_bool;
+                if (type1 != type2) 
+                    op_types2(tkn->line, tkn->col, tkn->value, type1, type2);
+                return t_bool;
             case op_ge:
             case op_gt:
             case op_le:
             case op_lt:
-            case op_ne:
+                type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
+                type2 = check_expr(globaltab, functab, expression->arg2);
+                expression->annotation = t_bool;
+                if (type1 != type2 || type1 == t_bool) 
+                    op_types2(tkn->line, tkn->col, tkn->value, type1, type2);
+                return t_bool;
+            case op_and:
+            case op_or:
                 type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
                 type2 = check_expr(globaltab, functab, expression->arg2);
                 expression->annotation = t_bool;
@@ -179,7 +191,7 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
             case op_mul:
                 type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
                 type2 = check_expr(globaltab, functab, expression->arg2);
-                if (type1 == type2) {
+                if (type1 == type2 && type1 != t_bool) {
                     expression->annotation = type1;    
                     return type1;
                 }
