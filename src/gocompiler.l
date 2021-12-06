@@ -117,10 +117,8 @@ int main(int argc, char** argv) {
 		else if (sflag) {
 			symtab* global;
 			if (semantic_check(&global, program)) return 1;
-			else {
-				show_tables(global, program);
-				print_annotations(program);
-			}
+			show_tables(global, program);
+			print_annotations(program);
 		}
 		/* destroy(program); */
 	}

@@ -1,11 +1,11 @@
 package main 
 
-func test(i int, b bool) bool {
-	return b;
-}
+var a float32;
 
 func main() {
-	test(1, boolean)
+	var x int;
+
+	h(a+x);
 }
 
-var boolean bool;
+func h(q bool) int {};
