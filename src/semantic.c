@@ -153,7 +153,6 @@ int check_call_params(symtab* global, symtab* func, f_params* params, f_invoc_op
 int check_call(symtab* global, symtab* func, func_invoc* call);
 
 t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
-    // TODO Finish all posible expression checking needed
     if (!expression) return t_undef;
     token* tkn = expression->tkn;
     symtab* symbol;
