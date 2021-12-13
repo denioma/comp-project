@@ -1,5 +1,4 @@
 package main 
 
-func main() {
-	noWhereToBeFound = noWhereToBeFound(a == b, c, d >= f);
+func main(a int, a bool) {
 }

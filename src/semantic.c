@@ -469,12 +469,18 @@ f_params* check_params(symtab** funtab, param_dec* params) {
 
     f_params* faux = fparams;
     param_dec* aux = params->next;
+    symtab* new_param;
     for (; aux; aux = aux->next) {
         faux->next = (f_params*)malloc(sizeof(f_params));
         faux = faux->next;
         faux->type = convert_v_type(aux->typespec);
         faux->next = NULL;
-        insert_el(funtab, aux->tkn->value, aux->tkn->line, aux->tkn->col, faux->type, 0, 0, 1, 0);
+        new_param = insert_el(funtab, aux->tkn->value, aux->tkn->line, aux->tkn->col, faux->type, 0, 0, 1, 0);
+        if (!new_param) {
+            printf("Line %d, column %d: Symbol %s already defined\n", 
+                aux->tkn->line, aux->tkn->col, aux->tkn->value);
+            return NULL;
+        }
     }
 
     return fparams;
@@ -492,6 +498,7 @@ int define_func(symtab** tab, func_dec* func) {
     // insert return type in local symbol table
     insert_el(localtab, 0, 0, 0, type, 0, 0, 0, 1);
     f_params* params = check_params(localtab, func->f_header->param);
+    if (func->f_header->param && !params) return 1;
     if (insert_el(tab, tkn->value, tkn->line, tkn->col, type, 1, params, 0, 0))
         return 0;
 
@@ -521,7 +528,7 @@ int semantic_check(symtab** tab, prog_node* program) {
             break;
         case d_func:
             // Define functions in global symtab
-            define_func(tab, dec->dec.func);
+            errors += define_func(tab, dec->dec.func);
             break;
         }
     }

@@ -25,11 +25,11 @@ Rodrigo Alexandre da Mota Machado
 B: 25/25
 C: 58/58
 D: 84/84
-E: 22/33
+E: 33/33
 F: 34/50
 
-Total: 223/250
-Missing: 33
+Total: 234/250
+Missing: 16
 ```
 
 ## Test Status
