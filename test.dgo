@@ -1,5 +1,14 @@
 package main 
 
-func main() {
-    main = 25;
+var x int;
+
+func div(a float32, b float32) float32 {
+    var div float32;
+    div = a / b;
+    return div;
+}
+
+func main() int {
+    x = 25;
+    return x;
 }

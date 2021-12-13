@@ -16,6 +16,7 @@ typedef enum { v_int, v_float, v_bool, v_string, v_void } v_type;
 // variable declaration node
 // - specifies token and respective type
 typedef struct {
+    t_type type;
     v_type typespec;
     token* tkn;
 } var_dec;

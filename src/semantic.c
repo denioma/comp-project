@@ -65,8 +65,10 @@ t_type convert_v_type(v_type type) {
 }
 
 int check_bool_var(symtab** tab, var_dec* var) {
-    if (insert_el(tab, var->tkn->value, var->tkn->line, var->tkn->col, t_bool, 0, 0, 0, 0))
+    if (insert_el(tab, var->tkn->value, var->tkn->line, var->tkn->col, t_bool, 0, 0, 0, 0)) {
+        var->type = t_bool;
         return 0;
+    }
 
     printf("Line %d, column %d: Symbol %s already defined\n",
         var->tkn->line, var->tkn->col, var->tkn->value);
@@ -74,8 +76,10 @@ int check_bool_var(symtab** tab, var_dec* var) {
 }
 
 int check_float_var(symtab** tab, var_dec* var) {
-    if (insert_el(tab, var->tkn->value, var->tkn->line, var->tkn->col, t_float32, 0, 0, 0, 0))
+    if (insert_el(tab, var->tkn->value, var->tkn->line, var->tkn->col, t_float32, 0, 0, 0, 0)) {
+        var->type = t_float32;
         return 0;
+    }
 
     printf("Line %d, column %d: Symbol %s already defined\n",
         var->tkn->line, var->tkn->col, var->tkn->value);
@@ -83,8 +87,10 @@ int check_float_var(symtab** tab, var_dec* var) {
 }
 
 int check_int_var(symtab** tab, var_dec* var) {
-    if (insert_el(tab, var->tkn->value, var->tkn->line, var->tkn->col, t_int, 0, 0, 0, 0))
+    if (insert_el(tab, var->tkn->value, var->tkn->line, var->tkn->col, t_int, 0, 0, 0, 0)) {
+        var->type = t_int;
         return 0;
+    }
 
     printf("Line %d, column %d: Symbol %s already defined\n",
         var->tkn->line, var->tkn->col, var->tkn->value);
@@ -92,8 +98,10 @@ int check_int_var(symtab** tab, var_dec* var) {
 }
 
 int check_string_var(symtab** tab, var_dec* var) {
-    if (insert_el(tab, var->tkn->value, var->tkn->line, var->tkn->col, t_string, 0, 0, 0, 0))
+    if (insert_el(tab, var->tkn->value, var->tkn->line, var->tkn->col, t_string, 0, 0, 0, 0)) {
+        var->type = t_string;
         return 0;
+    }
 
     printf("Line %d, column %d: Symbol %s already defined\n",
         var->tkn->line, var->tkn->col, var->tkn->value);
@@ -217,7 +225,10 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
             case op_mod:
                 type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
                 type2 = check_expr(globaltab, functab, expression->arg2);
-                if (type1 == type2 && type1 == t_int) return type1;
+                if (type1 == type2 && type1 == t_int)  {
+                    expression->annotation = t_int;
+                    return type1;
+                }
                 op_types2(tkn->line, tkn->col, tkn->value, type1, type2);
                 expression->annotation = t_undef;
                 return t_undef;
@@ -539,13 +550,8 @@ int semantic_check(symtab** tab, prog_node* program) {
         if (dec->type == d_var || !dec->dec.func->localsym) continue;
         // Check function here
         errors += check_func(tab, dec->dec.func);
-        /* TODO
-        ** enable unused checks after checking all symbols
-        ** otherwise it spits a million warnings about unused symbols
-        */
         check_unused(dec->dec.func->localsym);
     }
-    // check_unused(*tab);
 
     return errors;
 }

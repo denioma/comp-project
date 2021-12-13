@@ -2,6 +2,7 @@
 	// José Miguel Rocha Gonçalves - 2019223292
 	// Rodrigo Alexandre da Mota Machado - 2019218299
 	// -------------------------------------------------
+	#include "codegen.h"
 	#include "tree.h"
 	#include "semantic.h"
 	#include "symtab.h"
@@ -9,7 +10,7 @@
 	#include <string.h>
 
 	char lflag = 0, tflag = 0, sflag = 0;
-	char semicolon = 0, build = 1;
+	char semicolon = 0, status = 0, build = 1;
 	int col = 1, line = 1, temp = 0, ycol = 1, yline = 1;
 	prog_node* program;
 	symtab* global;
@@ -32,7 +33,7 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 %%
 {hex}           {yline = yylineno; ycol = col; col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "INTLIT(%s)\n", yytext); else {yylval.tkn = create_tkn(yytext, yline, ycol); return INTLIT;}}
 {octal}         {yline = yylineno; ycol = col; col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "INTLIT(%s)\n", yytext); else {yylval.tkn = create_tkn(yytext, yline, ycol); return INTLIT;}}
-0[0-9]*         {printf("Line %d, column %d: invalid octal constant (%s)\n", yylineno, col, yytext); col += yyleng;}
+0[0-9]*         {status = 1; fprintf(stdout, "Line %d, column %d: invalid octal constant (%s)\n", yylineno, col, yytext); col += yyleng;}
 {integer}		{yline = yylineno; ycol = col; col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "INTLIT(%s)\n", yytext); else {yylval.tkn = create_tkn(yytext, yline, ycol); return INTLIT;}}
 {real}			{yline = yylineno; ycol = col; col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "REALLIT(%s)\n", yytext); else {yylval.tkn = create_tkn(yytext, yline, ycol); return REALLIT;}}
 {string}		{yline = yylineno; ycol = col; col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "STRLIT(%s)\n", yytext); else {yylval.tkn = create_tkn(yytext, yline, ycol); return STRLIT;}}
@@ -83,12 +84,12 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 {newline}		{yline = yylineno-1; ycol = col; col = 1; if (semicolon) {semicolon = 0; if (lflag) fprintf(yyout, "SEMICOLON\n"); else return SEMICOLON;}}
 .				{fprintf(stdout, "Line %d, column %d: illegal character (%c)\n", yylineno, col++, *yytext); semicolon = 0;}
 
-<BADSTR>\\				{temp++; fprintf(stdout, "Line %d, column %d: invalid escape sequence (\\)\n", yylineno, temp);}
+<BADSTR>\\				{temp++; status = 1; fprintf(stdout, "Line %d, column %d: invalid escape sequence (\\)\n", yylineno, temp);}
 <BADSTR>\\[fnrt\\\"]	{temp += 2;}
-<BADSTR>\\.				{temp++; fprintf(stdout, "Line %d, column %d: invalid escape sequence (%s)\n", yylineno, temp++, yytext);}
+<BADSTR>\\.				{temp++; status = 1; fprintf(stdout, "Line %d, column %d: invalid escape sequence (%s)\n", yylineno, temp++, yytext);}
 <BADSTR>\"				{col = temp + 2; temp = 1; BEGIN 0;}
-<BADSTR>{newline}		{fprintf(stdout, "Line %d, column %d: unterminated string literal\n", yylineno-1, col); col = 1; BEGIN 0;}
-<BADSTR><<EOF>>			{fprintf(stdout, "Line %d, column %d: unterminated string literal\n", yylineno, col); yyterminate();}
+<BADSTR>{newline}		{status = 1; fprintf(stdout, "Line %d, column %d: unterminated string literal\n", yylineno-1, col); col = 1; BEGIN 0;}
+<BADSTR><<EOF>>			{status = 1; fprintf(stdout, "Line %d, column %d: unterminated string literal\n", yylineno, col); yyterminate();}
 <BADSTR>.				{++temp;}
 
 <COMMENT>"*/"       {col = temp + 2; temp = 1; BEGIN 0;}
@@ -109,24 +110,29 @@ int main(int argc, char** argv) {
 	if (lflag) {
 		tflag = 0; sflag = 0;
 	} else if (tflag) sflag = 0;
-	
-	if (lflag) yylex();
-	else if (tflag || sflag) {
-		yyparse();
-		if (!build) return 1;
-		else if (tflag) print_ast(program);
-		else if (sflag) {
-			semantic_check(&global, program);
-			show_tables(global, program);
-			print_annotations(program);
-		}
-	} else {
-		yyparse();
-		if (build) semantic_check(&global, program);
+
+	if (lflag) {
+		yylex();
+		return status;
 	}
+
+	yyparse();
+	if (build) {
+		if (tflag) {
+			print_ast(program);
+		} else {
+			if (semantic_check(&global, program)) status =1;
+			if (sflag) {
+				show_tables(global, program);
+				print_annotations(program);
+			}
+			if (status == 0) codegen(program, global);
+		}
+	} else status = 1;
+
 	// destroy_table(global);
 	// destroy(program);
-	return 0;
+	return status;
 }
 
 int yywrap() {
