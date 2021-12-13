@@ -217,7 +217,10 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
             case op_mod:
                 type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
                 type2 = check_expr(globaltab, functab, expression->arg2);
-                if (type1 == type2 && type1 == t_int) return type1;
+                if (type1 == type2 && type1 == t_int) {
+                    expression->annotation = t_int;
+                    return type1;
+                }
                 op_types2(tkn->line, tkn->col, tkn->value, type1, type2);
                 expression->annotation = t_undef;
                 return t_undef;
