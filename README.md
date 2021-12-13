@@ -15,9 +15,37 @@ Rodrigo Alexandre da Mota Machado
 
 [Go To Meta 2](#meta-2)
 
-# Meta 2
+[Go To Meta 3](#meta-3)
 
-## Next step: Meta 3
+# Meta 3
+
+## Mooshak 
+
+```
+B: 25/25
+C: 58/58
+D: 84/84
+E: 33/33
+F: 50/50
+
+Total: 250/250
+Missing: 0
+```
+
+## Test Status
+
+```
+✅ PASSED meta3/errors.dgo
+✅ PASSED meta3/errors_parseargs.dgo
+✅ PASSED meta3/factorial.dgo
+✅ PASSED meta3/logical_operators.dgo
+✅ PASSED meta3/statements_expressions.dgo
+✅ PASSED meta3/valid_program.dgo
+✅ PASSED meta3/variable_func_assign_errors.dgo
+✅ PASSED meta3/variable_func_symtab_aast.dgo
+```
+
+# Meta 2
 
 ## Test Status
 

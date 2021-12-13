@@ -41,9 +41,10 @@ y.output
 
 # Output
 gocompiler.zip
+gocompiler
 
 #VS Code
 .vscode
 
 # Allow testcases output
-!testcases/**/*.out
+!**/*.out
