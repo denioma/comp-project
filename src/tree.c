@@ -42,7 +42,6 @@ dec_node* insert_var_dec(dec_node* head, var_dec* var) {
         head = alloc_node();
         head->type = d_var;
         head->dec.var = var;
-        //head->next = NULL;
     } else {
         dec_node* tmp = head;
         for (; tmp->next; tmp = tmp->next);
@@ -164,6 +163,7 @@ func_dec* create_func(token* tkn, v_type typespec, param_dec* param_list, func_b
 stmt_dec* create_stmt(s_type type) {
     stmt_dec* stmt = (stmt_dec*)malloc(sizeof(stmt_dec));
     stmt->type = type;
+    stmt->tkn = NULL;
 
     return stmt;
 }
@@ -224,6 +224,8 @@ expr* create_expr(e_type type, op operator, token* tkn, void* arg1, expr* arg2) 
     expression->tkn = tkn;
     expression->operator = operator;
     expression->arg2 = arg2;
+    expression->annotation = t_undef;
+    expression->arg1.exp_1 = NULL;
 
     switch (type) {
     case e_expr:
@@ -352,6 +354,7 @@ void destroy_dec(dec_node* node) {
         break;
     case d_var:
         // destroy variable declaration
+        destroy_var_dec(node->dec.var);
         break;
     }
     free(node);
