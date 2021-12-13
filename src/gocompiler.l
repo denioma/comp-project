@@ -124,7 +124,7 @@ int main(int argc, char** argv) {
 		yyparse();
 		if (build) semantic_check(&global, program);
 	}
-	/* destroy(program); */
+	destroy(program);
 	return 0;
 }
 
