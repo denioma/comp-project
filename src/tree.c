@@ -495,7 +495,6 @@ void destroy_stmt_block(stmt_block* node) {
 void destroy_func_invoc(func_invoc* node) {
     if (!node) return;
     destroy_tkn(node->tkn);
-    destroy_f_params(node->params);
     destroy_func_invoc_opts(node->opts);
     free(node);
 }
