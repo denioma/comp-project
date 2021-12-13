@@ -207,7 +207,7 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
             case op_mul:
                 type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
                 type2 = check_expr(globaltab, functab, expression->arg2);
-                if (type1 == type2 && type1 != t_bool) {
+                if (type1 == type2 && type1 != t_bool && type1 != t_undef && type1 != t_void) {
                     expression->annotation = type1;
                     return type1;
                 }

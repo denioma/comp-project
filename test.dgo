@@ -1,4 +1,6 @@
 package main 
 
 func main(a int, a bool) {
+    var x int;
+    x = b + c;
 }
