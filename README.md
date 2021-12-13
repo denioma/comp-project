@@ -26,10 +26,10 @@ B: 25/25
 C: 58/58
 D: 84/84
 E: 33/33
-F: 39/50
+F: 45/50
 
-Total: 239/250
-Missing: 16
+Total: 245/250
+Missing: 5
 ```
 
 ## Test Status

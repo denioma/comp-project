@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
 		if (!build) return 1;
 		else if (tflag) print_ast(program);
 		else if (sflag) {
-			if (semantic_check(&global, program)) return 1;
+			semantic_check(&global, program);
 			show_tables(global, program);
 			print_annotations(program);
 		}

@@ -224,6 +224,11 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
             case op_minus:
             case op_plus:
                 type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
+                if (type1 == t_bool || type1 == t_void) {
+                    op_type(tkn->line, tkn->col, tkn->value, type1);
+                    expression->annotation = t_undef;
+                    return t_undef;    
+                }
                 expression->annotation = type1;
                 return type1;
             case nop:

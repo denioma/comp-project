@@ -20,7 +20,7 @@ for input in $path/*.dgo; do
     filename=`echo $input | cut -d "." -f1`
     if [ "$1" = "-s" ]; then 
         if [ "$filename" != "meta3/valid_program" ] && [ "$filename" != "meta3/factorial" ] && [ "$filename" != "meta3/logical_operators" ] && [ "$filename" != "meta3/variable_func_symtab_aast" ]; then
-            out=$(./gocompiler $flag < $filename.dgo | sort | diff $filename.out -)
+            out=$(./gocompiler < $filename.dgo | sort | diff $filename.out -)
         else
             out=$(./gocompiler $flag < $filename.dgo | diff $filename.out -)
         fi

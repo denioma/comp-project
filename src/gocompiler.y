@@ -196,8 +196,8 @@ Expr:
     |   Expr DIV Expr                                   {if (build) $$=create_expr(e_expr, op_div, $2, $1, $3);}
     |   Expr MOD Expr                                   {if (build) $$=create_expr(e_expr, op_mod, $2, $1, $3);}
     |   NOT Expr                                        {if (build) $$=create_expr(e_expr, op_not, $1, $2, NULL);}
-    |   MINUS Expr %prec UNARY                          {if (build) $$=create_expr(e_expr, op_minus, NULL, $2, NULL);}
-    |   PLUS Expr  %prec UNARY                          {if (build) $$=create_expr(e_expr, op_plus, NULL, $2, NULL);}
+    |   MINUS Expr %prec UNARY                          {if (build) $$=create_expr(e_expr, op_minus, $1, $2, NULL);}
+    |   PLUS Expr  %prec UNARY                          {if (build) $$=create_expr(e_expr, op_plus, $1, $2, NULL);}
     |   INTLIT                                          {if (build) $$=create_expr(e_int, nop, NULL, $1, NULL);}
     |   REALLIT                                         {if (build) $$=create_expr(e_real, nop, NULL, $1, NULL);}
     |   ID                                              {if (build) $$=create_expr(e_id, nop, $1, $1, NULL);}
