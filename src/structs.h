@@ -9,6 +9,8 @@ typedef struct _token {
     int col; 
 } token;
 
+// variable declaration type enum
+// - 
 typedef enum { v_int, v_float, v_bool, v_string, v_void } v_type;
 
 // variable declaration node
@@ -25,6 +27,8 @@ typedef enum {
     op_not, op_or, op_plus, op_sub, nop
 } op;
 
+// expression type enum
+// - can be either a composed expression or an int literal, real literal, function call or variable id 
 typedef enum { e_int, e_real, e_expr, e_func, e_id } e_type;
 
 // expression node
@@ -77,7 +81,6 @@ typedef struct _if_stmt {
     struct _stmt_dec* block2;
 } if_stmt;
 
-
 // for statement node
 // - has an condition expression and a statement block
 typedef struct _for_stmt {
@@ -85,6 +88,8 @@ typedef struct _for_stmt {
     struct _stmt_dec* block;
 } for_stmt;
 
+// statement declaration type enum
+// - can be a block, if, for, return, function call, print, argument parsing or variable assignment statement
 typedef enum { s_block, s_if, s_for, s_return, s_call, s_print, s_parse, s_assign } s_type;
 
 // block statement node
@@ -127,6 +132,8 @@ typedef struct _stmt_dec {
     } dec;
 } stmt_dec;
 
+// function body declaration type enum
+// - can be either a local variable declaration or a statement
 typedef enum { b_var, b_stmt } b_type;
 
 // function body node
@@ -164,6 +171,8 @@ typedef struct _func_dec {
     symtab* localsym;
 } func_dec;
 
+// declaration type enum
+// - can be either a local variable declaration or a function declaration
 typedef enum { d_var, d_func } d_type;
 
 // generic declaration node
