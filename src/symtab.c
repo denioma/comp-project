@@ -27,10 +27,7 @@ symtab* insert_el(symtab** tab, char* id, int line, int col, t_type type, char i
         for (aux = *tab; aux; aux = aux->next) {
             if (!aux->is_return && strcmp(aux->id, id) == 0) {
                 // if the symbol was already declared in tab, free space
-                // free(newSym->tkn);
-                if (is_func) {} //invoque destroy f_params function;
-                free(newSym);
-                newSym = 0;
+                destroy_table(newSym);
                 return NULL;
             }
             // save reference to previous symbol
