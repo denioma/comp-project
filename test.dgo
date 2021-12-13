@@ -1,8 +1,5 @@
 package main 
 
-func main(a int, a bool) {
-    var b bool;
-    var x int;
-
-    x = -b;
+func main() {
+    main = 25;
 }

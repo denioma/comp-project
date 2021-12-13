@@ -382,17 +382,14 @@ int check_parse(symtab* globaltab, symtab* functab, parse_args* stmt) {
 }
 
 int check_assign(symtab* globaltab, symtab* functab, assign_stmt* stmt) {
-    int error = 0;
+    t_type expr_type = check_expr(globaltab, functab, stmt->expression);
     symtab* symbol = search_el(functab, stmt->var->value);
     if (!symbol) symbol = search_el(globaltab, stmt->var->value);
-    if (!symbol) {
+    if (!symbol || symbol->is_func) {
+        stmt->type = t_undef;
         no_symbol(stmt->var->line, stmt->var->col, stmt->var->value, 0, 0, 0, 0);
-        error = 1;
-    }
-    t_type expr_type = check_expr(globaltab, functab, stmt->expression);
-    if (!symbol) {
         op_types2(stmt->tkn->line, stmt->tkn->col, stmt->tkn->value, t_undef, expr_type);
-        return error;
+        return 1;
     }
     if (symbol->type != expr_type) {
         op_types2(stmt->tkn->line, stmt->tkn->col, stmt->tkn->value, symbol->type, expr_type);
@@ -400,7 +397,7 @@ int check_assign(symtab* globaltab, symtab* functab, assign_stmt* stmt) {
     }
 
     stmt->type = symbol->type;
-    return error;
+    return 0;
 }
 
 int check_statement(symtab** globaltab, symtab** functab, stmt_dec* stmt) {
