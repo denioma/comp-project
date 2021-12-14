@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 char declare_puts = 0;
-int tmp;
+int tmp, if_cnt = 0;
 
 typedef struct {
     int size;
@@ -152,10 +152,50 @@ void cgen_expression(expr* expression) {
         case op_minus:
         case op_and:
         case op_eq:
+            printf("\t%%%d = ", tmp++);
+            if (expression->arg1.exp_1->annotation == t_float32)
+                printf("fcmp");
+            else
+                printf("icmp");
+            printf(" eq %s %%%d, %%%d\n",
+                t_types[expression->arg1.exp_1->annotation], tmp1, tmp2);
+            break;
         case op_ge:
+            printf("\t%%%d = ", tmp++);
+            if (expression->arg1.exp_1->annotation == t_float32)
+                printf("fcmp");
+            else
+                printf("icmp");
+            printf(" sge %s %%%d, %%%d\n",
+                t_types[expression->arg1.exp_1->annotation], tmp1, tmp2);
+            break;
         case op_gt:
+            printf("\t%%%d = ", tmp++);
+            if (expression->arg1.exp_1->annotation == t_float32)
+                printf("fcmp");
+            else
+                printf("icmp");
+            printf(" sgt %s %%%d, %%%d\n",
+                t_types[expression->arg1.exp_1->annotation], tmp1, tmp2);
+            break;
         case op_le:
+            printf("\t%%%d = ", tmp++);
+            if (expression->arg1.exp_1->annotation == t_float32)
+                printf("fcmp");
+            else
+                printf("icmp");
+            printf(" sle %s %%%d, %%%d\n",
+                t_types[expression->arg1.exp_1->annotation], tmp1, tmp2);
+            break;
         case op_lt:
+            printf("\t%%%d = ", tmp++);
+            if (expression->arg1.exp_1->annotation == t_float32)
+                printf("fcmp");
+            else
+                printf("icmp");
+            printf(" slt %s %%%d, %%%d\n",
+                t_types[expression->arg1.exp_1->annotation], tmp1, tmp2);
+            break;
         case op_mod:
         case op_ne:
         case op_not:
@@ -196,6 +236,34 @@ void cgen_print() {
     /* TODO figure out prints */
 }
 
+void cgen_if(if_stmt* stmt) {
+    char is_else;
+    if (stmt->block2->dec.d_block) is_else = 1;
+    else is_else = 0;
+    cgen_expression(stmt->condition);
+    printf("\tbr i1 %%%d, label %%if%d, label ",
+        tmp-1, ++if_cnt);
+    if (!is_else)
+        printf("%%fi%d\n", if_cnt);
+    else 
+        printf("%%else%d\n", if_cnt);
+    printf("\tif%d:\n", if_cnt);
+    cgen_stmt(stmt->block1);
+    if (is_else) {
+        printf("\tbr label %%fi%d\n", if_cnt);
+        printf("\telse%d:\n", if_cnt);
+        cgen_stmt(stmt->block2);
+    }
+    printf("\tfi%d:\n", if_cnt);
+}
+
+void cgen_block(stmt_block* block) {
+    if (!block) return;
+    stmt_block* aux = block;
+    for (;aux;aux = aux->next)
+        cgen_stmt(aux->stmt);
+}
+
 void cgen_stmt(stmt_dec* stmt) {
     stmt_block* block;
     switch (stmt->type) {
@@ -203,9 +271,7 @@ void cgen_stmt(stmt_dec* stmt) {
             cgen_assign(stmt->dec.d_assign);
             break;
         case s_block:
-            block = stmt->dec.d_block;
-            for (;block;block = block->next)
-                cgen_stmt(block->stmt);
+            cgen_block(stmt->dec.d_block);
             break;
         case s_call:
             cgen_call(stmt->dec.d_expr);
@@ -214,7 +280,7 @@ void cgen_stmt(stmt_dec* stmt) {
             // cgen_for();
             break;
         case s_if:
-            // cgen_if();
+            cgen_if(stmt->dec.d_if);
             break;
         case s_parse:
             // cgen_parse();

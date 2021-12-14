@@ -1,8 +1,14 @@
 # Latest:
 
-Finished call code generation
+Code gen for if-else statement, and some comparison operators
 
 # Previous:
+
+## 1: 
+
+Finished call code generation
+
+## 2: 
 
 Code gen functions
 
