@@ -6,11 +6,11 @@
 typedef struct _token {
     char* value;
     int line;
-    int col; 
+    int col;
 } token;
 
 // variable declaration type enum
-// - 
+// -
 typedef enum { v_int, v_float, v_bool, v_string, v_void } v_type;
 
 // variable declaration node
@@ -23,13 +23,13 @@ typedef struct {
 
 typedef enum {
     op_add, op_and, op_div,
-    op_eq, op_ge, op_gt, op_le, op_lt, 
-    op_minus, op_mod, op_mul, op_ne, 
+    op_eq, op_ge, op_gt, op_le, op_lt,
+    op_minus, op_mod, op_mul, op_ne,
     op_not, op_or, op_plus, op_sub, nop
 } op;
 
 // expression type enum
-// - can be either a composed expression or an int literal, real literal, function call or variable id 
+// - can be either a composed expression or an int literal, real literal, function call or variable id
 typedef enum { e_int, e_real, e_expr, e_func, e_id } e_type;
 
 // expression node

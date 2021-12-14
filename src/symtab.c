@@ -22,7 +22,7 @@ symtab* insert_el(symtab** tab, char* id, int line, int col, t_type type, char i
     if (is_func) newSym->used = 1;
     else newSym->used = 0;
     newSym->next = NULL;
-    
+
     if (*tab) {
         for (aux = *tab; aux; aux = aux->next) {
             if (!aux->is_return && strcmp(aux->id, id) == 0) {
@@ -60,7 +60,7 @@ symtab* insert_el(symtab** tab, char* id, t_type type, char is_func, f_params* p
     if (is_func) newSym->used = 1;
     else newSym->used = 0;
     newSym->next = NULL;
-    
+
     if (*tab) {
         for (aux = *tab; aux; aux = aux->next) {
             if (!aux->is_return && strcmp(aux->id, id) == 0) {

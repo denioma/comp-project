@@ -238,7 +238,7 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
                 if (type1 == t_bool || type1 == t_void) {
                     op_type(tkn->line, tkn->col, tkn->value, type1);
                     expression->annotation = t_undef;
-                    return t_undef;    
+                    return t_undef;
                 }
                 expression->annotation = type1;
                 return type1;
@@ -360,7 +360,7 @@ int check_print(symtab* globaltab, symtab* functab, print_stmt* stmt) {
                 call->tkn->line, call->tkn->col, stmt->tkn->value);
         } else if (stmt->expression->tkn) {
             printf("Line %d, column %d: Incompatible type undef in %s statement\n",
-                stmt->expression->tkn->line, stmt->expression->tkn->col, stmt->tkn->value);    
+                stmt->expression->tkn->line, stmt->expression->tkn->col, stmt->tkn->value);
         } else {
             printf("Line %d, column %d: Incompatible type undef in %s statement\n",
                     stmt->tkn->line, stmt->tkn->col, stmt->tkn->value);
@@ -489,7 +489,7 @@ f_params* check_params(symtab** funtab, param_dec* params) {
         faux->next = NULL;
         new_param = insert_el(funtab, aux->tkn->value, aux->tkn->line, aux->tkn->col, faux->type, 0, 0, 1, 0);
         if (!new_param) {
-            printf("Line %d, column %d: Symbol %s already defined\n", 
+            printf("Line %d, column %d: Symbol %s already defined\n",
                 aux->tkn->line, aux->tkn->col, aux->tkn->value);
             return NULL;
         }

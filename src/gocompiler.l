@@ -125,8 +125,7 @@ int main(int argc, char** argv) {
 			if (sflag) {
 				show_tables(global, program);
 				print_annotations(program);
-			}
-			if (status == 0) codegen(program, global);
+			} else if (status == 0) codegen(program, global);
 		}
 	} else status = 1;
 

@@ -515,7 +515,7 @@ void destroy_expr(expr* node) {
     // destroy expression operands
     if (node->type == e_func)
         destroy_func_invoc(node->arg1.call);
-    else 
+    else
         destroy_expr(node->arg1.exp_1);
     destroy_expr(node->arg2);
     free(node);

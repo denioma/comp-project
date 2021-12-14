@@ -13,7 +13,7 @@ struct symtables {
 const char t_types[6][7] = {"i32", "double", "i1", "", "void", ""};
 
 void cgen_load(const t_type type, char* id) {
-    printf("\t %%%d = load %s, %s* ", tmp++, t_types[type], t_types[type]);
+    printf("\t%%%d = load %s, %s* ", tmp++, t_types[type], t_types[type]);
     if (search_el(tables.local, id))
         printf("%%%s\n", id);
     else
@@ -21,7 +21,7 @@ void cgen_load(const t_type type, char* id) {
 }
 
 void cgen_store(const t_type type, char* id) {
-    printf("\tstore %s %%%d, %s* ", t_types[type], tmp++, t_types[type]);
+    printf("\tstore %s %%%d, %s* ", t_types[type], tmp-1, t_types[type]);
     if (search_el(tables.local, id))
         printf("%%%s\n", id);
     else
@@ -57,7 +57,7 @@ void cgen_call(expr* expression) {
     }
     printf("call %s @%s(", t_types[function->type], function->id);
     for (;params;params = params->next) {
-        /* TODO cgen call args */        
+        /* TODO cgen call args */
     }
     puts(")");
 }
@@ -96,9 +96,7 @@ void cgen_expression(expr* expression) {
         cgen_call(expression);
         break;
     case e_id:
-        if (search_el(tables.local, expression->tkn->value)) {
-            // TODO
-        }
+        cgen_load(expression->annotation, expression->tkn->value);
         break;
     case e_int:
         printf("\t%%%d = add i32 %s, 0\n",
@@ -112,14 +110,13 @@ void cgen_expression(expr* expression) {
 }
 
 void cgen_assign(assign_stmt* stmt) {
-    puts("\t; TODO cgen_expression()");
     cgen_expression(stmt->expression);
     cgen_store(stmt->type, stmt->var->value);
 }
 
-void cgen_return(stmt_dec* stmt) {
-    cgen_expression(stmt->dec.d_expr);
-    printf("\tret %s %%%d\n", t_types[tables.local->type], tmp);
+void cgen_return(expr* expression) {
+    cgen_expression(expression);
+    printf("\tret %s %%%d\n", t_types[tables.local->type], tmp-1);
 }
 
 void cgen_print() {
@@ -128,12 +125,15 @@ void cgen_print() {
 }
 
 void cgen_stmt(stmt_dec* stmt) {
+    stmt_block* block;
     switch (stmt->type) {
         case s_assign:
             cgen_assign(stmt->dec.d_assign);
             break;
         case s_block:
-            // cgen_block();
+            block = stmt->dec.d_block;
+            for (;block;block = block->next)
+                cgen_stmt(block->stmt);
             break;
         case s_call:
             cgen_call(stmt->dec.d_expr);
@@ -148,10 +148,11 @@ void cgen_stmt(stmt_dec* stmt) {
             // cgen_parse();
             break;
         case s_print:
+            /* TODO not finished */
             cgen_print();
             break;
         case s_return:
-            cgen_return(stmt);
+            cgen_return(stmt->dec.d_expr);
             break;
         }
 }
@@ -168,16 +169,17 @@ void cgen_alloca_params() {
 
 }
 
+void cgen_func_var(var_dec* var) {
+    printf("\t%%%s = alloca %s\n",
+        var->tkn->value, t_types[var->type]);
+}
+
 void cgen_func_body(func_body* body) {
     cgen_alloca_params();
     func_body *aux = body;
-    stmt_dec* stmt;
     for (;aux;aux = aux->next) {
-        if (aux->type == b_var);
-        else {
-            stmt = aux->dec.stmt;
-            cgen_stmt(stmt);
-        };
+        if (aux->type == b_var) cgen_func_var(aux->dec.var);
+        else cgen_stmt(aux->dec.stmt);
     }
 }
 
