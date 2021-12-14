@@ -12,6 +12,9 @@ y.tab.c
 y.tab.h
 y.output
 
+# Tests
+test.*
+
 # Output
 gocompiler
 
