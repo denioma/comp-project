@@ -1,9 +1,42 @@
 #include "codegen.h"
 #include "semantic.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 char declare_puts = 0;
 int tmp;
+
+typedef struct {
+    int size;
+    int capacity;
+    int *data;
+} int_vector;
+
+void init(int_vector* vector) {
+    vector->size = 0;
+    vector->capacity = 10;
+    vector->data = malloc(vector->capacity * sizeof(*vector->data));
+}
+
+void clean(int_vector* vector) {
+    vector->size = 0;
+    vector->capacity = 0;
+    if (vector->data) free(vector->data);
+    vector->data = 0;
+}
+
+void push(int_vector* vector, int value) {
+    if (vector->size == vector->capacity) {
+        vector->capacity += 10;
+        vector->data = realloc(vector->data, vector->capacity * sizeof(*vector->data));
+    }
+    vector->data[vector->size++] = value;
+}
+
+int get(int_vector* vector, int index) {
+    if (index >= vector->size || index < 0) return 0;
+    return vector->data[index];
+}
 
 struct symtables {
     symtab *global;
@@ -49,31 +82,70 @@ void cgen_type(t_type type) {
 
 void cgen_call(expr* expression) {
     func_invoc* call = expression->arg1.call;
-    f_invoc_opts* params = call->opts;
+    f_invoc_opts* opts = call->opts;
+    f_params* params = call->params;
     symtab* function = search_el(tables.global, call->tkn->value);
+    int_vector vector;
+    init(&vector);
+    for (;opts;opts = opts->next) {
+        cgen_expression(opts->opt);
+        push(&vector, tmp-1);
+    }
     printf("\t");
     if (function->type != t_void) {
         printf("%%%d = ", tmp++);
     }
     printf("call %s @%s(", t_types[function->type], function->id);
+    int i = 0;
     for (;params;params = params->next) {
-        /* TODO cgen call args */
+        if (params != call->params) printf(", ");
+        cgen_type(params->type);
+        printf(" %%%d", get(&vector, i++));
     }
     puts(")");
+    clean(&vector);
 }
 
 void cgen_expression(expr* expression) {
     /* TODO Finish expression code gen */
+    int tmp1, tmp2;
     switch (expression->type) {
     case e_expr:
+        cgen_expression(expression->arg1.exp_1);
+        tmp1 = tmp-1;
+        if (expression->arg2) {
+            cgen_expression(expression->arg2);
+            tmp2 = tmp-1;
+        }
         switch (expression->operator) {
         // Binary operators
         case op_add:
+            printf("\t%%%d = ", tmp++);
+            if (expression->annotation == t_float32)
+                printf("fadd");
+            else printf("add");
+            printf(" %s %%%d, %%%d\n", t_types[expression->annotation], tmp1, tmp2);
+            break;
         case op_sub:
+            printf("\t%%%d = ", tmp++);
+            if (expression->annotation == t_float32)
+                printf("fsub");
+            else printf("sub");
+            printf(" %s %%%d, %%%d\n", t_types[expression->annotation], tmp1, tmp2);
+            break;
         case op_div:
+            printf("\t%%%d = ", tmp++);
+            if (expression->annotation == t_float32)
+                printf("fdiv");
+            else printf("sdiv");
+            printf(" %s %%%d, %%%d\n", t_types[expression->annotation], tmp1, tmp2);
+            break;
         case op_mul:
-            cgen_expression(expression->arg1.exp_1);
-            cgen_expression(expression->arg2);
+            printf("\t%%%d = ", tmp++);
+            if (expression->annotation == t_float32)
+                printf("fmul");
+            else printf("mul");
+            printf(" %s %%%d, %%%d\n", t_types[expression->annotation], tmp1, tmp2);
             break;
         // Unary operators
         case op_plus:
@@ -103,7 +175,7 @@ void cgen_expression(expr* expression) {
             tmp++, expression->tkn->value);
         break;
     case e_real:
-        printf("\t%%%d = add double %s, 0\n",
+        printf("\t%%%d = fadd double %s, 0.0\n",
             tmp++, expression->tkn->value);
         break;
     }
@@ -193,7 +265,6 @@ void cgen_func_params(param_dec* params) {
         if (aux != params) printf(", ");
         cgen_type(convert_v_type(aux->typespec));
         printf(" %%a.%s", aux->tkn->value);
-        tmp += 1;
     }
 }
 

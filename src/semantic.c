@@ -299,7 +299,7 @@ int check_return(symtab* globaltab, symtab* functab, stmt_dec* stmt) {
 
 
     printf("Line %d, column %d: Incompatible type ",
-        stmt->dec.d_expr->tkn->line, stmt->dec.d_expr->tkn->col);
+        stmt->tkn->line, stmt->tkn->col);
     print_sym_type(type);
     printf(" in return statement\n");
     return 1;

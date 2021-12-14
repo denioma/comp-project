@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
 		if (tflag) {
 			print_ast(program);
 		} else {
-			if (semantic_check(&global, program)) status =1;
+			if (semantic_check(&global, program)) status = 1;
 			if (sflag) {
 				show_tables(global, program);
 				print_annotations(program);
