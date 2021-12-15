@@ -109,8 +109,10 @@ void cgen_call(expr* expression) {
 void cgen_expression(expr* expression) {
     /* TODO Finish expression code gen */
     int tmp1, tmp2;
+    t_type type;
     switch (expression->type) {
     case e_expr:
+        type = expression->arg1.exp_1->annotation;
         cgen_expression(expression->arg1.exp_1);
         tmp1 = tmp-1;
         if (expression->arg2) {
@@ -149,57 +151,75 @@ void cgen_expression(expr* expression) {
             break;
         // Unary operators
         case op_plus:
+            break;
         case op_minus:
+            break;
         case op_and:
+            break;
+        case op_or:
+            break;
         case op_eq:
             printf("\t%%%d = ", tmp++);
-            if (expression->arg1.exp_1->annotation == t_float32)
+            if (type == t_float32)
                 printf("fcmp");
             else
                 printf("icmp");
             printf(" eq %s %%%d, %%%d\n",
-                t_types[expression->arg1.exp_1->annotation], tmp1, tmp2);
+                t_types[type], tmp1, tmp2);
+            break;
+        case op_ne:
+        printf("\t%%%d = ", tmp++);
+            if (type == t_float32)
+                printf("fcmp");
+            else
+                printf("icmp");
+            printf(" ne %s %%%d, %%%d\n",
+                t_types[type], tmp1, tmp2);
             break;
         case op_ge:
             printf("\t%%%d = ", tmp++);
-            if (expression->arg1.exp_1->annotation == t_float32)
+            if (type == t_float32)
                 printf("fcmp");
             else
                 printf("icmp");
             printf(" sge %s %%%d, %%%d\n",
-                t_types[expression->arg1.exp_1->annotation], tmp1, tmp2);
+                t_types[type], tmp1, tmp2);
             break;
         case op_gt:
             printf("\t%%%d = ", tmp++);
-            if (expression->arg1.exp_1->annotation == t_float32)
+            if (type == t_float32)
                 printf("fcmp");
             else
                 printf("icmp");
             printf(" sgt %s %%%d, %%%d\n",
-                t_types[expression->arg1.exp_1->annotation], tmp1, tmp2);
+                t_types[type], tmp1, tmp2);
             break;
         case op_le:
             printf("\t%%%d = ", tmp++);
-            if (expression->arg1.exp_1->annotation == t_float32)
+            if (type == t_float32)
                 printf("fcmp");
             else
                 printf("icmp");
             printf(" sle %s %%%d, %%%d\n",
-                t_types[expression->arg1.exp_1->annotation], tmp1, tmp2);
+                t_types[type], tmp1, tmp2);
             break;
         case op_lt:
             printf("\t%%%d = ", tmp++);
-            if (expression->arg1.exp_1->annotation == t_float32)
+            if (type == t_float32)
                 printf("fcmp");
             else
                 printf("icmp");
             printf(" slt %s %%%d, %%%d\n",
-                t_types[expression->arg1.exp_1->annotation], tmp1, tmp2);
+                t_types[type], tmp1, tmp2);
             break;
         case op_mod:
-        case op_ne:
+            printf("\t%%%d = srem %s %%%d, %%%d\n",
+                tmp++, t_types[type], tmp1, tmp2);
+            break;
         case op_not:
-        case op_or:
+            printf("\t%%%d = sub %s 1, %%%d\n",
+                tmp++, t_types[type], tmp1);
+            break;
         case nop:
             break;
         }
