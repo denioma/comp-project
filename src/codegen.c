@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 char declare_puts = 0;
-int tmp, if_cnt = 0;
+int tmp, if_cnt = 0, for_cnt = 0;
 
 typedef struct {
     int size;
@@ -284,6 +284,17 @@ void cgen_block(stmt_block* block) {
         cgen_stmt(aux->stmt);
 }
 
+void cgen_for(for_stmt* stmt) {
+    printf("\tbr label %%cfor%d\n", ++for_cnt);
+    printf("\tcfor%d:\n", for_cnt);
+    cgen_expression(stmt->condition);
+    printf("\tbr i1 %%%d, label %%loop%d, label %%pool%d", tmp-1, for_cnt, for_cnt);
+    printf("\tloop%d:\n", for_cnt);
+    cgen_stmt(stmt->block);
+    printf("\tbr label %%cfor%d\n", for_cnt);
+    printf("\tpool%d:\n", for_cnt);
+}
+
 void cgen_stmt(stmt_dec* stmt) {
     stmt_block* block;
     switch (stmt->type) {
@@ -297,7 +308,7 @@ void cgen_stmt(stmt_dec* stmt) {
             cgen_call(stmt->dec.d_expr);
             break;
         case s_for:
-            // cgen_for();
+            cgen_for(stmt->dec.d_for);
             break;
         case s_if:
             cgen_if(stmt->dec.d_if);
