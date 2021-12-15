@@ -8,7 +8,10 @@ extern void print_sym_type(t_type);
 t_type check_expr(symtab* globaltab, symtab* functab, expr* expression);
 int check_statement(symtab** globaltab, symtab** functab, stmt_dec* stmt);
 
+int errors = 0;
+
 void no_symbol(int line, int col, char* id, char is_func, f_invoc_opts* params, symtab* global, symtab* func) {
+    errors++;
     if (!is_func) {
         printf("Line %d, column %d: Cannot find symbol %s\n", line, col, id);
         return;
@@ -28,6 +31,7 @@ void no_symbol(int line, int col, char* id, char is_func, f_invoc_opts* params, 
 }
 
 void op_type(int line, int col, char* op, t_type type1) {
+    errors++;
     printf("Line %d, column %d: Operator %s cannot be applied to type ",
         line, col, op);
     print_sym_type(type1);
@@ -35,6 +39,7 @@ void op_type(int line, int col, char* op, t_type type1) {
 }
 
 void op_types2(int line, int col, char* op, t_type type1, t_type type2) {
+    errors++;
     printf("Line %d, column %d: Operator %s cannot be applied to types ",
         line, col, op);
     print_sym_type(type1);
@@ -235,7 +240,7 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
             case op_minus:
             case op_plus:
                 type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
-                if (type1 == t_bool || type1 == t_void) {
+                if (type1 == t_bool || type1 == t_void || type1 == t_string) {
                     op_type(tkn->line, tkn->col, tkn->value, type1);
                     expression->annotation = t_undef;
                     return t_undef;
@@ -523,8 +528,7 @@ int define_func(symtab** tab, func_dec* func) {
 }
 
 int semantic_check(symtab** tab, prog_node* program) {
-    if (!program) return 0;
-    int errors = 0;
+    if (!program) return 1;
 
     /*
     ** b() declared after a() can still be reachable/called by a()
