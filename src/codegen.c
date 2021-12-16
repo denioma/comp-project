@@ -170,7 +170,7 @@ struct symtables {
     symtab *local;
 } tables;
 
-const char t_types[6][7] = {"i32", "double", "i1", "", "void", ""};
+const char t_types[6][7] = {"i32", "double", "i1", "", "i32", ""};
 
 void cgen_load(const t_type type, char* id) {
     printf("\t%%%d = load %s, %s* ", tmp++, t_types[type], t_types[type]);
@@ -591,8 +591,7 @@ void cgen_func_params(param_dec* params) {
 void cgen_func(func_dec* func) {
     tmp = 1;
     tables.local = func->localsym;
-    printf("define ");
-    cgen_type(func->localsym->type);
+    printf("define %s", t_types[func->localsym->type]);
     printf(" @%s(", func->f_header->tkn->value);
     if (strcmp("main", func->f_header->tkn->value) == 0) {
         printf("i32 %%argc, i8** %%argv");
@@ -601,9 +600,7 @@ void cgen_func(func_dec* func) {
     cgen_func_params(func->f_header->param);
     puts(") {");
     cgen_func_body(func->f_body);
-    if (tables.local->type != t_void) 
-        printf("\tret %s 0\n", t_types[tables.local->type]);
-    else printf("\tret void\n");
+    printf("\tret %s 0\n", t_types[tables.local->type]);
     puts("}\n");
 }
 
@@ -621,6 +618,10 @@ void codegen(prog_node* program, symtab* global) {
     str_init(&strings);
     if (!program) return;
     dec_node* dec = program->dlist;
+    if (!dec) {
+        puts("define i32 @main(i32, i8**) {\n\tret i32 0\n}");
+        return;
+    }
     for (;dec;dec = dec->next) {
         if (dec->type == d_var)
             cgen_global(dec->dec.var);
