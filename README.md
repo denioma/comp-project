@@ -26,14 +26,14 @@ Change reallits to conform to standard
 ## Mooshak
 
 ```
-B: 24/41
-C: 12/59
+B: 32/41
+C: 6/59
 D: 3/54
-E: 0/55
-F: 16/41
+E: 41/55
+F: 30/41
 
-Total: 55/250
-Missing: 195
+Total: 112/250
+Missing: 138
 ```
 
 # Meta 3

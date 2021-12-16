@@ -255,6 +255,7 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
             call = expression->arg1.call;
             symbol = search_el(globaltab, call->tkn->value);
             if (symbol) {
+                expression->annotation = symbol->type;
                 call->annotation = symbol->type;
                 call->params = symbol->params;
                 check = check_call_params(globaltab, functab, symbol->params, call->opts);

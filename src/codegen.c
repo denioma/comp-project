@@ -11,7 +11,7 @@ const char fdouble[] = "@.double = private unnamed_addr constant [7 x i8] c\"%.0
 const char ftrue[] = "@.true = private unnamed_addr constant [5 x i8] c\"true\\00\"";
 const char ffalse[] = "@.false = private unnamed_addr constant [6 x i8] c\"false\\00\"";
 
-char declare_prints = 0, declare_atoi = 0;
+char ret = 0, declare_prints = 0, declare_atoi = 0;
 int tmp, if_cnt = 0, for_cnt = 0, bool_cnt = 0, str_count = 0;
 
 typedef struct {
@@ -170,14 +170,20 @@ struct symtables {
     symtab *local;
 } tables;
 
-const char t_types[6][7] = {"i32", "double", "i1", "", "i32", ""};
+const char t_types[6][7] = {"i32", "double", "i1", "i8*", "i32", ""};
 
 void cgen_load(const t_type type, char* id) {
-    printf("\t%%%d = load %s, %s* ", tmp++, t_types[type], t_types[type]);
-    if (search_el(tables.local, id))
-        printf("%%%s\n", id);
-    else
-        printf("@%s\n", id);
+    symtab* is_local = search_el(tables.local, id);
+    if (is_local)
+        printf("\t%%%d = load %s, %s* %%%s\n", tmp++, t_types[type], t_types[type], id);
+    else {
+        symtab* symbol = search_el(tables.global, id);
+        printf("\t; type = %d\n", symbol->type);
+        if (symbol->type == t_string)
+            printf("\t%%%d = getelementptr [1 x i8], [1 x i8]* @%s, i1 0, i1 0\n", tmp++, id);
+        else 
+            printf("\t%%%d = load %s, %s* @%s\n", tmp++, t_types[type], t_types[type], id);
+    }
 }
 
 void cgen_store(const t_type type, char* id) {
@@ -230,8 +236,7 @@ void cgen_call_expr(expr* expression) {
     int i = 0;
     for (;params;params = params->next) {
         if (params != call->params) printf(", ");
-        cgen_type(params->type);
-        printf(" %%%d", int_get(&vector, i++));
+        printf("%s %%%d", t_types[params->type],int_get(&vector, i++));
     }
     puts(")");
     int_clean(&vector);
@@ -253,21 +258,22 @@ void cgen_call_fi(func_invoc* call) {
     }
     printf("\t");
     if (function->type != t_void) {
-        printf("%%%d = ", tmp++);
+        printf("%%%d = ", tmp);
     }
     printf("call %s @%s(", t_types[function->type], function->id);
     int i = 0;
     for (;params;params = params->next) {
         if (params != call->params) printf(", ");
-        cgen_type(params->type);
-        printf(" %%%d", int_get(&vector, i++));
+        printf("%s %%%d", t_types[params->type], int_get(&vector, i++));
     }
     puts(")");
     int_clean(&vector);
+    tmp++;
 }
 
 void cgen_expression(expr* expression) {
     int tmp1, tmp2;
+    double real;
     t_type type;
     switch (expression->type) {
     case e_expr:
@@ -326,55 +332,55 @@ void cgen_expression(expr* expression) {
         case op_eq:
             printf("\t%%%d = ", tmp++);
             if (type == t_float32)
-                printf("fcmp");
+                printf("fcmp oeq");
             else
-                printf("icmp");
-            printf(" eq %s %%%d, %%%d\n",
+                printf("icmp eq");
+            printf(" %s %%%d, %%%d\n",
                 t_types[type], tmp1, tmp2);
             break;
         case op_ne:
         printf("\t%%%d = ", tmp++);
             if (type == t_float32)
-                printf("fcmp");
+                printf("fcmp one");
             else
-                printf("icmp");
-            printf(" ne %s %%%d, %%%d\n",
+                printf("icmp ne");
+            printf(" %s %%%d, %%%d\n",
                 t_types[type], tmp1, tmp2);
             break;
         case op_ge:
             printf("\t%%%d = ", tmp++);
             if (type == t_float32)
-                printf("fcmp");
+                printf("fcmp oge");
             else
-                printf("icmp");
-            printf(" sge %s %%%d, %%%d\n",
+                printf("icmp sge");
+            printf(" %s %%%d, %%%d\n",
                 t_types[type], tmp1, tmp2);
             break;
         case op_gt:
             printf("\t%%%d = ", tmp++);
             if (type == t_float32)
-                printf("fcmp");
+                printf("fcmp ogt");
             else
-                printf("icmp");
-            printf(" sgt %s %%%d, %%%d\n",
+                printf("icmp sgt");
+            printf(" %s %%%d, %%%d\n",
                 t_types[type], tmp1, tmp2);
             break;
         case op_le:
             printf("\t%%%d = ", tmp++);
             if (type == t_float32)
-                printf("fcmp");
+                printf("fcmp ole");
             else
-                printf("icmp");
-            printf(" sle %s %%%d, %%%d\n",
+                printf("icmp sle");
+            printf(" %s %%%d, %%%d\n",
                 t_types[type], tmp1, tmp2);
             break;
         case op_lt:
             printf("\t%%%d = ", tmp++);
             if (type == t_float32)
-                printf("fcmp");
+                printf("fcmp olt");
             else
-                printf("icmp");
-            printf(" slt %s %%%d, %%%d\n",
+                printf("icmp slt");
+            printf(" %s %%%d, %%%d\n",
                 t_types[type], tmp1, tmp2);
             break;
         case op_mod:
@@ -400,8 +406,9 @@ void cgen_expression(expr* expression) {
             tmp++, expression->tkn->value);
         break;
     case e_real:
-        printf("\t%%%d = fadd double %s, 0.0\n",
-            tmp++, expression->tkn->value);
+        real = atof(expression->tkn->value);
+        printf("\t%%%d = fadd double %.08f, 0.0\n",
+            tmp++, real);
         break;
     }
 }
@@ -446,6 +453,9 @@ void cgen_print(print_stmt* stmt) {
             printf("\tprint%d:\n", bool_cnt);
             tmp++;
             break;
+        case t_string:
+            printf("\tcall i32 @puts(i8* %%%d)\n", tmp1);
+            break;
         default:
             break;
         }
@@ -460,31 +470,37 @@ void cgen_print(print_stmt* stmt) {
 
 void cgen_if(if_stmt* stmt) {
     char is_else;
+    int cnt = if_cnt++;
     if (stmt->block2->dec.d_block) is_else = 1;
     else is_else = 0;
     cgen_expression(stmt->condition);
     printf("\tbr i1 %%%d, label %%if%d, label ",
-        tmp-1, ++if_cnt);
+        tmp-1, cnt);
     if (!is_else)
-        printf("%%fi%d\n", if_cnt);
+        printf("%%fi%d\n", cnt);
     else
-        printf("%%else%d\n", if_cnt);
-    printf("\tif%d:\n", if_cnt);
+        printf("%%else%d\n", cnt);
+    printf("\tif%d:\n", cnt);
     cgen_stmt(stmt->block1);
+    if (!ret) printf("\tbr label %%fi%d\n", cnt);
+    else ret = 0;
     if (is_else) {
-        printf("\tbr label %%fi%d\n", if_cnt);
-        printf("\telse%d:\n", if_cnt);
+        printf("\telse%d:\n", cnt);
         cgen_stmt(stmt->block2);
-        printf("\tbr label %%fi%d\n", if_cnt);
+        if (!ret) printf("\tbr label %%fi%d\n", cnt);
+        else ret = 0;
     }
-    printf("\tfi%d:\n", if_cnt);
+    printf("\tfi%d:\n", cnt);
 }
 
 void cgen_block(stmt_block* block) {
+    ret = 0;
     if (!block) return;
     stmt_block* aux = block;
-    for (;aux;aux = aux->next)
+    for (;aux;aux = aux->next) {
         cgen_stmt(aux->stmt);
+        if (aux->stmt->type == s_return) ret = 1;
+    }
 }
 
 void cgen_for(for_stmt* stmt) {
@@ -554,7 +570,7 @@ void cgen_alloca_params() {
 
 void cgen_func_var(var_dec* var) {
     printf("\t%%%s = alloca %s\n",
-        var->tkn->value, t_types[var->type]);
+            var->tkn->value, t_types[var->type]);
     switch (var->type) {
     case t_int:
         printf("\tstore i32 0, i32* %%%s\n", var->tkn->value);
@@ -583,8 +599,7 @@ void cgen_func_params(param_dec* params) {
     param_dec* aux = params;
     for (;aux;aux = aux->next) {
         if (aux != params) printf(", ");
-        cgen_type(convert_v_type(aux->typespec));
-        printf(" %%a.%s", aux->tkn->value);
+        printf("%s %%a.%s", t_types[convert_v_type(aux->typespec)], aux->tkn->value);
     }
 }
 
@@ -600,16 +615,21 @@ void cgen_func(func_dec* func) {
     cgen_func_params(func->f_header->param);
     puts(") {");
     cgen_func_body(func->f_body);
-    printf("\tret %s 0\n", t_types[tables.local->type]);
+    if (tables.local->type != t_string) {
+        printf("\tret %s ", t_types[tables.local->type]);
+        if (tables.local->type == t_float32) puts("0.0");
+        else puts("0");
+    }
     puts("}\n");
 }
 
 void cgen_global(var_dec* var) {
-    if (var->typespec != v_string) {
-        printf("@%s = global ", var->tkn->value);
-        cgen_type(var->type);
+    if (var->type == t_string) {
+        printf("@%s = global [1 x i8] zeroinitializer\n", var->tkn->value);
+    } else {
+        printf("@%s = global %s", var->tkn->value, t_types[var->type]);
         if (var->type == t_float32) puts(" 0.0\n");
-        else puts(" 0\n");
+        else puts(" 0");
     }
 }
 
