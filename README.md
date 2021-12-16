@@ -27,12 +27,12 @@ Change reallits to conform to standard
 
 ```
 B: 32/41
-C: 6/59
-D: 3/54
-E: 41/55
+C: 18/59
+D: 6/54
+E: 55/55
 F: 30/41
 
-Total: 112/250
+Total: 141/250
 Missing: 138
 ```
 

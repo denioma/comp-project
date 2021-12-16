@@ -174,13 +174,14 @@ const char t_types[6][7] = {"i32", "double", "i1", "i8*", "i32", ""};
 
 void cgen_load(const t_type type, char* id) {
     symtab* is_local = search_el(tables.local, id);
-    if (is_local)
-        printf("\t%%%d = load %s, %s* %%%s\n", tmp++, t_types[type], t_types[type], id);
-    else {
-        symtab* symbol = search_el(tables.global, id);
-        printf("\t; type = %d\n", symbol->type);
-        if (symbol->type == t_string)
+    if (type == t_string) {
+        if (is_local)
+            printf("\t%%%d = load i8*, i8** %%%s\n", tmp++, id);
+        else
             printf("\t%%%d = getelementptr [1 x i8], [1 x i8]* @%s, i1 0, i1 0\n", tmp++, id);
+    } else {
+        if (is_local)
+            printf("\t%%%d = load %s, %s* %%%s\n", tmp++, t_types[type], t_types[type], id);
         else 
             printf("\t%%%d = load %s, %s* @%s\n", tmp++, t_types[type], t_types[type], id);
     }
@@ -326,8 +327,10 @@ void cgen_expression(expr* expression) {
             printf(", %%%d\n", tmp1);
             break;
         case op_and:
+            printf("\t%%%d = and i1 %%%d, %%%d\n", tmp++, tmp1, tmp2);
             break;
         case op_or:
+            printf("\t%%%d = or i1 %%%d, %%%d\n", tmp++, tmp1, tmp2);
             break;
         case op_eq:
             printf("\t%%%d = ", tmp++);
@@ -581,6 +584,9 @@ void cgen_func_var(var_dec* var) {
     case t_bool:
         printf("\tstore i1 0, i1* %%%s\n", var->tkn->value);
         break;
+    case t_string:
+        printf("\tstore i8* getelementptr inbounds ([1 x i8], [1 x i8]* @.str.empty, i1 0, i1 0), i8** %%%s\n", var->tkn->value);
+        break;
     default:
         break;
     }
@@ -662,6 +668,7 @@ void codegen(prog_node* program, symtab* global) {
         printf("%s\n", ffalse);
     }
 
+    printf("@.str.empty = private unnamed_addr constant [1 x i8] zeroinitializer\n");
     for (int i = 0; i < strings.size; i++) {
         printf("@.str.%d = private unnamed_addr constant [%d x i8] c\"%s\\00\"\n",
             i, size_get(&strings, i), str_get(&strings, i));
