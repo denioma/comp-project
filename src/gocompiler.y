@@ -10,9 +10,7 @@
 %}
 %union{
     token* tkn;
-    char* token;
     dec_node* decl;
-    var_dec* var;
     func_dec* func;
     v_type var_type;
     prog_node* prog;
@@ -42,6 +40,16 @@
 %type <s_call> FuncInvocation
 %type <fi_opts> FuncInvocationOpts ExprReps
 
+%destructor {if (!build) destroy_tkn($$);} <tkn>
+%destructor {if (!build) destroy_dec($$);} <decl>
+%destructor {if (!build) destroy_func($$);} <func>
+%destructor {if (!build) destroy_func_params($$);} <params>
+%destructor {if (!build) destroy_func_body($$);} <f_body>
+%destructor {if (!build) destroy_stmt_dec($$);} <stmt>
+%destructor {if (!build) destroy_expr($$);} <expression>
+%destructor {if (!build) destroy_stmt_block($$);} <s_block>
+%destructor {if (!build) destroy_func_invoc($$);} <s_call>
+%destructor {if (!build) destroy_func_invoc_opts($$);} <fi_opts>
 
 %right ASSIGN
 %left OR

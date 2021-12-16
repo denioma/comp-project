@@ -123,6 +123,7 @@ func_body* create_body_var(dec_node* head) {
 }
 
 func_body* create_body_stmt(stmt_dec* stmt) {
+    if (!stmt) return NULL;
     func_body* body = (func_body*)malloc(sizeof(func_body));
     body->type = b_stmt;
     body->dec.stmt = stmt;

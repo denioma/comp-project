@@ -130,9 +130,11 @@ int main(int argc, char** argv) {
 		}
 	} else {
 		yyparse();
-		if (build) semantic_check(&global, program);
-		destroy_table(global);
-		destroy(program);
+		if (build) {
+			semantic_check(&global, program);
+			destroy_table(global);
+			destroy(program);
+		}
 	}
 	
 	yylex_destroy();
