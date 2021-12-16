@@ -67,9 +67,8 @@ dec_node* set_id_reps_head(dec_node* head, token* tkn, v_type typespec) {
     for (dec_node* tmp = head; tmp; tmp = tmp->next) {
         tmp->dec.var->typespec = typespec;
     }
-
     n_head->next = head;
-    ;
+    
     return n_head;
 }
 
