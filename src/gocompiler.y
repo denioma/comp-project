@@ -162,8 +162,8 @@ ExprOpt:
 ;
 
 ParseArgs: 
-        ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ Expr RSQ RPAR     {if (build) $$=create_pargs($5, $1, $9);}
-    |   ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ error RSQ RPAR    {$$=NULL;} 
+        ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ Expr RSQ RPAR     {if (build) $$=create_pargs($5, $1, $9); destroy_tkn($4);}
+    |   ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ error RSQ RPAR    {$$=NULL; destroy_tkn($4);} 
 ;
 
 FuncInvocation: 

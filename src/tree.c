@@ -191,7 +191,7 @@ stmt_dec* create_pargs(token* tkn, token* var, expr* index) {
 stmt_dec* create_print(token* tkn, token* strlit, expr* expression) {
     print_stmt* print = (print_stmt*)malloc(sizeof(print_stmt));
     print->tkn = tkn;
-    if (strlit) print->strlit = strlit->value;
+    if (strlit) {print->strlit = strlit->value; free(strlit);}
     else print->strlit = NULL;
     print->expression = expression;
 
@@ -330,6 +330,8 @@ func_invoc* create_func_invocation(token* tkn, f_invoc_opts* opts) {
     func_invoc* fi = (func_invoc*)malloc(sizeof(func_invoc));
     fi->tkn = tkn;
     fi->opts = opts;
+    fi->annotation = t_undef;
+    fi->params = NULL;
 
     return fi;
 }
@@ -464,7 +466,7 @@ void destroy_assign_stmt(assign_stmt* node) {
 void destroy_print_stmt(print_stmt* node) {
     if (!node) return;
     destroy_tkn(node->tkn);
-    // destroy string literal ???
+    if (node->strlit) free(node->strlit);
     if (node->expression) destroy_expr(node->expression);
     free(node);
 }
