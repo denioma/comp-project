@@ -10,7 +10,7 @@ int check_statement(symtab** globaltab, symtab** functab, stmt_dec* stmt);
 
 int errors = 0;
 
-void no_symbol(int line, int col, char* id, char is_func, f_invoc_opts* params, symtab* global, symtab* func) {
+void no_symbol(int line, int col, char* id, char is_func, f_invoc_opts* params) {
     errors++;
     if (!is_func) {
         printf("Line %d, column %d: Cannot find symbol %s\n", line, col, id);
@@ -261,7 +261,7 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
                 type1 = symbol->type;
             } else check = check_call_params(globaltab, functab, NULL, call->opts);
             if (symbol && check) return type1;
-            no_symbol(call->tkn->line, call->tkn->col, call->tkn->value, 1, call->opts, globaltab, functab);
+            no_symbol(call->tkn->line, call->tkn->col, call->tkn->value, 1, call->opts);
             return t_undef;
             break;
         case e_id:
@@ -272,7 +272,7 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
                 expression->annotation = symbol->type;
                 return symbol->type;
             }
-            no_symbol(tkn->line, tkn->col, tkn->value, 0, 0, 0, 0);
+            no_symbol(tkn->line, tkn->col, tkn->value, 0, 0);
             expression->annotation = t_undef;
             return t_undef;
         default:
@@ -291,7 +291,7 @@ int check_call(symtab* global, symtab* func, func_invoc* call) {
         check = check_call_params(global, func, symbol->params, call->opts);
     } else check_call_params(global, func, NULL, call->opts);
     if (symbol && check) return 0;
-    no_symbol(call->tkn->line, call->tkn->col, id, 1, call->opts, global, func);
+    no_symbol(call->tkn->line, call->tkn->col, id, 1, call->opts);
     return 1;
 }
 
@@ -317,7 +317,7 @@ int check_for(symtab* globaltab, symtab* functab, for_stmt* stmt) {
         if (type == t_undef && stmt->condition->type == e_func) {
             token* tkn = stmt->condition->tkn;
             func_invoc* call = stmt->condition->arg1.call;
-            no_symbol(tkn->line, tkn->col, tkn->value, 1, call->opts, globaltab, functab);
+            no_symbol(tkn->line, tkn->col, tkn->value, 1, call->opts);
             errors++;
         } else if (type != t_bool) {
             printf("Line %d, column %d: Incompatible type ",
@@ -338,7 +338,7 @@ int check_if(symtab* globaltab, symtab* functab, if_stmt* stmt) {
         t_type type = check_expr(globaltab, functab, stmt->condition);
         if (type == t_undef && stmt->condition->type == e_func) {
             token* tkn = stmt->condition->tkn;
-            no_symbol(tkn->line, tkn->col, tkn->value, 0, 0, 0, 0);
+            no_symbol(tkn->line, tkn->col, tkn->value, 0, 0);
             errors++;
         } else if (type != t_bool) {
             printf("Line %d, column %d: Incompatible type ",
@@ -380,7 +380,7 @@ int check_parse(symtab* globaltab, symtab* functab, parse_args* stmt) {
     symtab* symbol = search_el(functab, stmt->var->value);
     if (!symbol) symbol = search_el(globaltab, stmt->tkn->value);
     if (!symbol) {
-        no_symbol(stmt->var->line, stmt->var->col, stmt->var->value, 0, 0, 0, 0);
+        no_symbol(stmt->var->line, stmt->var->col, stmt->var->value, 0, 0);
         return 1;
     }
     if (symbol->type != t_int) error = 1;
@@ -403,7 +403,7 @@ int check_assign(symtab* globaltab, symtab* functab, assign_stmt* stmt) {
     if (!symbol) symbol = search_el(globaltab, stmt->var->value);
     if (!symbol || symbol->is_func) {
         stmt->type = t_undef;
-        no_symbol(stmt->var->line, stmt->var->col, stmt->var->value, 0, 0, 0, 0);
+        no_symbol(stmt->var->line, stmt->var->col, stmt->var->value, 0, 0);
         op_types2(stmt->tkn->line, stmt->tkn->col, stmt->tkn->value, t_undef, expr_type);
         return 1;
     }
@@ -562,7 +562,7 @@ int semantic_check(symtab** tab, prog_node* program) {
 
 void print_v_type(v_type type) { print_sym_type(convert_v_type(type)); }
 
-void print_func_table(symtab* global, func_dec* fun) {
+void print_func_table(func_dec* fun) {
     func_header* header = fun->f_header;
     printf("\n===== Function %s(", header->tkn->value);
     // Print return types - parse params typespec
@@ -582,7 +582,7 @@ void show_tables(symtab* global, prog_node* program) {
     dec_node* aux = program->dlist;
     for (; aux; aux = aux->next) {
         if (aux->type == d_func) {
-            print_func_table(global, aux->dec.func);
+            print_func_table(aux->dec.func);
         }
     }
     puts("");

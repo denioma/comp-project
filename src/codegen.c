@@ -267,7 +267,6 @@ void cgen_call_fi(func_invoc* call) {
 }
 
 void cgen_expression(expr* expression) {
-    /* TODO Finish expression code gen */
     int tmp1, tmp2;
     t_type type;
     switch (expression->type) {
@@ -513,7 +512,6 @@ void cgen_parse(parse_args* parse) {
 }
 
 void cgen_stmt(stmt_dec* stmt) {
-    stmt_block* block;
     switch (stmt->type) {
         case s_assign:
             cgen_assign(stmt->dec.d_assign);

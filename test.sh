@@ -23,7 +23,7 @@ for input in $path/*.dgo; do
         else
             out=$(./gocompiler $flag < $filename.dgo | diff $filename.out -)
         fi
-    elif ["$1" = ""]; then
+    elif [ "$1" = "" ]; then
         compile=$(./gocompiler < $filename.dgo > $filename.ll)
         if [ "$filename" = "meta4/parse_args" ]; then
             out=$(lli $filename.ll 0 1 2 3 | diff $filename.out - ) 
@@ -32,6 +32,8 @@ for input in $path/*.dgo; do
         else
             out=$(lli $filename.ll | diff $filename.out - ) 
         fi
+    else
+        out=$(./gocompiler $flag < $filename.dgo | diff $filename.out -)
     fi
     if [ $? -eq 0 ]; then
         echo "✅ PASSED $filename.dgo"
