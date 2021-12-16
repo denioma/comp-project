@@ -126,6 +126,7 @@ int main(int argc, char** argv) {
 	}
 	destroy_table(global);
 	destroy(program);
+	yylex_destroy();
 	return 0;
 }
 
