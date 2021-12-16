@@ -182,6 +182,8 @@ stmt_dec* create_pargs(token* tkn, token* var, expr* index) {
     args->tkn = tkn;
     args->var = var;
     args->index = index;
+    args->type = t_undef;
+
     stmt_dec* stmt = create_stmt(s_parse);
     stmt->dec.d_args = args;
 
@@ -206,6 +208,7 @@ stmt_dec* create_assign(token* tkn, token* var, expr* expression) {
     assign->tkn = tkn;
     assign->var = var;
     assign->expression = expression;
+    assign->type = t_undef;
 
     stmt_dec* stmt = create_stmt(s_assign);
     stmt->dec.d_assign = assign;

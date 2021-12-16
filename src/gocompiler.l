@@ -113,19 +113,28 @@ int main(int argc, char** argv) {
 	if (lflag) yylex();
 	else if (tflag || sflag) {
 		yyparse();
-		if (!build) return 1;
-		else if (tflag) print_ast(program);
+		if (!build) {
+			yylex_destroy();
+			return 1;
+		}
+		else if (tflag) {
+			print_ast(program);
+			destroy(program);
+		}
 		else if (sflag) {
 			semantic_check(&global, program);
 			show_tables(global, program);
 			print_annotations(program);
+			destroy_table(global);
+			destroy(program);
 		}
 	} else {
 		yyparse();
 		if (build) semantic_check(&global, program);
+		destroy_table(global);
+		destroy(program);
 	}
-	destroy_table(global);
-	destroy(program);
+	
 	yylex_destroy();
 	return 0;
 }
