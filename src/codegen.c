@@ -315,9 +315,9 @@ void cgen_expression(expr* expression) {
         case op_minus:
             printf("\t%%%d = ", tmp++); 
             if (type == t_float32)
-                printf("fsub double 0.0");
+                printf("fmul double -1.0");
             else
-                printf("sub i32 0");
+                printf("mul i32 -1");
             printf(", %%%d\n", tmp1);
             break;
         case op_and:

@@ -1,3 +1,7 @@
+# TBD
+
+Insert 0 in doubles like '.xxx' (must be '0.xxx') and + in doubles like 'x.xxxexx' (must be 'x.xxxe+xx')
+
 # Latest:
 
 Code gen for 'for' statement

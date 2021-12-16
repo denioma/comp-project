@@ -7,7 +7,7 @@ func factorial(n int) int {
     return n * factorial(n-1);
 };
 
-func main() int {
+func main() {
     var argument int;
     argument,_ = strconv.Atoi(os.Args[1]);
     fmt.Println(factorial(argument));
