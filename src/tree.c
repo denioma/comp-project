@@ -100,6 +100,7 @@ func_body* create_body_var(dec_node* head) {
     func_body* f_body_head = (func_body*)malloc(sizeof(func_body));
     func_body* body = f_body_head;
 
+    // copy variable declarations from declaration list
     for (dec_node* tmp = head; tmp; tmp = tmp->next) {
         body->type = b_var;
         body->dec.var = tmp->dec.var;
@@ -107,6 +108,15 @@ func_body* create_body_var(dec_node* head) {
             body->next = (func_body*)malloc(sizeof(func_body));
             body = body->next;
         } else body->next = NULL;
+    }
+
+    // destroy declaration list
+    dec_node* cur = head;
+    dec_node* next;
+    while(cur) {
+        next = cur->next;
+        free(cur);
+        cur = next;
     }
 
     return f_body_head;
