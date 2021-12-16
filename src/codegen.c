@@ -40,7 +40,7 @@ int strsize(char* str) {
         if (str[i] == '\\') {
             if (str[i + 1] == '\\' || str[i + 1] == '9')
                 i++;
-            else   
+            else
                 i += 2;
         }
     }
@@ -312,7 +312,7 @@ void cgen_expression(expr* expression) {
         case op_plus:
             break;
         case op_minus:
-            printf("\t%%%d = ", tmp++); 
+            printf("\t%%%d = ", tmp++);
             if (type == t_float32)
                 printf("fmul double -1.0");
             else
@@ -629,7 +629,7 @@ void codegen(prog_node* program, symtab* global) {
             cgen_func(dec->dec.func);
     }
 
-    if (declare_atoi) 
+    if (declare_atoi)
         puts("declare i32 @atoi(i8*) nounwind\n");
 
     if (declare_prints) {
