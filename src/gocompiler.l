@@ -51,7 +51,7 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 "=="			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "EQ\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return EQ;}}
 ">="			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "GE\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return GE;}}
 ">"				{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "GT\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return GT;}}
-"{"				{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "LBRACE\n"); return LBRACE;}
+"{"				{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "LBRACE\n"); else return LBRACE;}
 "<="			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "LE\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return LE;}}
 "("				{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "LPAR\n"); else return LPAR;}
 "["				{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "LSQ\n"); else return LSQ;}
@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
 	if (lflag) {
 		yylex();
 		yylex_destroy();
-		return 0;
+		return status;
 	}
 
 	yyparse();
@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
 	} else status = 1;
 
 	yylex_destroy();
-	return 0;
+	return status;
 }
 
 int yywrap() {
