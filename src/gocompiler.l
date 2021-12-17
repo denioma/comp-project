@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
 	if (lflag) {
 		yylex();
 		yylex_destroy();
-		return status;
+		return 0;
 	}
 
 	yyparse();
@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
 	} else status = 1;
 
 	yylex_destroy();
-	return status;
+	return 0;
 }
 
 int yywrap() {
