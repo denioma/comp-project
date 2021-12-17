@@ -122,10 +122,12 @@ int main(int argc, char** argv) {
 			print_ast(program);
 		} else {
 			if (semantic_check(&global, program)) status = 1;
-			if (sflag) {
-				show_tables(global, program);
-				print_annotations(program);
-			} else if (status == 0) codegen(program, global);
+			else {
+				if (sflag) {
+					show_tables(global, program);
+					print_annotations(program);
+				} else codegen(program, global);
+			}
 		}
 	} else status = 1;
 
