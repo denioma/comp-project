@@ -448,10 +448,10 @@ void cgen_print(print_stmt* stmt) {
             bool_cnt++;
             printf("\tbr i1 %%%d, label %%true%d, label  %%false%d\n", tmp1, bool_cnt, bool_cnt);
             printf("\ttrue%d:\n", bool_cnt);
-            printf("%s ([5 x i8], [5 x i8]* @.true, i1 0, i1 0))\n", call_puts);
+            printf("%s ([4 x i8], [4 x i8]* @.str, i1 0, i1 0), i8* getelementptr inbounds ([5 x i8], [5 x i8]* @.true, i1 0, i1 0))\n", call_printf);
             printf("\tbr label %%print%d\n", bool_cnt);
             printf("\tfalse%d:\n", bool_cnt);
-            printf("%s ([6 x i8], [6 x i8]* @.false, i1 0, i1 0))\n", call_puts);
+            printf("%s ([4 x i8], [4 x i8]* @.str, i1 0, i1 0), i8* getelementptr inbounds ([6 x i8], [6 x i8]* @.false, i1 0, i1 0))\n", call_printf);
             printf("\tbr label %%print%d\n", bool_cnt);
             printf("\tprint%d:\n", bool_cnt);
             tmp++;
