@@ -68,30 +68,39 @@ void strclean(char** str, int size) {
         if (*(*str+i) == '\\') {
             size = strlen(*str);
             c = *(*str+i+1);
-            if (c == '"') {
-                *str = strshift(*str, i+1, &size);
-                *(*str+i+1) = '2';
-                *(*str+i+2) = '2';
-            }
-            else if (c == 't') {
-                *str = strshift(*str, i+1, &size);
-                *(*str+i+1) = '0';
-                *(*str+i+2) = '9';
-            }
-            else if (c == 'n') {
-                *str = strshift(*str, i+1, &size);
-                *(*str+i+1) = '0';
-                *(*str+i+2) = 'A';
-            }
-            else if (c == 'f') {
-                *str = strshift(*str, i+1, &size);
-                *(*str+i+1) = '0';
-                *(*str+i+2) = 'C';
-            }
-            else if (c == 'r') {
-                *str = strshift(*str, i+1, &size);
-                *(*str+i+1) = '0';
-                *(*str+i+2) = 'D';
+            switch (c) {
+                case '\\':
+                    *str = strshift(*str, i+1, &size);
+                    *(*str+i+1) = '5';
+                    *(*str+i+2) = 'C';
+                    break;
+                case '"':
+                    *str = strshift(*str, i+1, &size);
+                    *(*str+i+1) = '2';
+                    *(*str+i+2) = '2';
+                    break;
+                case 'f':
+                    *str = strshift(*str, i+1, &size);
+                    *(*str+i+1) = '0';
+                    *(*str+i+2) = 'C';
+                    break;
+                case 'n':
+                    *str = strshift(*str, i+1, &size);
+                    *(*str+i+1) = '0';
+                    *(*str+i+2) = 'A';
+                    break;
+                case 'r':
+                    *str = strshift(*str, i+1, &size);
+                    *(*str+i+1) = '0';
+                    *(*str+i+2) = 'D';
+                    break;
+                case 't':
+                    *str = strshift(*str, i+1, &size);
+                    *(*str+i+1) = '0';
+                    *(*str+i+2) = '9';
+                    break;
+                default:
+                    break;
             }
         }
     }
@@ -457,7 +466,7 @@ void cgen_print(print_stmt* stmt) {
             tmp++;
             break;
         case t_string:
-            printf("\tcall i32 @puts(i8* %%%d)\n", tmp1);
+            printf("\tcall i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str, i1 0, i1 0), i8* %%%d)\n", tmp1);
             break;
         default:
             break;
