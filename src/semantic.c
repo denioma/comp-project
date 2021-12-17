@@ -379,7 +379,7 @@ int check_print(symtab* globaltab, symtab* functab, print_stmt* stmt) {
 int check_parse(symtab* globaltab, symtab* functab, parse_args* stmt) {
     int error = 0;
     symtab* symbol = search_el(functab, stmt->var->value);
-    if (!symbol) symbol = search_el(globaltab, stmt->tkn->value);
+    if (!symbol) symbol = search_el(globaltab, stmt->var->value);
     if (!symbol) {
         no_symbol(stmt->var->line, stmt->var->col, stmt->var->value, 0, 0);
         return 1;
