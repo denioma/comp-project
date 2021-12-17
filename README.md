@@ -17,9 +17,28 @@ Rodrigo Alexandre da Mota Machado
 
 [Go To Meta 3](#meta-3)
 
+# Meta 4
+
+## Missing
+
+Change reallits to conform to standard
+
+## Mooshak
+
+```
+B: 32/41
+C: 24/59
+D: 6/54
+E: 55/55
+F: 30/41
+
+Total: 147/250
+Missing: 103
+```
+
 # Meta 3
 
-## Mooshak 
+## Mooshak
 
 ```
 B: 25/25
