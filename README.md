@@ -27,13 +27,13 @@ Change reallits to conform to standard
 
 ```
 B: 32/41
-C: 18/59
+C: 24/59
 D: 6/54
 E: 55/55
 F: 30/41
 
-Total: 141/250
-Missing: 138
+Total: 147/250
+Missing: 103
 ```
 
 # Meta 3

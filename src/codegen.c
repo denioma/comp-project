@@ -179,6 +179,37 @@ struct symtables {
     symtab *local;
 } tables;
 
+void str_double(char** str) {
+    char dot = 0, c;
+    int size = strlen(*str);
+    if (*(*str) == '.') {
+        *str = strshift(*str, 0, &size);
+        *(*str) = '0';
+        printf("\t; str = %s\n", *str);
+    }
+    for (int i = 1; i < size; i++) {
+        c = *(*str+i);
+        if (c == '.') dot = 1;
+        if (tolower(c) == 'e') {
+            if (!dot) {
+                dot = 1;
+                *str = strshift(*str, i+1, &size);
+                *str = strshift(*str, i+1, &size);
+                *(*str+i) = '.';
+                *(*str+i+1) = '0';
+                *(*str+i+2) = c;
+                printf("\t; str = %s\n", *str);
+                continue;
+            }
+            if (*(*str+i+1) != '+' && *(*str+i+1) != '-') {
+                *str = strshift(*str, i+1, &size);
+                *(*str+i+1) = '+';
+                printf("\t; str = %s\n", *str);
+            }
+        }
+    }
+}
+
 const char t_types[6][7] = {"i32", "double", "i1", "i8*", "i32", ""};
 
 void cgen_load(const t_type type, char* id) {
@@ -283,7 +314,6 @@ void cgen_call_fi(func_invoc* call) {
 
 void cgen_expression(expr* expression) {
     int tmp1, tmp2;
-    double real;
     t_type type;
     switch (expression->type) {
     case e_expr:
@@ -418,9 +448,9 @@ void cgen_expression(expr* expression) {
             tmp++, expression->tkn->value);
         break;
     case e_real:
-        real = atof(expression->tkn->value);
-        printf("\t%%%d = fadd double %.08f, 0.0\n",
-            tmp++, real);
+        str_double(&expression->tkn->value);
+        printf("\t%%%d = fadd double %s, 0.0\n",
+            tmp++, expression->tkn->value);
         break;
     }
 }
