@@ -305,7 +305,7 @@ int check_return(symtab* globaltab, symtab* functab, stmt_dec* stmt) {
 
 
     printf("Line %d, column %d: Incompatible type ",
-        stmt->tkn->line, stmt->tkn->col);
+        expression->tkn->line, expression->tkn->col);
     print_sym_type(type);
     printf(" in return statement\n");
     return 1;

@@ -124,14 +124,12 @@ int main(int argc, char** argv) {
 			destroy(program);
 		} else {
 			if (semantic_check(&global, program)) status = 1;
-			if (sflag) {
-				show_tables(global, program);
-				print_annotations(program);
-			} else if (status == 0) {
-				codegen(program, global);
+			else {
+				if (sflag) {
+					show_tables(global, program);
+					print_annotations(program);
+				} else codegen(program, global);
 			}
-			destroy_table(global);
-			destroy(program);
 		}
 	} else status = 1;
 
