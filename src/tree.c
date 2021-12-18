@@ -6,6 +6,9 @@
 // Only useful for debug printing, remove later!
 #include <stdio.h>
 
+/* ------ AST CREATION ------ */
+
+// create new token
 token* create_tkn(char* value, int line, int col) {
     token* tkn = (token*)malloc(sizeof(token));
     tkn->value = strdup(value);
@@ -14,18 +17,21 @@ token* create_tkn(char* value, int line, int col) {
     return tkn;
 }
 
+// create a new program node
 prog_node* new_prog(dec_node* declarations) {
     prog_node* pn = (prog_node*)malloc(sizeof(prog_node));
     pn->dlist = declarations;
     return pn;
 }
 
+// allocate a declaration node
 dec_node* alloc_node() {
     dec_node* node = (dec_node*)malloc(sizeof(dec_node));
     node->next = NULL;
     return node;
 }
 
+// append list to declaration node list's head
 dec_node* insert_var_dec_list(dec_node* head, dec_node* list) {
     if (!head) {
         head = list;
@@ -37,12 +43,12 @@ dec_node* insert_var_dec_list(dec_node* head, dec_node* list) {
     return head;
 }
 
+// append variable declaration to declaration list
 dec_node* insert_var_dec(dec_node* head, var_dec* var) {
     if (!head) {
         head = alloc_node();
         head->type = d_var;
         head->dec.var = var;
-        //head->next = NULL;
     } else {
         dec_node* tmp = head;
         for (; tmp->next; tmp = tmp->next);
@@ -53,6 +59,7 @@ dec_node* insert_var_dec(dec_node* head, var_dec* var) {
     return head;
 }
 
+// create variable declaration
 var_dec* create_var(token* tkn, const v_type typespec) {
     var_dec* var = (var_dec*)malloc(sizeof(var_dec));
     var->typespec = typespec;
@@ -61,6 +68,7 @@ var_dec* create_var(token* tkn, const v_type typespec) {
     return var;
 }
 
+// create a new variable declaration and set it as the head of declaration list
 dec_node* set_id_reps_head(dec_node* head, token* tkn, v_type typespec) {
     var_dec* var = create_var(tkn, typespec);
     dec_node* n_head = insert_var_dec(NULL, var);
@@ -68,12 +76,12 @@ dec_node* set_id_reps_head(dec_node* head, token* tkn, v_type typespec) {
     for (dec_node* tmp = head; tmp; tmp = tmp->next) {
         tmp->dec.var->typespec = typespec;
     }
-
     n_head->next = head;
-    ;
+    
     return n_head;
 }
 
+// create and add a new variable to an declaration list withou defining its type
 dec_node* save_id_reps(dec_node* head, token* tkn) {
     var_dec* var = (var_dec*)malloc(sizeof(var_dec));
     var->tkn = tkn;
@@ -82,6 +90,7 @@ dec_node* save_id_reps(dec_node* head, token* tkn) {
     return head;
 }
 
+// create a function declaration and add it to declaration list
 dec_node* insert_func_dec(dec_node* head, func_dec* func) {
     if (!head) {
         head = alloc_node();
@@ -98,10 +107,12 @@ dec_node* insert_func_dec(dec_node* head, func_dec* func) {
     return head;
 }
 
+// copy variable declaration from declaration list to the body of a function
 func_body* create_body_var(dec_node* head) {
     func_body* f_body_head = (func_body*)malloc(sizeof(func_body));
     func_body* body = f_body_head;
 
+    // copy variable declarations from declaration list
     for (dec_node* tmp = head; tmp; tmp = tmp->next) {
         body->type = b_var;
         body->dec.var = tmp->dec.var;
@@ -111,10 +122,21 @@ func_body* create_body_var(dec_node* head) {
         } else body->next = NULL;
     }
 
+    // destroy declaration list
+    dec_node* cur = head;
+    dec_node* next;
+    while(cur) {
+        next = cur->next;
+        free(cur);
+        cur = next;
+    }
+
     return f_body_head;
 }
 
+// create a function body statement
 func_body* create_body_stmt(stmt_dec* stmt) {
+    if (!stmt) return NULL;
     func_body* body = (func_body*)malloc(sizeof(func_body));
     body->type = b_stmt;
     body->dec.stmt = stmt;
@@ -123,6 +145,7 @@ func_body* create_body_stmt(stmt_dec* stmt) {
     return body;
 }
 
+// insert a function body declaration to the function body list
 func_body* insert_to_body(func_body* node, func_body* chain) {
     if (!node) return chain;
     if (!chain) return node;
@@ -133,6 +156,7 @@ func_body* insert_to_body(func_body* node, func_body* chain) {
     return chain;
 }
 
+ // create a function parameter node
 param_dec* create_param(token* tkn, v_type typespec, param_dec* chain) {
     param_dec* param = (param_dec*)malloc(sizeof(param_dec));
     param->tkn = tkn;
@@ -143,6 +167,7 @@ param_dec* create_param(token* tkn, v_type typespec, param_dec* chain) {
     return param;
 }
 
+// create function header node
 func_header* create_func_header(token* tkn, v_type typespec, param_dec* param_list) {
     func_header* header = (func_header*)malloc(sizeof(func_header));
     header->tkn = tkn;
@@ -153,6 +178,7 @@ func_header* create_func_header(token* tkn, v_type typespec, param_dec* param_li
     return header;
 }
 
+// create new function node
 func_dec* create_func(token* tkn, v_type typespec, param_dec* param_list, func_body* body) {
     func_dec* func = (func_dec*)malloc(sizeof(func_dec));
     func->f_header = create_func_header(tkn, typespec, param_list);
@@ -161,28 +187,34 @@ func_dec* create_func(token* tkn, v_type typespec, param_dec* param_list, func_b
     return func;
 }
 
+// create generic statement wrapper node
 stmt_dec* create_stmt(s_type type) {
     stmt_dec* stmt = (stmt_dec*)malloc(sizeof(stmt_dec));
     stmt->type = type;
+    stmt->tkn = NULL;
 
     return stmt;
 }
 
+// create argument parsing statement node
 stmt_dec* create_pargs(token* tkn, token* var, expr* index) {
     parse_args* args = (parse_args*)malloc(sizeof(parse_args));
     args->tkn = tkn;
     args->var = var;
     args->index = index;
+    args->type = t_undef;
+
     stmt_dec* stmt = create_stmt(s_parse);
     stmt->dec.d_args = args;
 
     return stmt;
 }
 
+// create print statement node
 stmt_dec* create_print(token* tkn, token* strlit, expr* expression) {
     print_stmt* print = (print_stmt*)malloc(sizeof(print_stmt));
     print->tkn = tkn;
-    if (strlit) print->strlit = strlit->value;
+    if (strlit) {print->strlit = strlit->value; free(strlit);}
     else print->strlit = NULL;
     print->expression = expression;
 
@@ -192,11 +224,13 @@ stmt_dec* create_print(token* tkn, token* strlit, expr* expression) {
     return stmt;
 }
 
+// create assignment statement node
 stmt_dec* create_assign(token* tkn, token* var, expr* expression) {
     assign_stmt* assign = (assign_stmt*)malloc(sizeof(assign_stmt));
     assign->tkn = tkn;
     assign->var = var;
     assign->expression = expression;
+    assign->type = t_undef;
 
     stmt_dec* stmt = create_stmt(s_assign);
     stmt->dec.d_assign = assign;
@@ -204,6 +238,7 @@ stmt_dec* create_assign(token* tkn, token* var, expr* expression) {
     return stmt;
 }
 
+// create return statement node
 stmt_dec* create_return(token* tkn, expr* expression) {
     stmt_dec* stmt = create_stmt(s_return);
     stmt->dec.d_expr = expression;
@@ -211,6 +246,7 @@ stmt_dec* create_return(token* tkn, expr* expression) {
     return stmt;
 }
 
+// create function call statement node
 stmt_dec* create_call(func_invoc* call) {
     stmt_dec* stmt = create_stmt(s_call);
     stmt->dec.d_fi = call;
@@ -218,12 +254,15 @@ stmt_dec* create_call(func_invoc* call) {
     return stmt;
 }
 
+// create expression node
 expr* create_expr(e_type type, op operator, token* tkn, void* arg1, expr* arg2) {
     expr* expression = (expr*)malloc(sizeof(expr));
     expression->type = type;
     expression->tkn = tkn;
     expression->operator = operator;
     expression->arg2 = arg2;
+    expression->annotation = t_undef;
+    expression->arg1.exp_1 = NULL;
 
     switch (type) {
     case e_expr:
@@ -243,6 +282,7 @@ expr* create_expr(e_type type, op operator, token* tkn, void* arg1, expr* arg2) 
     return expression;
 }
 
+// initialize block statement node
 stmt_dec* create_stmt_block(stmt_block* block) {
     stmt_dec* stmt = create_stmt(s_block);
     stmt->type = s_block;
@@ -251,12 +291,14 @@ stmt_dec* create_stmt_block(stmt_block* block) {
     return stmt;
 }
 
+// create block node or return NULL if there are no conditions to do so
 stmt_dec* create_stmt_block_nullable(stmt_block* block) {
     if (!block) return NULL;
     else if (!block->next) return block->stmt;
     return create_stmt_block(block);
 }
 
+// create for statement node
 stmt_dec* create_for(expr* expression, stmt_block* block) {
     for_stmt* d_for = (for_stmt*)malloc(sizeof(for_stmt));
     d_for->condition = expression;
@@ -266,7 +308,7 @@ stmt_dec* create_for(expr* expression, stmt_block* block) {
 
     return stmt;
 }
-
+// create if statement node
 stmt_dec* create_if(expr* condition, stmt_block* block1, stmt_block* block2) {
     if_stmt* d_if = (if_stmt*)malloc(sizeof(if_stmt));
 
@@ -280,6 +322,7 @@ stmt_dec* create_if(expr* condition, stmt_block* block1, stmt_block* block2) {
     return stmt;
 }
 
+// add new statement to block statements list node
 stmt_block* add_block_stmt(stmt_block* block, stmt_dec* stmt) {
     stmt_block* new_block = (stmt_block*)malloc(sizeof(stmt_block));
     new_block->stmt = stmt;
@@ -291,6 +334,7 @@ stmt_block* add_block_stmt(stmt_block* block, stmt_dec* stmt) {
     return block;
 }
 
+// create block statements list node
 stmt_block* create_block(stmt_block* chain, stmt_dec* stmt) {
     stmt_block* block = (stmt_block*)malloc(sizeof(stmt_block));
     block->stmt = stmt;
@@ -299,6 +343,7 @@ stmt_block* create_block(stmt_block* chain, stmt_dec* stmt) {
     return block;
 }
 
+// try to create block statement node
 stmt_block* block_or_null(stmt_block* chain, stmt_dec* stmt) {
     if (!stmt) {
         if (chain) return chain;
@@ -307,6 +352,7 @@ stmt_block* block_or_null(stmt_block* chain, stmt_dec* stmt) {
     return create_block(chain, stmt);
 }
 
+// create node list that holds parameters passed to function
 f_invoc_opts* create_fi_opts(f_invoc_opts* chain, expr* expression) {
     f_invoc_opts* fi_opts = (f_invoc_opts*)malloc(sizeof(f_invoc_opts));
     fi_opts->opt = expression;
@@ -315,10 +361,13 @@ f_invoc_opts* create_fi_opts(f_invoc_opts* chain, expr* expression) {
     return fi_opts;
 }
 
+// create function call node
 func_invoc* create_func_invocation(token* tkn, f_invoc_opts* opts) {
     func_invoc* fi = (func_invoc*)malloc(sizeof(func_invoc));
     fi->tkn = tkn;
     fi->opts = opts;
+    fi->annotation = t_undef;
+    fi->params = NULL;
 
     return fi;
 }
@@ -352,6 +401,7 @@ void destroy_dec(dec_node* node) {
         break;
     case d_var:
         // destroy variable declaration
+        destroy_var_dec(node->dec.var);
         break;
     }
     free(node);
@@ -452,7 +502,7 @@ void destroy_assign_stmt(assign_stmt* node) {
 void destroy_print_stmt(print_stmt* node) {
     if (!node) return;
     destroy_tkn(node->tkn);
-    // destroy string literal ???
+    if (node->strlit) free(node->strlit);
     if (node->expression) destroy_expr(node->expression);
     free(node);
 }
@@ -495,7 +545,6 @@ void destroy_stmt_block(stmt_block* node) {
 void destroy_func_invoc(func_invoc* node) {
     if (!node) return;
     destroy_tkn(node->tkn);
-    destroy_f_params(node->params);
     destroy_func_invoc_opts(node->opts);
     free(node);
 }
@@ -521,7 +570,7 @@ void destroy_expr(expr* node) {
     free(node);
 }
 
-/* ------ Pretty printers ------ */
+/* ------ AST PRINTING ------ */
 
 int spacing = 0;
 

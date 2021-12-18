@@ -10,7 +10,6 @@ typedef struct _token {
 } token;
 
 // variable declaration type enum
-// -
 typedef enum { v_int, v_float, v_bool, v_string, v_void } v_type;
 
 // variable declaration node

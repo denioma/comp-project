@@ -523,7 +523,7 @@ int define_func(symtab** tab, func_dec* func) {
     printf("Line %d, column %d: Symbol %s already defined\n",
         tkn->line, tkn->col, tkn->value);
 
-    free(func->localsym);
+    destroy_table(func->localsym);
     func->localsym = NULL;
     return 1;
 }
