@@ -18,14 +18,13 @@ func main () {
 				fmt.Println("one not equals two");
 
 				if 11.012 < 2e3  {
-				fmt.Println("and for floats too");
-			}
+					fmt.Println("and for floats too");
+				}
 			}
 		}
 
 	} else {
 		fmt.Println("Can't print this");
-
 	}
 }
 

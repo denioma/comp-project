@@ -1,18 +1,29 @@
-package main
-
-func fibonacci(n int) int {
-    if n == 0 || n == 1 {
-        return n
-    } else {
-        return (fibonacci(n-1) + fibonacci(n-2))
-    }
-}
+package main;
 
 func main() {
-    var i int;
-    i = 0
-    for i < 20 {
-        fmt.Println(fibonacci(i))
-        i = i + 1
-    }
+
+  var i, n int;
+  i = 3;
+  n = 10; // number of terms
+
+  var t1, t2 int;
+  t1 = 0;
+  t2 = 1;
+
+  var nextTerm int;
+  nextTerm = t1 + t2;
+
+  // print the first two terms t1 and t2
+  //printf("Fibonacci Series: %d, %d, ", t1, t2);
+  fmt.Println(t1);
+  fmt.Println(t2);
+
+  for i <= n {
+	fmt.Println(nextTerm);
+	t1 = t2;
+    t2 = nextTerm;
+	nextTerm = t1 + t2;
+	i = i + 1;
+  }
+
 }

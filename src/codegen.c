@@ -222,7 +222,7 @@ void cgen_load(const t_type type, char* id) {
     } else {
         if (is_local)
             printf("\t%%%d = load %s, %s* %%%s\n", tmp++, t_types[type], t_types[type], id);
-        else 
+        else
             printf("\t%%%d = load %s, %s* @%s\n", tmp++, t_types[type], t_types[type], id);
     }
 }
@@ -557,8 +557,12 @@ void cgen_for(for_stmt* stmt) {
 }
 
 void cgen_parse(parse_args* parse) {
+    char global;
     declare_atoi = 1;
     cgen_expression(parse->index);
+    if (search_el(tables.local, parse->var->value))
+        global = 0;
+    else global = 1;
     printf("\t%%%d = getelementptr inbounds i8*, i8** %%argv, i32 %%%d\n",
         tmp, tmp-1);
     tmp++;
@@ -566,7 +570,10 @@ void cgen_parse(parse_args* parse) {
     tmp++;
     printf("\t%%%d = call i32 @atoi(i8* %%%d)\n", tmp, tmp-1);
     tmp++;
-    printf("\tstore i32 %%%d, i32* %%%s\n", tmp-1, parse->var->value);
+    if (global)
+        printf("\tstore i32 %%%d, i32* @%s\n", tmp-1, parse->var->value);
+    else
+        printf("\tstore i32 %%%d, i32* %%%s\n", tmp-1, parse->var->value);
 }
 
 void cgen_stmt(stmt_dec* stmt) {

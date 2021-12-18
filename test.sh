@@ -26,11 +26,11 @@ for input in $path/*.dgo; do
     elif [ "$1" = "" ]; then
         compile=$(./gocompiler < $filename.dgo > $filename.ll)
         if [ "$filename" = "meta4/parse_args" ]; then
-            out=$(lli $filename.ll 0 1 2 3 | diff $filename.out - ) 
-        elif [ "$filename" = "meta4/recursive_factorial" ]; then
-            out=$(lli $filename.ll 10 | diff $filename.out - ) 
+            out=$(lli-7 $filename.ll 0 1 2 3 | diff $filename.out - ) 
+        elif [ "$filename" = "meta4/recursive_factorial" ] || [ "$filename" = "meta4/global_args" ]; then
+            out=$(lli-7 $filename.ll 10 | diff $filename.out - ) 
         else
-            out=$(lli $filename.ll | diff $filename.out - ) 
+            out=$(lli-7 $filename.ll | diff $filename.out - ) 
         fi
     else
         out=$(./gocompiler $flag < $filename.dgo | diff $filename.out -)
