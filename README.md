@@ -26,14 +26,14 @@ Change reallits to conform to standard
 ## Mooshak
 
 ```
-B: 32/41
-C: 24/59
-D: 6/54
+B: 32/41 (Erro de execução)
+C: 59/59
+D: 51/54 (Erro de execução)
 E: 55/55
-F: 30/41
+F: 37/41 (Erro de execução)
 
-Total: 147/250
-Missing: 103
+Total: 234/250
+Missing: 16
 ```
 
 # Meta 3
