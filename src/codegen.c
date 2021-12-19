@@ -312,6 +312,22 @@ void cgen_call_fi(func_invoc* call) {
     tmp++;
 }
 
+void cgen_intlit(expr* expression) {
+    if (*(expression->tkn->value) == '0') {
+        int intlit;
+        if (*((expression->tkn->value)+1) == 'x') {
+            intlit = strtol(expression->tkn->value, NULL, 16);
+        } else {
+            intlit = strtol(expression->tkn->value, NULL, 8);
+        }
+        printf("\t%%%d = add i32 %d, 0\n",
+                tmp++, intlit);
+    } else {
+        printf("\t%%%d = add i32 %s, 0\n",
+                tmp++, expression->tkn->value);
+    }
+}
+
 void cgen_expression(expr* expression) {
     int tmp1, tmp2;
     t_type type;
@@ -444,8 +460,7 @@ void cgen_expression(expr* expression) {
         cgen_load(expression->annotation, expression->tkn->value);
         break;
     case e_int:
-        printf("\t%%%d = add i32 %s, 0\n",
-            tmp++, expression->tkn->value);
+        cgen_intlit(expression);
         break;
     case e_real:
         str_double(&expression->tkn->value);
