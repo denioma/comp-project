@@ -10,9 +10,7 @@
 %}
 %union{
     token* tkn;
-    char* token;
     dec_node* decl;
-    var_dec* var;
     func_dec* func;
     v_type var_type;
     prog_node* prog;
@@ -26,8 +24,8 @@
 }
 
 %token <tkn> STRLIT ID INTLIT REALLIT
-%token <tkn> PLUS MINUS STAR DIV MOD EQ GE GT LE LT NE NOT AND OR LPAR RPAR LBRACE RBRACE LSQ RSQ PACKAGE RETURN PRINT PARSEINT FUNC CMDARGS IF ELSE FOR INT FLOAT32 BOOL STRING ASSIGN
-%token SEMICOLON COMMA BLANKID VAR
+%token <tkn> PLUS MINUS STAR DIV MOD EQ GE GT LE LT NE NOT AND OR RETURN PRINT PARSEINT INT FLOAT32 BOOL STRING ASSIGN
+%token PACKAGE IF ELSE FOR LPAR RPAR LBRACE RBRACE LSQ RSQ SEMICOLON COMMA BLANKID VAR CMDARGS FUNC
 %token RESERVED
 
 %type <prog> Program
@@ -42,6 +40,16 @@
 %type <s_call> FuncInvocation
 %type <fi_opts> FuncInvocationOpts ExprReps
 
+/* %destructor {if (!build) destroy_tkn($$);} <tkn>
+%destructor {if (!build) destroy_dec($$);} <decl>
+%destructor {if (!build) destroy_func($$);} <func>
+%destructor {if (!build) destroy_func_params($$);} <params>
+%destructor {if (!build) destroy_func_body($$);} <f_body>
+%destructor {if (!build) destroy_stmt_dec($$);} <stmt>
+%destructor {if (!build) destroy_expr($$);} <expression>
+%destructor {if (!build) destroy_stmt_block($$);} <s_block>
+%destructor {if (!build) destroy_func_invoc($$);} <s_call>
+%destructor {if (!build) destroy_func_invoc_opts($$);} <fi_opts> */
 
 %right ASSIGN
 %left OR
@@ -54,7 +62,7 @@
 %%
 
 Program:
-        PACKAGE ID SEMICOLON Declarations               {free($2); if (build) $$=program=new_prog($4);}
+        PACKAGE ID SEMICOLON Declarations               {destroy_tkn($2); if (build) $$=program=new_prog($4);}
 ;
 
 Declarations:
@@ -148,7 +156,7 @@ Stmt:
 
 StmtBlock:
         Statement SEMICOLON StmtBlock                   {if (build) $$=block_or_null($3, $1);}
-    |   Statement SEMICOLON Statement SEMICOLON         {stmt_block* debug; if (build) $$=block_or_null(debug = block_or_null(NULL, $3), $1);}
+    |   Statement SEMICOLON Statement SEMICOLON         {if (build) $$=block_or_null(block_or_null(NULL, $3), $1);}
 ;
 
 ElseStmt:
@@ -162,8 +170,8 @@ ExprOpt:
 ;
 
 ParseArgs:
-        ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ Expr RSQ RPAR     {if (build) $$=create_pargs($5, $1, $9);}
-    |   ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ error RSQ RPAR    {$$=NULL;}
+        ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ Expr RSQ RPAR     {if (build) $$=create_pargs($5, $1, $9); destroy_tkn($4);}
+    |   ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ error RSQ RPAR    {$$=NULL; destroy_tkn($4);}
 ;
 
 FuncInvocation:

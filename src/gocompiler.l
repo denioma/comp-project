@@ -51,10 +51,10 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 "=="			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "EQ\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return EQ;}}
 ">="			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "GE\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return GE;}}
 ">"				{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "GT\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return GT;}}
-"{"				{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "LBRACE\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return LBRACE;}}
+"{"				{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "LBRACE\n"); else return LBRACE;}
 "<="			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "LE\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return LE;}}
-"("				{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "LPAR\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return LPAR;}}
-"["				{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "LSQ\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return LSQ;}}
+"("				{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "LPAR\n"); else return LPAR;}
+"["				{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "LSQ\n"); else return LSQ;}
 "<"				{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "LT\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return LT;}}
 "%"				{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "MOD\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return MOD;}}
 "!="			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "NE\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return NE;}}
@@ -67,8 +67,8 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 "package"		{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "PACKAGE\n"); else return PACKAGE;}
 "return"		{yline = yylineno; ycol = col; col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "RETURN\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return RETURN;}}
 "else"			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "ELSE\n"); else return ELSE;}
-"for"			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "FOR\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return FOR;}}
-"if"			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "IF\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol);  return IF;}}
+"for"			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "FOR\n"); else return FOR;}
+"if"			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "IF\n"); else return IF;}
 "var"			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "VAR\n"); else return VAR;}
 "int"			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "INT\n"); else return INT;}
 "float32"		{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "FLOAT32\n"); else return FLOAT32;}
@@ -76,8 +76,8 @@ reserved        break|case|chan|const|continue|default|defer|fallthrough|go|goto
 "string"		{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "STRING\n"); else return STRING;}
 "fmt.Println"	{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "PRINT\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return PRINT;}}
 "strconv.Atoi"	{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "PARSEINT\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return PARSEINT;}}
-"func"			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "FUNC\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return FUNC;}}
-"os.Args"		{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "CMDARGS\n"); else {yylval.tkn = create_tkn(yytext, yline, ycol); return CMDARGS;}}
+"func"			{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "FUNC\n"); else return FUNC;}
+"os.Args"		{yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "CMDARGS\n"); else return CMDARGS;}
 {reserved}      {yline = yylineno; ycol = col; col += yyleng; semicolon = 0; if (lflag) fprintf(yyout, "RESERVED(%s)\n", yytext); else return RESERVED;}
 {identifier}	{yline = yylineno; ycol = col; col += yyleng; semicolon = 1; if (lflag) fprintf(yyout, "ID(%s)\n", yytext); else {yylval.tkn = create_tkn(yytext, yline, ycol); return ID;}}
 {whitespace}    {++col;}
@@ -113,13 +113,15 @@ int main(int argc, char** argv) {
 
 	if (lflag) {
 		yylex();
-		return status;
+		yylex_destroy();
+		return 0;
 	}
 
 	yyparse();
 	if (build) {
 		if (tflag) {
 			print_ast(program);
+			destroy(program);
 		} else {
 			if (semantic_check(&global, program)) status = 1;
 			else {
@@ -128,12 +130,13 @@ int main(int argc, char** argv) {
 					print_annotations(program);
 				} else codegen(program, global);
 			}
+			destroy_table(global);
+			destroy(program);
 		}
 	} else status = 1;
 
-	// destroy_table(global);
-	// destroy(program);
-	return status;
+	yylex_destroy();
+	return 0;
 }
 
 int yywrap() {
