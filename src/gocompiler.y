@@ -10,9 +10,7 @@
 %}
 %union{
     token* tkn;
-    char* token;
     dec_node* decl;
-    var_dec* var;
     func_dec* func;
     v_type var_type;
     prog_node* prog;
@@ -26,8 +24,8 @@
 }
 
 %token <tkn> STRLIT ID INTLIT REALLIT
-%token <tkn> PLUS MINUS STAR DIV MOD EQ GE GT LE LT NE NOT AND OR LPAR RPAR LBRACE RBRACE LSQ RSQ PACKAGE RETURN PRINT PARSEINT FUNC CMDARGS IF ELSE FOR INT FLOAT32 BOOL STRING ASSIGN
-%token SEMICOLON COMMA BLANKID VAR
+%token <tkn> PLUS MINUS STAR DIV MOD EQ GE GT LE LT NE NOT AND OR RETURN PRINT PARSEINT INT FLOAT32 BOOL STRING ASSIGN
+%token PACKAGE IF ELSE FOR LPAR RPAR LBRACE RBRACE LSQ RSQ SEMICOLON COMMA BLANKID VAR CMDARGS FUNC
 %token RESERVED
 
 %type <prog> Program
@@ -42,6 +40,16 @@
 %type <s_call> FuncInvocation
 %type <fi_opts> FuncInvocationOpts ExprReps
 
+/* %destructor {if (!build) destroy_tkn($$);} <tkn>
+%destructor {if (!build) destroy_dec($$);} <decl>
+%destructor {if (!build) destroy_func($$);} <func>
+%destructor {if (!build) destroy_func_params($$);} <params>
+%destructor {if (!build) destroy_func_body($$);} <f_body>
+%destructor {if (!build) destroy_stmt_dec($$);} <stmt>
+%destructor {if (!build) destroy_expr($$);} <expression>
+%destructor {if (!build) destroy_stmt_block($$);} <s_block>
+%destructor {if (!build) destroy_func_invoc($$);} <s_call>
+%destructor {if (!build) destroy_func_invoc_opts($$);} <fi_opts> */
 
 %right ASSIGN
 %left OR
@@ -53,8 +61,8 @@
 %nonassoc LPAR RPAR
 %%
 
-Program: 
-        PACKAGE ID SEMICOLON Declarations               {free($2); if (build) $$=program=new_prog($4);} 
+Program:
+        PACKAGE ID SEMICOLON Declarations               {destroy_tkn($2); if (build) $$=program=new_prog($4);}
 ;
 
 Declarations:
@@ -63,61 +71,61 @@ Declarations:
     |   /* empty */                                     {$$=NULL;}
 ;
 
-VarDeclaration: 
+VarDeclaration:
         VAR VarSpec                                     {if (build) $$=$2;}
     |   VAR LPAR VarSpec SEMICOLON RPAR                 {if (build) $$=$3;}
 ;
 
-FuncDeclaration: 
+FuncDeclaration:
         FUNC ID LPAR FuncParams RPAR FuncType FuncBody  {if (build) $$=create_func($2, $6, $4, $7);}
 ;
 
-FuncParams: 
+FuncParams:
         Parameters                                      {if (build) $$=$1;}
     |   /* empty */                                     {$$=NULL;}
 ;
 
-FuncType: 
+FuncType:
         Type                                            {if (build) $$=$1;}
     |   /* empty */                                     {if (build) $$=v_void;}
 ;
 
-VarSpec: 
+VarSpec:
         ID IdReps Type                                  {if (build) $$=set_id_reps_head($2, $1, $3);}
 ;
 
-IdReps: 
-        IdReps COMMA ID                                 {if (build) $$=save_id_reps($1,$3);} 
-    |   /* empty */                                     {$$=NULL;} 
+IdReps:
+        IdReps COMMA ID                                 {if (build) $$=save_id_reps($1,$3);}
+    |   /* empty */                                     {$$=NULL;}
 ;
-        
-Type: 
+
+Type:
         INT                                             {if (build) $$=v_int;}
     |   FLOAT32                                         {if (build) $$=v_float;}
     |   BOOL                                            {if (build) $$=v_bool;}
     |   STRING                                          {if (build) $$=v_string;}
 ;
 
-Parameters: 
+Parameters:
         ID Type ParamOpts                               {if (build) $$=create_param($1, $2, $3);}
 ;
 
-ParamOpts: 
+ParamOpts:
         COMMA ID Type ParamOpts                         {if (build) $$=create_param($2, $3, $4);}
     |   /* empty */                                     {$$=NULL;}
 ;
 
-FuncBody: 
+FuncBody:
         LBRACE VarsAndStatements RBRACE                 {if (build) $$=$2;}
 ;
 
-VarsAndStatements: 
+VarsAndStatements:
         VarsAndStatements VASOpts SEMICOLON             {if (build) $$=insert_to_body($2, $1);}
     |   /* empty */                                     {$$=NULL;}
 ;
 
-VASOpts: 
-        VarDeclaration                                  {if (build) $$=create_body_var($1);} 
+VASOpts:
+        VarDeclaration                                  {if (build) $$=create_body_var($1);}
     |   Statement                                       {if (build) $$=create_body_stmt($1);}
     |   /* empty */                                     {$$=NULL;}
 ;
@@ -146,37 +154,37 @@ Stmt:
     |   /* empty */                                     {$$=NULL;}
 ;
 
-StmtBlock: 
+StmtBlock:
         Statement SEMICOLON StmtBlock                   {if (build) $$=block_or_null($3, $1);}
-    |   Statement SEMICOLON Statement SEMICOLON         {stmt_block* debug; if (build) $$=block_or_null(debug = block_or_null(NULL, $3), $1);}
+    |   Statement SEMICOLON Statement SEMICOLON         {if (build) $$=block_or_null(block_or_null(NULL, $3), $1);}
 ;
 
-ElseStmt: 
+ElseStmt:
         ELSE LBRACE ExplicitBlock RBRACE                {if (build) $$=$3;}
     |   /* empty */                                     {$$=NULL;}
 ;
 
-ExprOpt: 
+ExprOpt:
         Expr                                            {if (build) $$=$1;}
     |   /* empty */                                     {$$=NULL;} // $$=NULL;
 ;
 
-ParseArgs: 
-        ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ Expr RSQ RPAR     {if (build) $$=create_pargs($5, $1, $9);}
-    |   ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ error RSQ RPAR    {$$=NULL;} 
+ParseArgs:
+        ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ Expr RSQ RPAR     {if (build) $$=create_pargs($5, $1, $9); destroy_tkn($4);}
+    |   ID COMMA BLANKID ASSIGN PARSEINT LPAR CMDARGS LSQ error RSQ RPAR    {$$=NULL; destroy_tkn($4);}
 ;
 
-FuncInvocation: 
+FuncInvocation:
         ID LPAR FuncInvocationOpts RPAR                 {if (build) $$=create_func_invocation($1,$3);}
     |   ID LPAR error RPAR                              {$$=NULL;}
 ;
 
-FuncInvocationOpts: 
+FuncInvocationOpts:
         Expr ExprReps                                   {if (build) $$=create_fi_opts($2, $1);}
     |   /* empty */                                     {$$=NULL;}
 ;
-    
-ExprReps: 
+
+ExprReps:
         COMMA Expr ExprReps                             {if (build) $$=create_fi_opts($3, $2);}
     |   /* empty */                                     {$$=NULL;}
 ;

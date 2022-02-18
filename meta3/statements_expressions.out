@@ -18,11 +18,11 @@ Line 35, column 9: Cannot find symbol func1(int,int,float32,undef)
 Line 37, column 13: Operator strconv.Atoi cannot be applied to types int, undef
 Line 37, column 34: Cannot find symbol func1(bool)
 Line 39, column 7: Operator = cannot be applied to types int, float32
-Line 4, column 39: Incompatible type int in return statement
 Line 40, column 12: Operator > cannot be applied to types bool, bool
 Line 43, column 12: Operator > cannot be applied to types int, float32
 Line 44, column 13: Operator strconv.Atoi cannot be applied to types float32, string
 Line 46, column 4: Operator = cannot be applied to types int, bool
+Line 4, column 39: Incompatible type int in return statement
 Line 50, column 11: Operator && cannot be applied to types float32, bool
 Line 55, column 6: Operator = cannot be applied to types int, undef
 Line 55, column 8: Cannot find symbol func3()

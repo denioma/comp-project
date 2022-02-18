@@ -8,7 +8,10 @@ extern void print_sym_type(t_type);
 t_type check_expr(symtab* globaltab, symtab* functab, expr* expression);
 int check_statement(symtab** globaltab, symtab** functab, stmt_dec* stmt);
 
-void no_symbol(int line, int col, char* id, char is_func, f_invoc_opts* params, symtab* global, symtab* func) {
+int errors = 0;
+
+void no_symbol(int line, int col, char* id, char is_func, f_invoc_opts* params) {
+    errors++;
     if (!is_func) {
         printf("Line %d, column %d: Cannot find symbol %s\n", line, col, id);
         return;
@@ -28,6 +31,7 @@ void no_symbol(int line, int col, char* id, char is_func, f_invoc_opts* params, 
 }
 
 void op_type(int line, int col, char* op, t_type type1) {
+    errors++;
     printf("Line %d, column %d: Operator %s cannot be applied to type ",
         line, col, op);
     print_sym_type(type1);
@@ -35,6 +39,7 @@ void op_type(int line, int col, char* op, t_type type1) {
 }
 
 void op_types2(int line, int col, char* op, t_type type1, t_type type2) {
+    errors++;
     printf("Line %d, column %d: Operator %s cannot be applied to types ",
         line, col, op);
     print_sym_type(type1);
@@ -65,8 +70,10 @@ t_type convert_v_type(v_type type) {
 }
 
 int check_bool_var(symtab** tab, var_dec* var) {
-    if (insert_el(tab, var->tkn->value, var->tkn->line, var->tkn->col, t_bool, 0, 0, 0, 0))
+    if (insert_el(tab, var->tkn->value, var->tkn->line, var->tkn->col, t_bool, 0, 0, 0, 0)) {
+        var->type = t_bool;
         return 0;
+    }
 
     printf("Line %d, column %d: Symbol %s already defined\n",
         var->tkn->line, var->tkn->col, var->tkn->value);
@@ -74,8 +81,10 @@ int check_bool_var(symtab** tab, var_dec* var) {
 }
 
 int check_float_var(symtab** tab, var_dec* var) {
-    if (insert_el(tab, var->tkn->value, var->tkn->line, var->tkn->col, t_float32, 0, 0, 0, 0))
+    if (insert_el(tab, var->tkn->value, var->tkn->line, var->tkn->col, t_float32, 0, 0, 0, 0)) {
+        var->type = t_float32;
         return 0;
+    }
 
     printf("Line %d, column %d: Symbol %s already defined\n",
         var->tkn->line, var->tkn->col, var->tkn->value);
@@ -83,8 +92,10 @@ int check_float_var(symtab** tab, var_dec* var) {
 }
 
 int check_int_var(symtab** tab, var_dec* var) {
-    if (insert_el(tab, var->tkn->value, var->tkn->line, var->tkn->col, t_int, 0, 0, 0, 0))
+    if (insert_el(tab, var->tkn->value, var->tkn->line, var->tkn->col, t_int, 0, 0, 0, 0)) {
+        var->type = t_int;
         return 0;
+    }
 
     printf("Line %d, column %d: Symbol %s already defined\n",
         var->tkn->line, var->tkn->col, var->tkn->value);
@@ -92,8 +103,10 @@ int check_int_var(symtab** tab, var_dec* var) {
 }
 
 int check_string_var(symtab** tab, var_dec* var) {
-    if (insert_el(tab, var->tkn->value, var->tkn->line, var->tkn->col, t_string, 0, 0, 0, 0))
+    if (insert_el(tab, var->tkn->value, var->tkn->line, var->tkn->col, t_string, 0, 0, 0, 0)) {
+        var->type = t_string;
         return 0;
+    }
 
     printf("Line %d, column %d: Symbol %s already defined\n",
         var->tkn->line, var->tkn->col, var->tkn->value);
@@ -217,17 +230,20 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
             case op_mod:
                 type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
                 type2 = check_expr(globaltab, functab, expression->arg2);
-                if (type1 == type2 && type1 == t_int) return type1;
+                if (type1 == type2 && type1 == t_int)  {
+                    expression->annotation = t_int;
+                    return type1;
+                }
                 op_types2(tkn->line, tkn->col, tkn->value, type1, type2);
                 expression->annotation = t_undef;
                 return t_undef;
             case op_minus:
             case op_plus:
                 type1 = check_expr(globaltab, functab, expression->arg1.exp_1);
-                if (type1 == t_bool || type1 == t_void) {
+                if (type1 == t_bool || type1 == t_void || type1 == t_string) {
                     op_type(tkn->line, tkn->col, tkn->value, type1);
                     expression->annotation = t_undef;
-                    return t_undef;    
+                    return t_undef;
                 }
                 expression->annotation = type1;
                 return type1;
@@ -239,13 +255,14 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
             call = expression->arg1.call;
             symbol = search_el(globaltab, call->tkn->value);
             if (symbol) {
+                expression->annotation = symbol->type;
                 call->annotation = symbol->type;
                 call->params = symbol->params;
                 check = check_call_params(globaltab, functab, symbol->params, call->opts);
                 type1 = symbol->type;
             } else check = check_call_params(globaltab, functab, NULL, call->opts);
             if (symbol && check) return type1;
-            no_symbol(call->tkn->line, call->tkn->col, call->tkn->value, 1, call->opts, globaltab, functab);
+            no_symbol(call->tkn->line, call->tkn->col, call->tkn->value, 1, call->opts);
             return t_undef;
             break;
         case e_id:
@@ -256,7 +273,7 @@ t_type check_expr(symtab* globaltab, symtab* functab, expr* expression) {
                 expression->annotation = symbol->type;
                 return symbol->type;
             }
-            no_symbol(tkn->line, tkn->col, tkn->value, 0, 0, 0, 0);
+            no_symbol(tkn->line, tkn->col, tkn->value, 0, 0);
             expression->annotation = t_undef;
             return t_undef;
         default:
@@ -275,7 +292,7 @@ int check_call(symtab* global, symtab* func, func_invoc* call) {
         check = check_call_params(global, func, symbol->params, call->opts);
     } else check_call_params(global, func, NULL, call->opts);
     if (symbol && check) return 0;
-    no_symbol(call->tkn->line, call->tkn->col, id, 1, call->opts, global, func);
+    no_symbol(call->tkn->line, call->tkn->col, id, 1, call->opts);
     return 1;
 }
 
@@ -288,7 +305,7 @@ int check_return(symtab* globaltab, symtab* functab, stmt_dec* stmt) {
 
 
     printf("Line %d, column %d: Incompatible type ",
-        stmt->dec.d_expr->tkn->line, stmt->dec.d_expr->tkn->col);
+        expression->tkn->line, expression->tkn->col);
     print_sym_type(type);
     printf(" in return statement\n");
     return 1;
@@ -301,7 +318,7 @@ int check_for(symtab* globaltab, symtab* functab, for_stmt* stmt) {
         if (type == t_undef && stmt->condition->type == e_func) {
             token* tkn = stmt->condition->tkn;
             func_invoc* call = stmt->condition->arg1.call;
-            no_symbol(tkn->line, tkn->col, tkn->value, 1, call->opts, globaltab, functab);
+            no_symbol(tkn->line, tkn->col, tkn->value, 1, call->opts);
             errors++;
         } else if (type != t_bool) {
             printf("Line %d, column %d: Incompatible type ",
@@ -322,7 +339,7 @@ int check_if(symtab* globaltab, symtab* functab, if_stmt* stmt) {
         t_type type = check_expr(globaltab, functab, stmt->condition);
         if (type == t_undef && stmt->condition->type == e_func) {
             token* tkn = stmt->condition->tkn;
-            no_symbol(tkn->line, tkn->col, tkn->value, 0, 0, 0, 0);
+            no_symbol(tkn->line, tkn->col, tkn->value, 0, 0);
             errors++;
         } else if (type != t_bool) {
             printf("Line %d, column %d: Incompatible type ",
@@ -349,7 +366,7 @@ int check_print(symtab* globaltab, symtab* functab, print_stmt* stmt) {
                 call->tkn->line, call->tkn->col, stmt->tkn->value);
         } else if (stmt->expression->tkn) {
             printf("Line %d, column %d: Incompatible type undef in %s statement\n",
-                stmt->expression->tkn->line, stmt->expression->tkn->col, stmt->tkn->value);    
+                stmt->expression->tkn->line, stmt->expression->tkn->col, stmt->tkn->value);
         } else {
             printf("Line %d, column %d: Incompatible type undef in %s statement\n",
                     stmt->tkn->line, stmt->tkn->col, stmt->tkn->value);
@@ -362,9 +379,9 @@ int check_print(symtab* globaltab, symtab* functab, print_stmt* stmt) {
 int check_parse(symtab* globaltab, symtab* functab, parse_args* stmt) {
     int error = 0;
     symtab* symbol = search_el(functab, stmt->var->value);
-    if (!symbol) symbol = search_el(globaltab, stmt->tkn->value);
+    if (!symbol) symbol = search_el(globaltab, stmt->var->value);
     if (!symbol) {
-        no_symbol(stmt->var->line, stmt->var->col, stmt->var->value, 0, 0, 0, 0);
+        no_symbol(stmt->var->line, stmt->var->col, stmt->var->value, 0, 0);
         return 1;
     }
     if (symbol->type != t_int) error = 1;
@@ -387,7 +404,7 @@ int check_assign(symtab* globaltab, symtab* functab, assign_stmt* stmt) {
     if (!symbol) symbol = search_el(globaltab, stmt->var->value);
     if (!symbol || symbol->is_func) {
         stmt->type = t_undef;
-        no_symbol(stmt->var->line, stmt->var->col, stmt->var->value, 0, 0, 0, 0);
+        no_symbol(stmt->var->line, stmt->var->col, stmt->var->value, 0, 0);
         op_types2(stmt->tkn->line, stmt->tkn->col, stmt->tkn->value, t_undef, expr_type);
         return 1;
     }
@@ -478,7 +495,7 @@ f_params* check_params(symtab** funtab, param_dec* params) {
         faux->next = NULL;
         new_param = insert_el(funtab, aux->tkn->value, aux->tkn->line, aux->tkn->col, faux->type, 0, 0, 1, 0);
         if (!new_param) {
-            printf("Line %d, column %d: Symbol %s already defined\n", 
+            printf("Line %d, column %d: Symbol %s already defined\n",
                 aux->tkn->line, aux->tkn->col, aux->tkn->value);
             return NULL;
         }
@@ -506,14 +523,13 @@ int define_func(symtab** tab, func_dec* func) {
     printf("Line %d, column %d: Symbol %s already defined\n",
         tkn->line, tkn->col, tkn->value);
 
-    free(func->localsym);
+    destroy_table(func->localsym);
     func->localsym = NULL;
     return 1;
 }
 
 int semantic_check(symtab** tab, prog_node* program) {
-    if (!program) return 0;
-    int errors = 0;
+    if (!program) return 1;
 
     /*
     ** b() declared after a() can still be reachable/called by a()
@@ -539,20 +555,15 @@ int semantic_check(symtab** tab, prog_node* program) {
         if (dec->type == d_var || !dec->dec.func->localsym) continue;
         // Check function here
         errors += check_func(tab, dec->dec.func);
-        /* TODO
-        ** enable unused checks after checking all symbols
-        ** otherwise it spits a million warnings about unused symbols
-        */
         check_unused(dec->dec.func->localsym);
     }
-    // check_unused(*tab);
 
     return errors;
 }
 
 void print_v_type(v_type type) { print_sym_type(convert_v_type(type)); }
 
-void print_func_table(symtab* global, func_dec* fun) {
+void print_func_table(func_dec* fun) {
     func_header* header = fun->f_header;
     printf("\n===== Function %s(", header->tkn->value);
     // Print return types - parse params typespec
@@ -572,7 +583,7 @@ void show_tables(symtab* global, prog_node* program) {
     dec_node* aux = program->dlist;
     for (; aux; aux = aux->next) {
         if (aux->type == d_func) {
-            print_func_table(global, aux->dec.func);
+            print_func_table(aux->dec.func);
         }
     }
     puts("");

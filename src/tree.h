@@ -1,5 +1,6 @@
 #include "structs.h"
 
+/* ------ AST CREATION ------ */
 token* create_tkn(char* value, int line, int col);
 prog_node* new_prog(dec_node* declarations);
 dec_node* insert_var_dec(dec_node* head, var_dec* new);
@@ -30,6 +31,7 @@ expr* create_expr(e_type type, op operator, token* tkn, void* arg1, expr* arg2);
 f_invoc_opts* create_fi_opts(f_invoc_opts* chain, expr* expression);
 func_invoc* create_func_invocation(token* tkn, f_invoc_opts* opts);
 
+/* ------ AST PRINTING ------ */
 void print_ast(const prog_node* head);
 void print_annotations(const prog_node* head);
 

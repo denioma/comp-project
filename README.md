@@ -17,9 +17,28 @@ Rodrigo Alexandre da Mota Machado
 
 [Go To Meta 3](#meta-3)
 
+# Meta 4
+
+## Missing
+
+Change reallits to conform to standard
+
+## Mooshak
+
+```
+B: 32/41 (Erro de execução)
+C: 59/59
+D: 51/54 (Erro de execução)
+E: 55/55
+F: 37/41 (Erro de execução)
+
+Total: 234/250
+Missing: 16
+```
+
 # Meta 3
 
-## Mooshak 
+## Mooshak
 
 ```
 B: 25/25
